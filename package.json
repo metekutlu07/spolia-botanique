@@ -1,0 +1,15 @@
+{
+  "name": "spolia-botanique-neo",
+  "version": "1.0.0",
+  "description": "Spolia Botanique website",
+  "private": true,
+  "scripts": {
+    "test:e2e": "playwright test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "@playwright/test": "^1.59.1"
+  }
+}

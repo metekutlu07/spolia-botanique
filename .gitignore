@@ -1,0 +1,12 @@
+node_modules/
+.DS_Store
+.claude/
+__pycache__/
+*.pyc
+*.zip
+playwright-report/
+test-results/
+.cache/
+
+# Source report/archive files are huge and not needed by the live site.
+spolia final report/

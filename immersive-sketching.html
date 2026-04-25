@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spolia Botanique — Immersive Sketching</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=EB+Garamond:ital,wght@0,400;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="site-nav.css" />
+    <script src="i18n.js" defer></script>
+    <style>
+      @font-face {
+        font-family: 'Neue Machina';
+        src: url('fonts/PPNeueMachina-PlainRegular.ttf') format('truetype');
+        font-weight: 400;
+      }
+      @font-face {
+        font-family: 'Neue Machina';
+        src: url('fonts/PPNeueMachina-PlainLight.ttf') format('truetype');
+        font-weight: 300;
+      }
+      @font-face {
+        font-family: 'Neue Machina';
+        src: url('fonts/PPNeueMachina-PlainUltrabold.ttf') format('truetype');
+        font-weight: 700;
+      }
+
+      *,
+      *::before,
+      *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --bg: #000000;
+        --fg: #ffffff;
+        --fg-dim: rgba(255, 255, 255, 0.55);
+        --green: #49dca4;
+        --pad: 60px;
+        --pad-sm: 32px;
+        --nav-h: 56px;
+        --immersive-page-gap: 60px;
+        --immersive-page-gap-loose: 120px;
+        --immersive-page-gap-tight: 15px;
+        --immersive-page-gap-taxonomy: 30px;
+        --immersive-caption-bar-padding: 28px var(--pad);
+      }
+
+      html {
+        scroll-behavior: smooth;
+        background: var(--bg);
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--fg);
+        font-family: 'Neue Machina', sans-serif;
+        font-weight: 300;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* ─── NAV ─── */
+      .top-nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: var(--nav-h);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 var(--pad-sm);
+        background: rgba(0, 0, 0, 0.25);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        z-index: 100;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .nav-brand {
+        text-decoration: none;
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        color: var(--green);
+        flex-shrink: 0;
+        cursor: pointer;
+        transition: color 0.2s;
+      }
+      .nav-brand:hover {
+        color: white;
+      }
+      .nav-brand-spolia {
+        font-family: 'EB Garamond', serif;
+        font-style: italic;
+        font-size: 32px;
+        font-weight: 400;
+        letter-spacing: 0.5px;
+        color: var(--green);
+      }
+      .nav-brand-botanique {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 27px;
+        font-weight: 500;
+        letter-spacing: 1px;
+        color: var(--green);
+      }
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: var(--nav-link-gap);
+      }
+      .nav-link {
+        text-decoration: none;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: var(--nav-link-font-size);
+        letter-spacing: var(--nav-link-letter-spacing);
+        text-transform: uppercase;
+        color: var(--green);
+        transition: color 0.2s, border-color 0.2s;
+        padding-top: var(--nav-link-padding-top);
+        padding-bottom: var(--nav-link-padding-bottom);
+        border-bottom: 1px solid transparent;
+      }
+      .nav-link:hover {
+        color: white;
+      }
+
+      /* ─── NAV CONTROLS (sound + fullscreen) ─── */
+      .nav-controls {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        margin-left: 24px;
+      }
+      .nav-ctrl-btn {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 6px;
+        color: rgba(255, 255, 255, 0.5);
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        padding: 0;
+      }
+      .nav-ctrl-btn svg {
+        width: 18px;
+        height: 18px;
+        fill: currentColor;
+      }
+      .nav-ctrl-btn:hover {
+        border-color: rgba(255, 255, 255, 0.5);
+        color: white;
+      }
+      .nav-ctrl-btn.on {
+        border-color: var(--green);
+        color: var(--green);
+      }
+      .nav-lang-btn {
+        width: 48px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 12px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+      }
+      .nav-link.active {
+        color: white;
+        border-bottom: 1px solid white;
+      }
+
+      /* ─── SECTION BASE ─── */
+      .page {
+        position: relative;
+        min-height: 100vh;
+        width: 100%;
+        overflow: hidden;
+      }
+      .page + .page {
+        margin-top: var(--immersive-page-gap);
+      }
+      #page-33 + .page {
+        margin-top: var(--immersive-page-gap-loose);
+      }
+      #page-37 + .page,
+      #page-39 + .page {
+        margin-top: var(--immersive-page-gap-tight);
+      }
+      #page-38 + .page {
+        margin-top: var(--immersive-page-gap-taxonomy);
+      }
+
+      /* ─── FADE-IN ─── */
+      .fade-in {
+        opacity: 0;
+        transform: translateY(28px);
+        transition: opacity 0.9s ease, transform 0.9s ease;
+      }
+      .fade-in.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      .fade-in.delay-1 {
+        transition-delay: 0.15s;
+      }
+      .fade-in.delay-2 {
+        transition-delay: 0.3s;
+      }
+
+      /* ─── BLINDS ─── */
+      .blinds {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: repeating-linear-gradient(
+          0deg,
+          rgba(0, 0, 0, 0.06) 0px,
+          rgba(0, 0, 0, 0.06) 2.5px,
+          transparent 2.5px,
+          transparent 5px
+        );
+        z-index: 1;
+      }
+
+      /* ─── LAYOUT: FULL SCREEN ─── */
+      .layout-full .bg-image {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+      }
+      .layout-full .bg-image.contain-width {
+        width: 90vw;
+        height: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        object-fit: contain;
+      }
+      .layout-full .overlay {
+        position: absolute;
+        inset: 0;
+        background: none;
+      }
+      .layout-full .section-badge {
+        position: absolute;
+        top: calc(var(--nav-h) + 36px);
+        left: var(--pad);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--fg-dim);
+        z-index: 2;
+      }
+      .layout-full .section-title {
+        position: absolute;
+        bottom: 120px;
+        left: var(--pad);
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: clamp(48px, 6vw, 90px);
+        color: var(--fg);
+        line-height: 1;
+        letter-spacing: -1px;
+        z-index: 2;
+      }
+      .layout-full .section-title,
+      .layout-full .section-badge,
+      .layout-full .caption-overlay {
+        z-index: 2;
+      }
+
+      /* ─── Scroll Arrow ─── */
+      .scroll-arrow {
+        position: absolute;
+        bottom: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 44px;
+        height: 44px;
+        z-index: 3;
+        object-fit: contain;
+        animation: float 2s ease-in-out infinite;
+      }
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateX(-50%) translateY(0);
+        }
+        50% {
+          transform: translateX(-50%) translateY(10px);
+        }
+      }
+
+      /* ─── LAYOUT: SPLIT RIGHT / LEFT ─── */
+      .layout-right,
+      .layout-left {
+        display: grid;
+        min-height: 100vh;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .text-side {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: calc(var(--nav-h) + 60px) var(--pad) 60px var(--pad);
+      }
+      .layout-left .text-side {
+        order: 2;
+      }
+
+      .image-col {
+        position: relative;
+        overflow: hidden;
+      }
+      .layout-right .image-col {
+        order: 2;
+      }
+      .layout-left .image-col {
+        order: 1;
+      }
+
+      .image-col img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        display: block;
+      }
+
+      .image-col-inner {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+      .image-col-inner .caption-below {
+        padding: 12px var(--pad-sm) 0 0;
+      }
+
+      /* ─── LAYOUT: CENTER WIDTH (90vw image) ─── */
+      .layout-center-w {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: calc(var(--nav-h) + 60px) 0 80px;
+        min-height: 100vh;
+      }
+      .layout-center-w .center-block {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 90vw;
+      }
+      .layout-center-w .center-block.w-80 {
+        width: 80vw;
+      }
+      .layout-center-w .center-block img {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+      .layout-center-w .caption-below {
+        width: 100%;
+        padding-top: 16px;
+      }
+
+      /* ─── LAYOUT: CENTER HEIGHT (90vh image) ─── */
+      .layout-center-h {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: calc(var(--nav-h) + 60px) var(--pad) 80px;
+        min-height: 100vh;
+      }
+      .layout-center-h .center-block {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .layout-center-h .center-block img {
+        height: 90vh;
+        width: auto;
+        max-width: 100%;
+        display: block;
+        object-fit: contain;
+      }
+      .layout-center-h .caption-below {
+        margin-top: 16px;
+        text-align: center;
+        max-width: 80ch;
+      }
+
+      /* ─── LAYOUT: TAXONOMY ─── */
+      .layout-taxonomy {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        padding: calc(var(--nav-h) + 36px) var(--pad) 56px;
+        min-height: 100vh;
+      }
+      .taxonomy-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        max-width: 1280px;
+        width: 100%;
+      }
+      .taxonomy-content .page-title-centered {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: clamp(22px, 2.4vw, 34px);
+        color: var(--green);
+        line-height: 1.2;
+        letter-spacing: -0.3px;
+        margin-bottom: 14px;
+        text-align: center;
+      }
+      .taxonomy-content img {
+        width: min(82vw, 1180px);
+        height: auto;
+        max-width: 100%;
+        display: block;
+        object-fit: contain;
+        margin-bottom: 18px;
+      }
+      .taxonomy-content .body-text {
+        width: min(100%, 900px);
+        text-align: left;
+      }
+
+      /* ─── LAYOUT: FULL-CAPTION ─── */
+      .layout-full-caption {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+      .layout-full-caption .full-image {
+        flex: 1;
+        position: relative;
+        overflow: hidden;
+        min-height: 75vh;
+      }
+      .layout-full-caption .full-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        display: block;
+      }
+      .layout-full-caption .caption-below-bar {
+        padding: var(--immersive-caption-bar-padding);
+        background: var(--bg);
+      }
+
+      /* ─── LAYOUT: TEXT OVERLAY ─── */
+      .layout-text-overlay {
+        position: relative;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+      }
+      .layout-text-overlay .bg-image {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+      }
+      .layout-text-overlay .overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          to right,
+          rgba(0, 0, 0, 0.88) 0%,
+          rgba(0, 0, 0, 0.72) 40%,
+          rgba(0, 0, 0, 0.1) 65%,
+          rgba(0, 0, 0, 0) 100%
+        );
+      }
+      .layout-text-overlay .blinds {
+        z-index: 1;
+      }
+      .overlay-text {
+        position: relative;
+        z-index: 2;
+        max-width: 50%;
+        padding: calc(var(--nav-h) + 60px) var(--pad) 60px var(--pad);
+      }
+
+      /* ─── TYPOGRAPHY ─── */
+      .page-title {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: clamp(22px, 2.4vw, 34px);
+        color: var(--green);
+        line-height: 1.2;
+        letter-spacing: -0.3px;
+        margin-bottom: 32px;
+      }
+
+      .body-text p {
+        font-family: 'Neue Machina', sans-serif;
+        font-weight: 300;
+        font-size: 21px;
+        line-height: 1.8;
+        letter-spacing: 0.2px;
+        color: rgba(255, 255, 255, 0.85);
+        margin-bottom: 22px;
+      }
+      .body-text p:last-child {
+        margin-bottom: 0;
+      }
+
+      /* ─── CAPTION ─── */
+      .caption {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 17px;
+        line-height: 1.6;
+        letter-spacing: 0.5px;
+        color: rgba(255, 255, 255, 0.65);
+      }
+      .caption-overlay {
+        position: absolute;
+        padding: 14px 16px;
+        background: transparent;
+        max-width: 340px;
+      }
+      .caption-br {
+        bottom: 24px;
+        right: 24px;
+        text-align: right;
+      }
+      .caption-bl {
+        bottom: 24px;
+        left: 24px;
+        text-align: left;
+      }
+      .caption-tl {
+        top: calc(var(--nav-h) + 24px);
+        left: 24px;
+        text-align: left;
+      }
+      .caption-below {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 17px;
+        line-height: 1.6;
+        letter-spacing: 0.5px;
+        color: var(--fg-dim);
+        padding-top: 14px;
+      }
+      .caption-center {
+        text-align: center;
+        max-width: 80ch;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      /* ─── STYLED LIST ─── */
+      .styled-list {
+        margin-top: 20px;
+        padding-left: 0;
+        list-style: none;
+      }
+      .styled-list li {
+        font-family: 'Neue Machina', sans-serif;
+        font-weight: 300;
+        font-size: 21px;
+        line-height: 1.75;
+        color: rgba(255, 255, 255, 0.85);
+        padding-left: 24px;
+        position: relative;
+        margin-bottom: 10px;
+      }
+      .styled-list li::before {
+        content: '—';
+        position: absolute;
+        left: 0;
+        color: var(--green);
+      }
+
+      /* ─── TECH STACK ─── */
+      .tech-stack {
+        margin-top: 36px;
+      }
+      .tech-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .tech-row {
+        display: contents;
+      }
+      .tech-label {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--green);
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        padding: 14px 20px 14px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      }
+      .tech-value {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 14px;
+        font-weight: 400;
+        color: rgba(255, 255, 255, 0.8);
+        padding: 14px 0 14px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+        line-height: 1.6;
+      }
+      .tech-subsection-heading {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--fg-dim);
+        margin-top: 40px;
+        margin-bottom: 16px;
+      }
+      .tech-app-block {
+        margin-bottom: 32px;
+        padding: 24px 28px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.02);
+      }
+      .tech-app-name {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--green);
+        margin-bottom: 12px;
+        letter-spacing: 0.5px;
+      }
+      .tech-app-desc {
+        font-family: 'Neue Machina', sans-serif;
+        font-weight: 300;
+        font-size: 17px;
+        line-height: 1.75;
+        color: rgba(255, 255, 255, 0.75);
+      }
+
+      /* ─── COVER TITLE GROUP (centered, title + subtitle stacked) ─── */
+      .layout-full .title-group {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, calc(-50% - 20px));
+        z-index: 2;
+        text-align: center;
+        width: 90%;
+      }
+      .title-group .section-title {
+        position: static;
+      }
+      .layout-full .section-subtitle {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 400;
+        font-size: clamp(16px, 1.8vw, 24px);
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--fg);
+        margin-top: 28px;
+      }
+
+      @media (min-width: 1141px) and (max-width: 1512px),
+        (min-width: 1141px) and (max-height: 860px) {
+        :root {
+          --immersive-page-gap: 30px;
+          --immersive-page-gap-loose: 60px;
+          --immersive-page-gap-tight: 15px;
+          --immersive-page-gap-taxonomy: 15px;
+          --immersive-caption-bar-padding: 8px var(--pad) 18px;
+        }
+
+        #page-29 + #page-30 {
+          margin-top: 60px;
+        }
+
+        #page-35 + #page-36,
+        #page-42 + #page-43,
+        #page-43 + #page-44,
+        #page-44 + #page-45 {
+          margin-top: calc(var(--immersive-page-gap) * 3);
+        }
+
+        #page-57 + #page-58,
+        #page-58 + #page-59 {
+          margin-top: calc(var(--immersive-page-gap) * 2);
+        }
+
+        .page:not(#page-29),
+        .layout-right,
+        .layout-left,
+        .layout-center-w,
+        .layout-center-h,
+        .layout-taxonomy,
+        .layout-full-caption,
+        .layout-text-overlay {
+          min-height: auto;
+          overflow: visible;
+        }
+
+        .text-side {
+          padding-top: calc(var(--nav-h) + 36px);
+          padding-bottom: 36px;
+        }
+
+        .layout-center-w,
+        .layout-center-h,
+        .layout-taxonomy {
+          padding-top: calc(var(--nav-h) + 28px);
+          padding-bottom: 36px;
+        }
+
+        .layout-center-h .center-block img {
+          height: auto;
+          max-height: calc(100vh - var(--nav-h) - 110px);
+        }
+
+        .layout-full-caption .full-image {
+          flex: none;
+          min-height: 0;
+          max-height: calc(100vh - var(--nav-h) - 76px);
+        }
+
+        .layout-full-caption .full-image img {
+          height: auto;
+          object-fit: contain;
+        }
+
+        #page-43 .caption-below,
+        #page-58 .caption-below,
+        #page-59 .caption-below {
+          padding-top: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ═══════════════ TOP NAV ═══════════════ -->
+    <nav class="top-nav">
+      <a class="nav-brand" href="index.html?skipIntro=1">
+        <span class="nav-brand-spolia">Spolia</span>
+        <span class="nav-brand-botanique">botanique</span>
+      </a>
+      <div class="nav-links">
+        <a class="nav-link" href="about.html" data-i18n="nav.about">About</a>
+        <a class="nav-link" href="ultraviolet-city.html"
+           data-i18n="nav.ultraviolet-city">The Ultraviolet City</a
+        >
+        <a class="nav-link active" href="immersive-sketching.html"
+           data-i18n="nav.immersive-sketching">Immersive Sketching</a
+        >
+        <a class="nav-link" href="holo-botanics.html" data-i18n="nav.holo-botanics">Holo Botanics</a>
+        <a class="nav-link" href="ar-apps.html" data-i18n="nav.ar-apps">AR Apps</a>
+        <a class="nav-link" href="contact.html" data-i18n="nav.contact">Contact</a>
+      </div>
+      <div class="nav-controls">
+        <button class="nav-ctrl-btn nav-lang-btn" id="gc-lang" title="Switch to French" aria-label="Switch to French">EN</button>
+        <button class="nav-ctrl-btn" id="gc-snd" title="Sound">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"
+            />
+          </svg>
+        </button>
+        <button class="nav-ctrl-btn" id="gc-fs" title="Fullscreen">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"
+            />
+          </svg>
+        </button>
+      </div>
+    </nav>
+
+    <!-- ═══ PAGE 29 — Full screen cover ═══ -->
+    <section class="page layout-full" id="page-29">
+      <video
+        class="bg-image"
+        src="videos/bee01.mp4"
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="auto"
+        webkit-playsinline
+      ></video>
+      <div class="overlay"></div>
+      <div class="blinds"></div>
+      <div class="title-group fade-in delay-1">
+        <div class="section-title" data-i18n="page-29.section-title-1">Immersive Sketching</div>
+        <div class="section-subtitle" data-i18n="page-29.section-subtitle-1">
+          From Photogrammetry to Augmented Design
+        </div>
+      </div>
+      <img class="scroll-arrow" src="images/chevron.png" alt="" />
+    </section>
+
+    <!-- ═══ PAGE 30 — Right image ═══ -->
+    <section class="page layout-right" id="page-30">
+      <div class="text-side">
+        <h2 class="page-title" data-i18n="page-30.page-title-1">Two Digitization Campaigns</h2>
+        <div class="body-text" data-i18n="page-30.body-text-1">
+          <p>
+            We conducted two 3D digitization campaigns in the gardens of the
+            château, the first in July and the second in September 2022. In
+            addition to these primary missions, we carried out spontaneous scans
+            in and around Paris as specific needs emerged throughout the
+            project.
+          </p>
+
+          <p>
+            During the first campaign, we were able to capture gardens with a
+            greater abundance of flowers than in September. However, the primary
+            challenge we encountered was the heat. Capturing tens of thousands
+            of photographs under high temperatures repeatedly caused our
+            equipment to malfunction. Despite these conditions, we completed
+            approximately fifty scans in total at the Domaine de
+            Chaumont-sur-Loire.
+          </p>
+
+          <p>
+            We utilized PhotoCatch to generate 3D models from the collected
+            photographs. Each image corresponds to a flower, generated by
+            photogrammetric algorithms that translate 2D images into 3D models.
+          </p>
+        </div>
+      </div>
+      <div class="image-col">
+        <img src="images/33.jpg" alt="Digitization Campaign" />
+        <div class="blinds"></div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 31 — Center width (90vw) ═══ -->
+    <section class="page layout-center-w" id="page-31">
+      <div class="center-block">
+        <img
+          src="images/34.jpg"
+          alt="Generation of a 3D geometric model and a 2D image for color values from a set of photos"
+        />
+        <div class="caption-below caption caption-center" data-i18n="page-31.caption-below-1">
+          Generation of a 3D geometric model and a 2D image<br>for color values from a set of photos.
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 32 — Center width (90vw) ═══ -->
+    <section class="page layout-center-w" id="page-32">
+      <div class="center-block">
+        <img
+          src="images/35.jpg"
+          alt="Generation of the final model by assembling the image and the model"
+        />
+        <div class="caption-below caption caption-center" data-i18n="page-32.caption-below-1">
+          Generation of the final model by assembling the image and the model.
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 33 — Center width (90vw) ═══ -->
+    <section class="page layout-center-w" id="page-33">
+      <div class="center-block">
+        <img src="images/36.jpg" alt="Photogrammetric flower models" />
+        <div class="caption-below caption" data-i18n="page-33.caption-below-1">
+          Unfolded flowers, algorithmic mapping. Each square image corresponds to a scanned flower. They are generated by
+          photogrammetric algorithms translating 2D images into 3D models.
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 57 — Center width (80vw) ═══ -->
+    <section class="page layout-center-w" id="page-57">
+      <div class="center-block w-80">
+        <img
+          src="images/pivoine.jpg"
+          alt="An unfolded peony flower, algorithmic mapping of colors during 3D scanning"
+        />
+        <div class="caption-below caption" data-i18n="page-57.caption-below-1">
+          An unfolded peony flower, algorithmic mapping of colors during 3D
+          scanning.
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 58 — Full image + caption bar ═══ -->
+    <section class="page layout-full-caption" id="page-58">
+      <div class="full-image">
+        <img src="images/61.jpg" alt="Digitized lilies" />
+        <div class="blinds"></div>
+      </div>
+      <div class="caption-below-bar" data-i18n="page-58.caption-below-bar-1">
+        <div class="caption caption-below caption-center" data-i18n="page-58.caption-below-1">A close-up view of digitized lilies.</div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 59 — Full image + caption bar ═══ -->
+    <section class="page layout-full-caption" id="page-59">
+      <div class="full-image">
+        <img src="images/62.jpg" alt="Detail of a digitized rose" />
+        <div class="blinds"></div>
+      </div>
+      <div class="caption-below-bar" data-i18n="page-59.caption-below-bar-1">
+        <div class="caption caption-below caption-center" data-i18n="page-59.caption-below-1">
+          Micro-topography of a digitized rose.
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 34 — Center height (90vh) ═══ -->
+    <section class="page layout-center-h" id="page-34">
+      <div class="center-block">
+        <img
+          src="images/37.jpg"
+          alt="Visualization Tests of Digitized Models"
+        />
+        <div class="caption-below caption" data-i18n="page-34.caption-below-1">
+          Visualization tests of digitized models.
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 35 — Left image ═══ -->
+    <section class="page layout-left" id="page-35">
+      <div class="image-col">
+        <img src="images/38.jpg" alt="Optimization of 3D Models" />
+        <div class="blinds"></div>
+      </div>
+      <div class="text-side">
+        <h2 class="page-title" data-i18n="page-35.page-title-1">Optimization of 3D Models</h2>
+        <div class="body-text" data-i18n="page-35.body-text-1">
+          <p>
+            The models produced through photogrammetric scanning are refined and
+            cleaned so that they appear as fragments of reality, isolated and
+            shaped into virtual clones. Their geometries and textures are
+            further optimized through compression algorithms to facilitate
+            efficient visualization within augmented reality environments.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 36 — Right image ═══ -->
+    <section class="page layout-right" id="page-36">
+      <div class="text-side">
+        <h2 class="page-title" data-i18n="page-36.page-title-1">Botanical Classification</h2>
+        <div class="body-text" data-i18n="page-36.body-text-1">
+          <p>
+            The next stage involved the creation of a catalog of the digitized
+            gardens, organized according to their scales and the botanical
+            classification of the flowers they contain. Through this process, we
+            identified shared characteristics among the different gardens and
+            grouped them according to botanical families:
+          </p>
+        </div>
+        <ul class="styled-list" data-i18n="page-36.styled-list-1">
+          <li>Asteraceae</li>
+          <li>Herbaceous plants</li>
+          <li>Ericales</li>
+          <li>Succulents</li>
+          <li>Inflorescences</li>
+        </ul>
+      </div>
+      <div class="image-col">
+        <img src="images/39.jpg" alt="Botanical Classification" />
+        <div class="blinds"></div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 37 — Taxonomy: Asteraceae ═══ -->
+    <section class="page layout-taxonomy" id="page-37">
+      <div class="taxonomy-content">
+        <h2 class="page-title-centered" data-i18n="page-37.page-title-centered-1">Asteraceae</h2>
+        <img src="images/40.jpg" alt="Asteraceae" />
+        <div class="body-text" data-i18n="page-37.body-text-1">
+          <p>
+            Commonly known as the family of asters, daisies, composites, or
+            sunflowers, most species within Asteraceae are herbaceous plants,
+            whether annual, biennial, or perennial. Their defining
+            characteristic lies in the presence of numerous small individual
+            florets grouped together and held by protective involucral bracts
+            within a capitulum. This family has a remarkably wide distribution,
+            found on all continents except Antarctica.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 38 — Taxonomy: Inflorescence ═══ -->
+    <section class="page layout-taxonomy" id="page-38">
+      <div class="taxonomy-content">
+        <h2 class="page-title-centered" data-i18n="page-38.page-title-centered-1">Inflorescence</h2>
+        <img src="images/41.jpg" alt="Inflorescence" />
+        <div class="body-text" data-i18n="page-38.body-text-1">
+          <p>
+            An inflorescence is a cluster or grouping of flowers arranged along
+            a stem, composed either of a main axis or a more complex branching
+            structure. The flowers within an inflorescence develop according to
+            specific reproductive patterns, allowing for lateral or central
+            growth. Their bracts serve both to attract pollinators and to
+            protect developing flowers.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 39 — Center height, image only ═══ -->
+    <section class="page layout-center-h" id="page-39">
+      <div class="center-block">
+        <img src="images/42.jpg" alt="" />
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 40 — Center height, image only ═══ -->
+    <section class="page layout-center-h" id="page-40">
+      <div class="center-block">
+        <img src="images/43.jpg" alt="" />
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 41 — Text overlay ═══ -->
+    <section class="page layout-text-overlay" id="page-41">
+      <img class="bg-image" src="images/44.jpg" alt="Conventional 3D Recomposition" />
+      <div class="overlay"></div>
+      <div class="blinds"></div>
+      <div class="overlay-text">
+        <h2 class="page-title" data-i18n="page-41.page-title-1">Conventional 3D Recomposition</h2>
+        <div class="body-text" data-i18n="page-41.body-text-1">
+          <p>
+            We produced a series of 3D collages by recomposing digitized
+            fragments drawn from heterogeneous botanical realities. These
+            assemblages are then deployed as immersive environments to be
+            explored through augmented reality.
+          </p>
+          <p>
+            At this stage, we examined how these botanical scans, treated as
+            spatial components, could enter into a design process more familiar
+            to the architect, specifically one mediated through the computer. We
+            developed a working method in which the intermediate phase of
+            drawing takes place digitally, situated between the initial
+            digitization and the final immersive experience.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 42 — Left image ═══ -->
+    <section class="page layout-left" id="page-42">
+      <div class="image-col">
+        <img src="images/45.jpg" alt="Cinema 4D and Augmented Reality" />
+        <div class="blinds"></div>
+      </div>
+      <div class="text-side">
+        <div class="body-text" data-i18n="page-42.body-text-1">
+          <p>
+            These necessary articulations led us away from BIM environments such
+            as Autodesk Revit, which tend to align architecture with the domains
+            of engineering, commerce, and standardization. Such platforms remain
+            distant from the technical, theoretical, and artistic flexibility
+            required for the discipline to renew itself in the age of artificial
+            intelligence.
+          </p>
+          <p>
+            Our 3D collages, conceived as recycled virtual gardens, are produced
+            using Cinema 4D, a tool widely employed in the digital arts. Once
+            constructed, each garden is visualized and tested in augmented
+            reality. Based on these tests, the model is subsequently modified on
+            the computer, allowing for an iterative exchange between Cinema 4D
+            and augmented reality that can be repeated as many times as
+            necessary.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 43 — Full image + caption bar ═══ -->
+    <section class="page layout-full-caption" id="page-43">
+      <div class="full-image">
+        <img src="images/46.jpg" alt="A Fantastic Garden — 3D Collage" />
+        <div class="blinds"></div>
+      </div>
+      <div class="caption-below-bar" data-i18n="page-43.caption-below-bar-1">
+        <div class="caption caption-below" data-i18n="page-43.caption-below-1">
+          An imaginary garden, 3D collage, prepared for an augmented reality
+          experience.
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 44 — Right image ═══ -->
+    <section class="page layout-right" id="page-44">
+      <div class="text-side">
+        <h2 class="page-title" data-i18n="page-44.page-title-1">Immersive Recomposition</h2>
+        <div class="body-text" data-i18n="page-44.body-text-1">
+          <p>
+            Following these initial experiments, we explored how augmented
+            reality could be used directly within the act of design itself. Our
+            aim was to set aside the computer during the design phase and to
+            compose our "garden spolia" in an immersive, spatial, and immediate
+            manner using an iPad or iPhone.
+          </p>
+          <p>
+            One of the key concepts that emerged from this research and
+            development process is that of the immersive sketch. While
+            three-dimensional environments designed entirely in augmented
+            reality can be highly effective and visually compelling, they still
+            require computer-based refinement to achieve greater precision.
+            These models do not constitute final outcomes; rather, they serve as
+            initial spatial sketches that facilitate subsequent stages of
+            design.
+          </p>
+          <p>
+            Augmented reality thus appears to offer a significant transformation
+            of the traditional architectural sketch. These intuitive and rapidly
+            produced drawings are no longer confined to the flat surface of
+            paper, but instead unfold spatially, surrounding the designer and
+            expanding the field of architectural imagination.
+          </p>
+        </div>
+      </div>
+      <div class="image-col">
+        <img src="images/47.jpg" alt="Immersive Recomposition" />
+        <div class="blinds"></div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 45 — Left image ═══ -->
+    <section class="page layout-left" id="page-45">
+      <div class="image-col">
+        <img
+          src="images/48.jpg"
+          alt="Reality Composer — Augmented Reality Design"
+        />
+        <div class="blinds"></div>
+      </div>
+      <div class="text-side">
+        <div class="body-text" data-i18n="page-45.body-text-1">
+          <p>
+            At this stage, we utilized Reality Composer, the application
+            developed by Apple for the design of immersive experiences. This
+            tool allows us to import our components and reassemble them directly
+            in augmented reality. Beyond standard operations such as scaling and
+            rotation, it also enables animation, the addition of interactive
+            behaviors, and the integration of sound.
+          </p>
+          <p>
+            Once the composition is established, it is imported into Cinema 4D,
+            where it serves as a reference for the development of a more precise
+            final model. This model is then visualized in augmented reality for
+            testing, and, if necessary, further modifications are carried out in
+            Cinema 4D.
+          </p>
+          <p>
+            In conclusion, augmented reality does not eliminate the role of the
+            computer in the design process, but rather enriches it through the
+            introduction of the immersive sketch. It establishes a dynamic
+            back-and-forth between computer and tablet, creating a vital
+            alternation between two-dimensional representation and spatial,
+            embodied design.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 46 — Right image + Tech Stack ═══ -->
+    <section class="page layout-right" id="page-46">
+      <div class="text-side">
+        <h2 class="page-title" data-i18n="page-46.page-title-1">Development</h2>
+        <div class="body-text" data-i18n="page-46.body-text-1">
+          <p>
+            To develop the three applications, we used the development tools
+            provided by Apple.
+          </p>
+        </div>
+
+        <div class="tech-stack">
+          <div class="tech-grid">
+            <div class="tech-label" data-i18n="page-46.tech-label-1">Software</div>
+            <div class="tech-value" data-i18n="page-46.tech-value-1">
+              Xcode / Reality Composer / Reality Converter
+            </div>
+            <div class="tech-label" data-i18n="page-46.tech-label-2">Frameworks</div>
+            <div class="tech-value" data-i18n="page-46.tech-value-2">
+              RealityKit / ARKit / SceneKit / UIKit / MetalKit / Foundation /
+              QuickLook / SwiftUI / Model I/O
+            </div>
+          </div>
+
+          <div class="tech-subsection-heading" data-i18n="page-46.tech-subsection-heading-1">Per Application</div>
+
+          <div class="tech-app-block">
+            <div class="tech-app-name" data-i18n="page-46.tech-app-name-1">Floral Tracer</div>
+            <div class="tech-app-desc" data-i18n="page-46.tech-app-desc-1">
+              To record user gestures, we rely on motion data captured by the
+              device's gyroscope. Relative changes are computed in real time,
+              allowing a flower to be positioned approximately 50 cm in front of
+              the device.
+            </div>
+          </div>
+
+          <div class="tech-app-block">
+            <div class="tech-app-name" data-i18n="page-46.tech-app-name-2">Festum Virtua</div>
+            <div class="tech-app-desc" data-i18n="page-46.tech-app-desc-2">
+              Visualization of 3D models without AR: SceneKit — Visualization in
+              augmented reality: RealityKit
+            </div>
+          </div>
+
+          <div class="tech-app-block">
+            <div class="tech-app-name" data-i18n="page-46.tech-app-name-3">Spolia Botanique</div>
+            <div class="tech-app-desc" data-i18n="page-46.tech-app-desc-3">
+              Visualization of immersive experiences: RealityKit (.rcproject)
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="image-col">
+        <img src="images/49.jpg" alt="Development Tools" />
+        <div class="blinds"></div>
+      </div>
+    </section>
+
+    <script>
+      // Auto-apply fade-in to content blocks
+      document
+        .querySelectorAll(
+          '.text-side, .image-col, .image-col-inner, .full-image, .caption-below-bar, ' +
+            '.center-block, .taxonomy-content, .overlay-text'
+        )
+        .forEach(el => {
+          if (!el.classList.contains('fade-in')) el.classList.add('fade-in')
+        })
+
+      const observer = new IntersectionObserver(
+        entries => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible')
+              observer.unobserve(entry.target)
+            }
+          })
+        },
+        { threshold: 0.08 }
+      )
+
+      document.querySelectorAll('.fade-in').forEach(el => observer.observe(el))
+    </script>
+
+    <audio id="global-audio" loop>
+      <source src="sounds/merry.mp3" type="audio/mpeg" />
+    </audio>
+    <script>
+      ;(function () {
+        const audio = document.getElementById('global-audio')
+        const langBtn = document.getElementById('gc-lang')
+        const sndBtn = document.getElementById('gc-snd')
+        const fsBtn = document.getElementById('gc-fs')
+
+        function setSnd(on) {
+          localStorage.setItem('soundEnabled', on ? '1' : '0')
+          sndBtn.classList.toggle('on', on)
+          if (on) audio.play().catch(() => {})
+          else audio.pause()
+        }
+
+        const soundWasEnabled = ['1', 'true'].includes(localStorage.getItem('soundEnabled'))
+        const fullscreenWasPreferred = ['1', 'true'].includes(
+          localStorage.getItem('fullscreenPreferred')
+        )
+
+        // Restore sound
+        if (soundWasEnabled) {
+          audio.play().catch(() => {})
+          sndBtn.classList.add('on')
+        }
+
+        // Restore fullscreen indicator (user can re-enter by clicking fullscreen button)
+        if (fullscreenWasPreferred) {
+          fsBtn.classList.add('on')
+        }
+
+        function setFs(on) {
+          localStorage.setItem('fullscreenPreferred', on ? '1' : '0')
+          if (on) document.documentElement.requestFullscreen().catch(() => {})
+          else document.exitFullscreen().catch(() => {})
+        }
+
+        sndBtn.addEventListener('click', () =>
+          setSnd(!['1', 'true'].includes(localStorage.getItem('soundEnabled')))
+        )
+        langBtn.addEventListener('click', async () => {
+          const nextLang = localStorage.getItem('language') === 'fr' ? 'en' : 'fr'
+          if (window.SpoliaI18n) {
+            window.SpoliaI18n.setLanguage(nextLang)
+            await window.SpoliaI18n.applyTranslations(document, 'immersive-sketching')
+          } else {
+            localStorage.setItem('language', nextLang)
+            window.location.reload()
+          }
+        })
+        fsBtn.addEventListener('click', () =>
+          setFs(!document.fullscreenElement)
+        )
+        document.addEventListener('fullscreenchange', () =>
+          fsBtn.classList.toggle('on', !!document.fullscreenElement)
+        )
+      })()
+    </script>
+  </body>
+</html>

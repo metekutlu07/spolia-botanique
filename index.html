@@ -1,0 +1,1907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spolia Botanique</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="site-nav.css">
+    <script src="i18n.js" defer></script>
+    <script src="contact-snake.js" defer></script>
+    <style>
+        @font-face {
+            font-family: 'Neue Machina';
+            src: url('fonts/PPNeueMachina-PlainRegular.ttf') format('truetype');
+            font-weight: 400;
+        }
+        @font-face {
+            font-family: 'Neue Machina';
+            src: url('fonts/PPNeueMachina-PlainLight.ttf') format('truetype');
+            font-weight: 300;
+        }
+        @font-face {
+            font-family: 'Neue Machina';
+            src: url('fonts/PPNeueMachina-PlainUltrabold.ttf') format('truetype');
+            font-weight: 700;
+        }
+    </style>
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #000000;
+            --fg: #ffffff;
+            --green: #49DCA4;
+            --cyber: #49DCA4;
+            --pad: 60px;
+            --pad-sm: 32px;
+            --nav-h: 56px;
+        }
+
+        /* ── Body states ── */
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            color: white;
+            background: #000;
+            -webkit-font-smoothing: antialiased;
+        }
+        body.landing-mode {
+            overflow: hidden;
+            height: 100vh;
+        }
+        body.spa-mode {
+            overflow-y: auto;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* ── Landing elements — hidden in spa-mode ── */
+        .landing-el { transition: opacity 0.4s ease; }
+        body.spa-mode .landing-el { display: none !important; }
+
+        /* ── Emoji loader ── */
+        #loader {
+            position: fixed;
+            inset: 0;
+            z-index: 400;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.7s ease;
+        }
+        #loader.fade-out { opacity: 0; pointer-events: none; }
+        .loader-bar {
+            display: inline-flex;
+            align-items: center;
+            gap: 0;
+            min-height: 88px;
+            padding: 16px 18px;
+            border: 1px solid var(--cyber);
+            background: rgba(73,220,164,0.04);
+            box-shadow: 0 0 24px rgba(73,220,164,0.08);
+        }
+        #loader-emoji-track {
+            display: inline-flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 0;
+        }
+        .loader-emoji-slot {
+            width: 52px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            line-height: 1;
+            opacity: 0;
+            transform: translateY(6px) scale(0.92);
+            transition: opacity 0.22s ease, transform 0.22s ease;
+        }
+        .loader-emoji-slot.filled {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        /* ── Settings overlay ── */
+        #settings-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 56px;
+            opacity: 1;
+            pointer-events: none;          /* enabled by JS after loader done */
+            transition: opacity 0.8s ease;
+        }
+        #settings-overlay > * {
+            opacity: 0;
+            transition: opacity 0.8s ease;
+        }
+        #settings-overlay.ready  { pointer-events: auto; }
+        #settings-overlay.ready > * { opacity: 1; }
+        #settings-overlay.hidden { opacity: 0; pointer-events: none; }
+        .lang-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 18px;
+        }
+        .lang-section-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            color: var(--cyber);
+            opacity: 0.7;
+        }
+        .lang-row { display: flex; gap: 16px; }
+        .lang-btn {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 18px;
+            font-weight: 500;
+            background: transparent;
+            border: 1px solid rgba(73,220,164,0.45);
+            color: var(--cyber);
+            padding: 10px 32px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 2px;
+        }
+        .lang-btn:hover { border-color: var(--cyber); }
+        .lang-btn.active { border-color: white; background: white; color: #0d0d0d; }
+        .settings-hint {
+            font-family: 'Neue Machina', sans-serif;
+            font-size: 17px;
+            letter-spacing: 0.5px;
+            text-align: center;
+            line-height: 1.7;
+            color: rgba(73,220,164,0.75);
+        }
+        .settings-icons { display: flex; gap: 56px; align-items: center; }
+        .setting-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .setting-icon {
+            width: 60px;
+            height: 60px;
+            border: 1px solid rgba(73,220,164,0.45);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .setting-icon svg { width: 28px; height: 28px; fill: var(--cyber); transition: fill 0.3s ease; }
+        .setting-item:hover .setting-icon { border-color: var(--cyber); }
+        .setting-item.on .setting-icon {
+            border-color: white;
+            background: rgba(255,255,255,0.08);
+            box-shadow: 0 0 18px rgba(255,255,255,0.15);
+        }
+        .setting-item.on .setting-icon svg { fill: white; }
+        .setting-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--cyber);
+            opacity: 0.65;
+            transition: all 0.3s ease;
+        }
+        .setting-item.on .setting-label { color: white; opacity: 1; }
+        .settings-enter {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            letter-spacing: 3px;
+            padding: 14px 44px;
+            border: 1px solid var(--cyber);
+            background: transparent;
+            color: var(--cyber);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+        .settings-enter:hover { background: white; border-color: white; color: #0d0d0d; }
+
+        /* ── Nav — all rules prefixed with #main-nav to beat any injected page CSS ── */
+        #main-nav {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 56px !important;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 var(--pad-sm);
+            background: rgba(0,0,0,0.25) !important;
+            backdrop-filter: blur(12px) !important;
+            -webkit-backdrop-filter: blur(12px) !important;
+            z-index: 100;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        body.spa-mode #main-nav { display: flex; }
+        #main-nav .nav-brand {
+            text-decoration: none;
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            color: var(--green) !important;
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        #main-nav .nav-brand:hover {
+            color: white !important;
+        }
+        #main-nav .nav-brand-spolia {
+            font-family: 'EB Garamond', serif !important;
+            font-style: italic !important;
+            font-size: 32px !important;
+            font-weight: 400 !important;
+            letter-spacing: 0.5px !important;
+            color: var(--green) !important;
+        }
+        #main-nav .nav-brand-botanique {
+            font-family: 'JetBrains Mono', monospace !important;
+            font-size: 27px !important;
+            font-weight: 500 !important;
+            letter-spacing: 1px !important;
+            color: var(--green) !important;
+        }
+        #main-nav .nav-links { display: flex; align-items: center; gap: var(--nav-link-gap); }
+        #main-nav .nav-link {
+            text-decoration: none !important;
+            font-family: 'JetBrains Mono', monospace !important;
+            font-size: var(--nav-link-font-size) !important;
+            letter-spacing: var(--nav-link-letter-spacing) !important;
+            text-transform: uppercase !important;
+            color: var(--green) !important;
+            transition: color 0.2s, border-color 0.2s;
+            padding-top: var(--nav-link-padding-top) !important;
+            padding-bottom: var(--nav-link-padding-bottom) !important;
+            border-bottom: 1px solid transparent;
+            cursor: pointer;
+        }
+        #main-nav .nav-link:hover { color: white !important; }
+        #main-nav .nav-link.active { color: white !important; border-bottom: 1px solid white !important; }
+        #main-nav .nav-controls { display: flex; align-items: center; gap: 20px; margin-left: 24px; }
+        #main-nav .nav-ctrl-btn {
+            background: transparent !important;
+            border: 1px solid rgba(255,255,255,0.2) !important;
+            border-radius: 6px !important;
+            color: rgba(255,255,255,0.5) !important;
+            width: 36px !important;
+            height: 36px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            cursor: pointer !important;
+            transition: all 0.25s ease !important;
+            padding: 0 !important;
+        }
+        #main-nav .nav-ctrl-btn svg { width: 18px !important; height: 18px !important; fill: currentColor !important; }
+        #main-nav .nav-ctrl-btn:hover { border-color: rgba(255,255,255,0.5) !important; color: white !important; }
+        #main-nav .nav-ctrl-btn.on { border-color: var(--green) !important; color: var(--green) !important; }
+        #main-nav .nav-lang-btn {
+            width: 48px !important;
+            font-family: 'JetBrains Mono', monospace !important;
+            font-size: 12px !important;
+            letter-spacing: 1.5px !important;
+            text-transform: uppercase !important;
+            color: var(--green) !important;
+            border-color: var(--green) !important;
+        }
+        #main-nav .nav-lang-btn:hover,
+        #main-nav .nav-lang-btn.on {
+            color: var(--green) !important;
+            border-color: var(--green) !important;
+        }
+
+        /* ── Scroll lock during page transitions ── */
+        html.scroll-locked,
+        html.scroll-locked body { overflow: hidden !important; }
+
+        /* ── Landing bottom-left controls ── */
+        .landing-controls {
+            position: fixed;
+            bottom: 24px; left: 24px;
+            display: none;
+            gap: 10px;
+            z-index: 10;
+        }
+        .landing-ctrl-btn {
+            appearance: none;
+            -webkit-appearance: none;
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.5);
+            border-radius: 6px;
+            box-shadow: none;
+            color: white;
+            width: 48px; height: 48px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            padding: 0;
+        }
+        .landing-ctrl-btn svg { width: 22px; height: 22px; fill: currentColor; }
+        .landing-ctrl-btn:hover { border-color: rgba(255,255,255,0.8); color: white; }
+        .landing-ctrl-btn.on { border-color: white; color: white; }
+        .landing-lang-btn {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        /* ── Page transition veil ── */
+        #page-veil {
+            --veil-cell: 72px;
+            position: fixed;
+            inset: 0;
+            z-index: 300; /* above nav (100–202) so it covers the full screen */
+            background-color: #000;
+            background-image:
+                linear-gradient(to right, transparent calc(50% - 0.5px), rgba(73,220,164,0.22) calc(50% - 0.5px), rgba(73,220,164,0.22) calc(50% + 0.5px), transparent calc(50% + 0.5px)),
+                linear-gradient(to bottom, transparent calc(50% - 0.5px), rgba(73,220,164,0.22) calc(50% - 0.5px), rgba(73,220,164,0.22) calc(50% + 0.5px), transparent calc(50% + 0.5px));
+            background-repeat:
+                repeat,
+                repeat;
+            background-position:
+                center center,
+                center center;
+            background-size:
+                var(--veil-cell) var(--veil-cell),
+                var(--veil-cell) var(--veil-cell);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+        #page-veil.show { opacity: 1; pointer-events: all; }
+
+        /* ── Page loader ── */
+        .page-loader {
+            position: absolute;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.35s ease;
+            pointer-events: none;
+        }
+        #page-veil.show .page-loader {
+            opacity: 1;
+            transition-delay: 0.5s; /* appears only after veil is fully black */
+        }
+        .page-loader-grid {
+            display: grid;
+            grid-template-columns: repeat(2, var(--veil-cell));
+            grid-template-rows: repeat(2, var(--veil-cell));
+            width: calc(var(--veil-cell) * 2);
+            height: calc(var(--veil-cell) * 2);
+            gap: 0;
+            line-height: 1;
+        }
+        .page-loader-grid span {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 38px;
+            text-align: center;
+            opacity: 0;
+            transform: scale(0.9);
+            will-change: opacity, transform;
+            transition: opacity 0.09s ease, transform 0.09s ease;
+        }
+        .page-loader-grid span.active {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* ── Landing page ── */
+        .video-background {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            overflow: hidden;
+            z-index: -2;
+        }
+        .video-background video {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .video-background,
+        .landing-hero,
+        .logos-bar,
+        .copyright,
+        .landing-controls,
+        .entry-brand-stage,
+        .entry-lines-stage,
+        .entry-line-group {
+            transition: opacity 0.8s ease;
+        }
+        .landing-hero,
+        .logos-bar,
+        .copyright,
+        .landing-controls {
+            transition-duration: 1s;
+        }
+        .video-background,
+        .landing-hero,
+        .logos-bar,
+        .copyright,
+        .entry-brand-stage,
+        .entry-lines-stage {
+            transform: translateZ(0);
+            will-change: opacity;
+        }
+        body:not(.video-ready) .video-background {
+            opacity: 0;
+        }
+        body:not(.video-ready) .blinds-overlay,
+        body:not(.home-ready):not(.home-prewarm) .landing-hero,
+        body:not(.home-ready):not(.home-prewarm) .logos-bar,
+        body:not(.home-ready):not(.home-prewarm) .copyright,
+        body:not(.home-ready):not(.home-prewarm) .landing-controls {
+            opacity: 0;
+            pointer-events: none;
+        }
+        body.home-prewarm:not(.home-ready) .landing-hero,
+        body.home-prewarm:not(.home-ready) .logos-bar,
+        body.home-prewarm:not(.home-ready) .copyright,
+        body.home-prewarm:not(.home-ready) .landing-controls {
+            opacity: 0.001;
+            pointer-events: none;
+        }
+        body:not(.home-ready) .landing-container {
+            pointer-events: none;
+        }
+        .blinds-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0,0,0,0.12) 0px, rgba(0,0,0,0.12) 2.5px,
+                transparent 2.5px, transparent 5px
+            );
+        }
+        /* ── Skip button (laureate + pollen stages) ── */
+        .entry-skip-btn {
+            position: absolute;
+            top: 28px;
+            right: 32px;
+            pointer-events: all;
+            background: none;
+            border: 1px solid rgba(255,255,255,0.35);
+            color: rgba(255,255,255,0.55);
+            font-family: 'Neue Machina', sans-serif;
+            font-size: 11px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            padding: 8px 18px;
+            cursor: pointer;
+            transition: border-color 0.2s, color 0.2s;
+            z-index: 1;
+        }
+        .entry-skip-btn:hover {
+            border-color: rgba(255,255,255,0.8);
+            color: rgba(255,255,255,0.9);
+        }
+        /* Hide Safari's native media controls on the bg video */
+        #bg-video { pointer-events: none; }
+        #bg-video::-webkit-media-controls,
+        #bg-video::-webkit-media-controls-enclosure,
+        #bg-video::-webkit-media-controls-panel { display: none !important; }
+
+        .entry-brand-stage {
+            position: fixed;
+            inset: 0;
+            z-index: 25;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 54px;
+            pointer-events: none;
+            opacity: 0;
+            transform: translateY(-25px);
+        }
+        .entry-brand-stage.visible {
+            opacity: 1;
+        }
+        .entry-brand-logo {
+            position: relative;
+        }
+        .entry-brand-logo img {
+            height: 150px;
+            object-fit: contain;
+            filter: brightness(0) saturate(100%) invert(75%) sepia(54%) saturate(547%) hue-rotate(103deg) brightness(92%) contrast(88%);
+        }
+        .entry-brand-subtitle {
+            position: relative;
+            text-align: center;
+            font-size: 21px;
+            letter-spacing: 1px;
+            font-family: 'Neue Machina', sans-serif;
+            line-height: 1.8;
+            max-width: 680px;
+            color: var(--green);
+        }
+        .entry-lines-stage {
+            position: fixed;
+            inset: 0;
+            z-index: 24;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 34px;
+            padding: 80px 24px;
+            text-align: center;
+            pointer-events: none;
+            visibility: hidden;
+            opacity: 1;
+            contain: layout paint style;
+            transition: visibility 0s linear 0.9s;
+        }
+        .entry-lines-stage.visible {
+            visibility: visible;
+            transition-delay: 0s;
+        }
+        .entry-line-group {
+            opacity: 0;
+            transform: translateZ(0);
+            max-width: 980px;
+            font-family: 'Neue Machina', sans-serif;
+            font-size: clamp(16px, 1.55vw, 24px);
+            line-height: 1.45;
+            letter-spacing: 0.2px;
+            font-weight: 500;
+            will-change: opacity;
+            backface-visibility: hidden;
+        }
+        .entry-line-group.visible {
+            opacity: 1;
+        }
+        .entry-line-group div + div {
+            margin-top: 8px;
+        }
+        .landing-container {
+            position: relative;
+            width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1;
+        }
+        .landing-hero {
+            text-align: center;
+            z-index: 2;
+            transform: translateY(-50px);
+            contain: layout style;
+        }
+        .spolia-title {
+            display: flex;
+            gap: 36px;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            justify-content: center;
+            align-items: baseline;
+        }
+        .spolia-title-serif {
+            font-family: 'EB Garamond', serif;
+            font-style: italic;
+            font-size: 120px;
+            font-weight: normal;
+        }
+        .spolia-title-sans {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 96px;
+            font-weight: normal;
+            letter-spacing: 2px;
+        }
+        .enter-button {
+            position: relative;
+            isolation: isolate;
+            overflow: hidden;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 21px;
+            letter-spacing: 3px;
+            padding: 22px;
+            border: 1px solid white;
+            background: rgba(200,200,200,0.08);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+            text-transform: uppercase;
+            margin-top: 40px;
+            transform: translateZ(0);
+            will-change: opacity, background-color, color, box-shadow, backdrop-filter;
+        }
+        .enter-button::before {
+            content: none;
+        }
+        .enter-button:hover { background: white; color: #1a1a1a; box-shadow: 0 4px 20px rgba(255,255,255,0.3); }
+        .logos-bar {
+            position: fixed;
+            bottom: 20px; left: 0; right: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            height: 133px;
+            gap: 48px;
+            --ministry-domaine-gap-trim: 16px;
+            z-index: 10;
+            padding: 0 20px;
+            contain: layout paint style;
+        }
+        .logos-bar img { height: 100%; width: auto; object-fit: contain; display: block; flex-shrink: 0; }
+        .logos-bar .logo-ministry {
+            height: 84%;
+        }
+        .logos-bar .logo-domaine {
+            margin-left: calc(-1 * var(--ministry-domaine-gap-trim));
+        }
+        .logos-bar .comet-lab {
+            font-size: 20px;
+            letter-spacing: 1px;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            align-self: center;
+            height: 100%;
+            position: relative;
+            top: 5px;
+        }
+        .copyright {
+            position: fixed;
+            bottom: 20px; right: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 16px;
+            letter-spacing: 0.5px;
+            z-index: 10;
+        }
+        .landing-controls {
+            top: 24px;
+            right: 24px;
+            left: auto;
+            bottom: auto;
+        }
+
+        /* ── 13-15 inch laptop tuning ── */
+        @media (max-width: 1680px) {
+            :root {
+                --pad-sm: 24px;
+                --nav-link-gap: 22px;
+                --nav-link-font-size: 14px;
+                --nav-link-letter-spacing: 1.5px;
+            }
+
+            #main-nav .nav-brand-spolia {
+                font-size: 27px !important;
+            }
+            #main-nav .nav-brand-botanique {
+                font-size: 22px !important;
+            }
+            #settings-overlay {
+                gap: 44px;
+            }
+            .settings-icons {
+                gap: 42px;
+            }
+            .settings-hint {
+                font-size: 15px;
+            }
+            .setting-icon {
+                width: 54px;
+                height: 54px;
+            }
+            .settings-enter {
+                padding: 12px 38px;
+            }
+
+            .entry-brand-stage {
+                gap: 42px;
+            }
+            .entry-brand-logo img {
+                height: 118px;
+            }
+            .entry-brand-subtitle {
+                max-width: 600px;
+                font-size: 18px;
+                line-height: 1.65;
+            }
+            .entry-lines-stage {
+                gap: 28px;
+                padding: 70px 48px;
+            }
+            .entry-line-group {
+                max-width: 840px;
+                font-size: 20px;
+                line-height: 1.42;
+            }
+
+            .landing-hero {
+                transform: translateY(-34px);
+            }
+            .spolia-title {
+                gap: 28px;
+                margin-bottom: 16px;
+            }
+            .spolia-title-serif {
+                font-size: 104px;
+            }
+            .spolia-title-sans {
+                font-size: 82px;
+            }
+            .enter-button {
+                font-size: 18px;
+                padding: 18px 20px;
+                margin-top: 32px;
+            }
+            .logos-bar {
+                height: 110px;
+                gap: 34px;
+                bottom: 18px;
+            }
+            .logos-bar .comet-lab {
+                font-size: 17px;
+            }
+            .copyright {
+                right: 18px;
+                bottom: 18px;
+                font-size: 13px;
+            }
+        }
+
+        @media (max-width: 1512px) {
+            :root {
+                --nav-link-gap: 18px;
+                --nav-link-font-size: 13px;
+                --nav-link-letter-spacing: 1.3px;
+            }
+
+            #main-nav .nav-brand-spolia {
+                font-size: 25px !important;
+            }
+            #main-nav .nav-brand-botanique {
+                font-size: 20px !important;
+            }
+        }
+
+        @media (max-width: 1366px), (max-height: 820px) {
+            :root {
+                --pad-sm: 20px;
+            }
+
+            #settings-overlay {
+                gap: 34px;
+            }
+            .settings-icons {
+                gap: 34px;
+            }
+            .settings-hint {
+                font-size: 14px;
+                line-height: 1.55;
+            }
+
+            .entry-brand-stage {
+                gap: 34px;
+            }
+            .entry-brand-logo img {
+                height: 104px;
+            }
+            .entry-brand-subtitle {
+                max-width: 540px;
+                font-size: 16px;
+                line-height: 1.55;
+            }
+            .entry-lines-stage {
+                gap: 24px;
+                padding: 62px 42px;
+            }
+            .entry-line-group {
+                max-width: 760px;
+                font-size: 18px;
+                line-height: 1.38;
+            }
+
+            .landing-hero {
+                transform: translateY(-24px);
+            }
+            .spolia-title {
+                gap: 24px;
+                margin-bottom: 12px;
+            }
+            .spolia-title-serif {
+                font-size: 92px;
+            }
+            .spolia-title-sans {
+                font-size: 72px;
+            }
+            .enter-button {
+                font-size: 16px;
+                padding: 16px 18px;
+                margin-top: 26px;
+            }
+            .logos-bar {
+                height: 92px;
+                gap: 26px;
+                bottom: 16px;
+            }
+            .logos-bar .comet-lab {
+                font-size: 15px;
+            }
+            .copyright {
+                right: 16px;
+                bottom: 16px;
+                font-size: 12px;
+            }
+        }
+
+        /* ── SPA content area ── */
+        #spa-content {
+            display: none;
+            padding-top: 56px;
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        body.spa-mode #spa-content { display: block; }
+        body.spa-mode { overflow: hidden !important; height: 100vh; }
+
+        /* ── Page transition ── */
+        #spa-content.loading { opacity: 0; transition: opacity 0.3s ease; }
+        #spa-content.loaded  { opacity: 1; transition: opacity 0.3s ease; }
+    </style>
+</head>
+<body class="landing-mode">
+
+    <!-- ── Emoji loader ── -->
+    <div id="loader">
+        <div class="loader-bar">
+            <div id="loader-emoji-track" aria-hidden="true"></div>
+        </div>
+    </div>
+
+    <!-- ── Settings overlay ── -->
+    <div id="settings-overlay">
+        <div class="lang-section">
+            <span class="lang-section-label" data-i18n="overlay.language-label">Language</span>
+            <div class="lang-row">
+                <button class="lang-btn active" data-lang="en">EN</button>
+                <button class="lang-btn" data-lang="fr">FR</button>
+            </div>
+        </div>
+        <div class="settings-hint" id="settings-hint" data-i18n="overlay.settings-hint">
+            For a better experience,<br>please turn on sound and full screen.
+        </div>
+        <div class="settings-icons">
+            <div class="setting-item" id="snd-btn">
+                <div class="setting-icon">
+                    <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+                </div>
+                <span class="setting-label" id="snd-label" data-i18n="overlay.sound-label">Sound</span>
+            </div>
+            <div class="setting-item" id="fs-btn">
+                <div class="setting-icon">
+                    <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+                </div>
+                <span class="setting-label" id="fs-label" data-i18n="overlay.fullscreen-label">Full screen</span>
+            </div>
+        </div>
+        <button class="settings-enter" id="settings-enter" data-i18n="overlay.enter-button">Enter</button>
+    </div>
+
+    <div class="entry-brand-stage" id="entry-brand-stage">
+        <button class="entry-skip-btn" id="entry-skip-btn-brand">Skip</button>
+        <div class="entry-brand-logo">
+            <img src="images/minister.png" alt="Ministry of Culture">
+        </div>
+        <div class="entry-brand-subtitle" data-i18n="landing.subtitle">
+            French Ministry of Culture Laureate<br>
+            Innovative Digital Services Program
+        </div>
+    </div>
+
+    <div class="entry-lines-stage" id="entry-lines-stage">
+        <button class="entry-skip-btn" id="entry-skip-btn-lines">Skip</button>
+        <div class="entry-line-group" data-i18n="entry.line-1">In the ultraviolet city,</div>
+        <div class="entry-line-group" data-i18n="entry.line-2">pollen carries data.</div>
+        <div class="entry-line-group" data-i18n="entry.line-3">The world is seen through the eye of a bee.</div>
+        <div class="entry-line-group" data-i18n="entry.line-4">The human body becomes the pencil.</div>
+        <div class="entry-line-group" data-i18n="entry.line-5">City becomes garden.</div>
+    </div>
+
+    <!-- ── Persistent nav (shown after entering) ── -->
+    <nav id="main-nav">
+        <a class="nav-brand" id="nav-brand">
+            <span class="nav-brand-spolia">Spolia</span>
+            <span class="nav-brand-botanique">botanique</span>
+        </a>
+        <div class="nav-links">
+            <a class="nav-link" data-href="about.html" data-i18n="nav.about">About</a>
+            <a class="nav-link" data-href="ultraviolet-city.html" data-i18n="nav.ultraviolet-city">The Ultraviolet City</a>
+            <a class="nav-link" data-href="immersive-sketching.html" data-i18n="nav.immersive-sketching">Immersive Sketching</a>
+            <a class="nav-link" data-href="holo-botanics.html" data-i18n="nav.holo-botanics">Holo Botanics</a>
+            <a class="nav-link" data-href="ar-apps.html" data-i18n="nav.ar-apps">AR Apps</a>
+            <a class="nav-link" data-href="contact.html" data-i18n="nav.contact">Contact</a>
+        </div>
+        <div class="nav-controls">
+            <button class="nav-ctrl-btn nav-lang-btn" id="gc-lang" title="Switch to French" aria-label="Switch to French">EN</button>
+            <button class="nav-ctrl-btn" id="gc-snd" title="Sound">
+                <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+            </button>
+            <button class="nav-ctrl-btn" id="gc-fs" title="Fullscreen">
+                <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ── Landing page elements ── -->
+    <div class="video-background landing-el">
+        <video id="bg-video" autoplay muted loop playsinline preload="auto" webkit-playsinline>
+            <source src="videos/intro-video.mp4" type="video/mp4">
+        </video>
+    </div>
+    <div class="blinds-overlay landing-el"></div>
+    <div class="landing-container landing-el landing-home-ui">
+        <div class="landing-hero">
+            <div class="spolia-title">
+                <div class="spolia-title-serif">Spolia</div>
+                <div class="spolia-title-sans">botanique</div>
+            </div>
+            <button class="enter-button" id="discover-btn" data-i18n="landing.discover-button">Discover</button>
+        </div>
+    </div>
+    <div class="logos-bar landing-el landing-home-ui">
+        <img class="logo-ministry" src="images/ministerx.png" alt="Ministry of Culture">
+        <img class="logo-domaine" src="images/domaine.png" alt="Domaine de Chaumont-sur-Loire">
+        <img src="images/ensapb.png" alt="ENSAPB">
+        <img src="images/ausser.png" alt="Ausser">
+        <div class="comet-lab">Comet Lab</div>
+    </div>
+    <div class="copyright landing-el landing-home-ui" data-i18n="landing.copyright">© Mete Kutlu, 2026</div>
+
+    <!-- ── Landing bottom-left sound + fullscreen controls ── -->
+    <div class="landing-controls landing-el landing-home-ui">
+        <button class="landing-ctrl-btn landing-lang-btn" id="lc-lang" title="Switch to French" aria-label="Switch to French">EN</button>
+        <button class="landing-ctrl-btn" id="lc-snd" title="Sound">
+            <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+        </button>
+        <button class="landing-ctrl-btn" id="lc-fs" title="Fullscreen">
+            <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+        </button>
+    </div>
+
+    <!-- ── Page transition veil ── -->
+    <div id="page-veil">
+        <div class="page-loader">
+            <div class="page-loader-grid">
+                <span>🌿</span>
+                <span>🌺</span>
+                <span>🌱</span>
+                <span>🌸</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── SPA content area ── -->
+    <div id="spa-content"></div>
+
+    <!-- ── Global audio (never removed from DOM) ── -->
+    <audio id="background-audio" loop>
+        <source src="sounds/shima.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+    // ── Emoji loader ──
+    (function () {
+        const skipIntro = new URLSearchParams(window.location.search).get('skipIntro') === '1';
+        window.__spoliaSkipIntro = skipIntro;
+        const emojis = ['🌸','🌼','🌺','🪷','🪻','🌻','🌿','🍃','🌱','🪴','🍀','🌾','🍂','🍁'];
+        const loaderEl = document.getElementById('loader');
+        const trackEl = document.getElementById('loader-emoji-track');
+        const overlayEl = document.getElementById('settings-overlay');
+
+        if (skipIntro) {
+            loaderEl.remove();
+            overlayEl.classList.add('hidden');
+            overlayEl.style.display = 'none';
+            if (window.location.search.includes('skipIntro=1')) {
+                history.replaceState(history.state || {}, '', 'index.html');
+            }
+            return;
+        }
+
+        const slots = emojis.map((emoji) => {
+            const slot = document.createElement('span');
+            slot.className = 'loader-emoji-slot';
+            slot.textContent = emoji;
+            trackEl.appendChild(slot);
+            return slot;
+        });
+        let i = 0;
+
+        function step() {
+            if (i < slots.length) {
+                slots[i].classList.add('filled');
+                i += 1;
+                setTimeout(step, 212);
+                return;
+            }
+
+            // Fade the loader out first, then enable the options view.
+            requestAnimationFrame(() => {
+                loaderEl.classList.add('fade-out');
+                setTimeout(() => {
+                    loaderEl.remove();
+                    document.getElementById('settings-overlay').classList.add('ready');
+                }, 750);
+            });
+        }
+
+        setTimeout(step, 220);
+	    })();
+
+    // ── Page transition snake loader ──
+    (function () {
+        const cells = [...document.querySelectorAll('.page-loader-grid span')];
+        if (!cells.length) return;
+        const states = [
+            [0, 2, 3], // TL -> BL -> BR
+            [2, 3, 1], // BL -> BR -> TR
+            [3, 1, 0], // BR -> TR -> TL
+            [1, 0, 2]  // TR -> TL -> BL
+        ];
+        let stateIndex = 0;
+
+        function renderSnake() {
+            const active = new Set(states[stateIndex]);
+            cells.forEach((cell, index) => {
+                cell.classList.toggle('active', active.has(index));
+            });
+            stateIndex = (stateIndex + 1) % states.length;
+        }
+
+        renderSnake();
+        setInterval(renderSnake, 215);
+    })();
+
+	    (function () {
+	        const skipIntro = window.__spoliaSkipIntro || new URLSearchParams(window.location.search).get('skipIntro') === '1';
+	        const audio       = document.getElementById('background-audio');
+	        const bgVideo     = document.getElementById('bg-video');
+	        const bgVideoSource = bgVideo ? bgVideo.querySelector('source') : null;
+	        const bgVideoSrc = bgVideoSource ? bgVideoSource.getAttribute('src') : '';
+	        const overlay     = document.getElementById('settings-overlay');
+        const entryBrandStage = document.getElementById('entry-brand-stage');
+        const entryLinesStage = document.getElementById('entry-lines-stage');
+        const entryGroups = [...document.querySelectorAll('#entry-lines-stage .entry-line-group')];
+        const sndBtn      = document.getElementById('snd-btn');
+        const fsBtn       = document.getElementById('fs-btn');
+        const gcLang      = document.getElementById('gc-lang');
+        const gcSnd       = document.getElementById('gc-snd');
+        const gcFs        = document.getElementById('gc-fs');
+        const lcLang      = document.getElementById('lc-lang');
+        const lcSnd       = document.getElementById('lc-snd');
+        const lcFs        = document.getElementById('lc-fs');
+	        const spaContent  = document.getElementById('spa-content');
+	        const navBrand    = document.getElementById('nav-brand');
+	        const discoverBtn = document.getElementById('discover-btn');
+	        const veil        = document.getElementById('page-veil');
+        const backgroundLowVolume = 0.1;
+        const backgroundFullVolume = 0.7;
+        let backgroundFadeFrame = null;
+        audio.volume = backgroundLowVolume;
+        const pollenAudio = {
+            en: new Audio('sounds/pollen2-en.mp3'),
+            fr: new Audio('sounds/pollen2-fr.mp3')
+        };
+        Object.values(pollenAudio).forEach(track => {
+            track.preload = 'auto';
+        });
+        const pollenLineDurations = [2000, 2500, 3000, 3000, 2500];
+        const pollenTextHoldAfterAudio = 1000;
+        const pollenTextFadeOutDuration = 1000;
+        const homeRevealDelayAfterPollen = 1000;
+        let selectedLang  = 'en';
+        let soundUnlockedThisSession = false;
+        let landingSequenceStarted = false;
+        let sequenceAborted = false;
+        let currentPage = null;
+	        let pageStyleEl = null;
+        let fadeObserver = null;
+	        let landingVideoAllowed = true;
+	        const visitedPages = new Set();
+        const preloadedMedia = new Set();
+        let mediaPreloadStarted = false;
+        const pageHrefs = [...document.querySelectorAll('#main-nav .nav-link')]
+            .map(link => link.dataset.href)
+            .filter(Boolean);
+
+        function absolutePageAssetUrl(url, pageHref = 'index.html') {
+            try {
+                return new URL(url, new URL(pageHref, window.location.href)).href;
+            } catch {
+                return null;
+            }
+        }
+
+        function addPreload(url, as) {
+            if (!url || preloadedMedia.has(url)) return;
+            preloadedMedia.add(url);
+            const link = document.createElement('link');
+            link.rel = 'preload';
+            link.as = as;
+            link.href = url;
+            if (as === 'video') link.type = 'video/mp4';
+            document.head.appendChild(link);
+        }
+
+        async function preloadPageMedia() {
+            if (mediaPreloadStarted) return;
+            mediaPreloadStarted = true;
+            for (const href of pageHrefs) {
+                try {
+                    const res = await fetch(href, { cache: 'force-cache' });
+                    const html = await res.text();
+                    const doc = new DOMParser().parseFromString(html, 'text/html');
+                    doc.querySelectorAll('video source[src], video[src]').forEach(el => {
+                        const src = el.getAttribute('src');
+                        const url = absolutePageAssetUrl(src, href);
+                        addPreload(url, 'video');
+                        if (url) fetch(url, { cache: 'force-cache' }).catch(() => {});
+                    });
+                    [...doc.querySelectorAll('img[src]')].slice(0, 8).forEach(img => {
+                        const url = absolutePageAssetUrl(img.getAttribute('src'), href);
+                        addPreload(url, 'image');
+                    });
+                } catch {}
+            }
+        }
+        setTimeout(preloadPageMedia, 300);
+
+        function ensureLandingVideoSource() {
+            if (!bgVideo || !bgVideoSource || !bgVideoSrc) return;
+            if (!bgVideoSource.getAttribute('src')) {
+                bgVideoSource.setAttribute('src', bgVideoSrc);
+                bgVideo.load();
+            }
+        }
+
+        function landingVideoReady() {
+            if (!bgVideo) return Promise.resolve();
+            if (bgVideo.readyState >= 3) return Promise.resolve();
+            return new Promise(resolve => {
+                const done = () => {
+                    clearTimeout(timer);
+                    bgVideo.removeEventListener('canplay', done);
+                    bgVideo.removeEventListener('loadeddata', done);
+                    bgVideo.removeEventListener('error', done);
+                    resolve();
+                };
+                const timer = setTimeout(done, 1600);
+                bgVideo.addEventListener('canplay', done);
+                bgVideo.addEventListener('loadeddata', done);
+                bgVideo.addEventListener('error', done);
+            });
+        }
+
+	        function playLandingVideo() {
+	            if (!bgVideo) return Promise.resolve();
+            ensureLandingVideoSource();
+	            const preparedPlay = window.SpoliaI18n?.prepareAutoplayVideo
+	                ? window.SpoliaI18n.prepareAutoplayVideo(bgVideo)
+	                : (() => {
+	                    bgVideo.muted = true;
+                    bgVideo.defaultMuted = true;
+                    bgVideo.playsInline = true;
+                    bgVideo.autoplay = true;
+                    bgVideo.preload = 'auto';
+                    bgVideo.setAttribute('muted', '');
+                    bgVideo.setAttribute('autoplay', '');
+                    bgVideo.setAttribute('playsinline', '');
+                    bgVideo.setAttribute('webkit-playsinline', '');
+	                    bgVideo.setAttribute('preload', 'auto');
+	                    if (bgVideo.networkState === HTMLMediaElement.NETWORK_EMPTY) bgVideo.load();
+	                    return () => bgVideo.play().catch(() => {});
+	                })();
+            const tryPlay = () => {
+                if (!landingVideoAllowed || !document.body.classList.contains('landing-mode')) return Promise.resolve();
+                ensureLandingVideoSource();
+                return preparedPlay();
+            };
+	            tryPlay();
+	            requestAnimationFrame(tryPlay);
+            setTimeout(tryPlay, 120);
+            setTimeout(tryPlay, 650);
+            // Guard prevents duplicate listeners accumulating across multiple playLandingVideo() calls
+            if (!bgVideo.dataset.playListenersAdded) {
+                bgVideo.dataset.playListenersAdded = '1';
+                ['loadedmetadata', 'loadeddata', 'canplay', 'canplaythrough'].forEach(eventName => {
+                    bgVideo.addEventListener(eventName, tryPlay);
+                });
+                ['stalled', 'suspend'].forEach(eventName => {
+                    bgVideo.addEventListener(eventName, tryPlay);
+                });
+            }
+            return Promise.resolve();
+        }
+
+	        function resetAndPlayLandingVideo() {
+	            if (!bgVideo) return Promise.resolve();
+            landingVideoAllowed = true;
+            ensureLandingVideoSource();
+	            bgVideo.pause();
+	            try { bgVideo.currentTime = 0; } catch (_) {}
+	            return playLandingVideo();
+	        }
+
+	        function pauseLandingVideo(release = false) {
+	            if (!bgVideo) return;
+            landingVideoAllowed = false;
+	            bgVideo.pause();
+            if (release && bgVideoSource) {
+                bgVideo.removeAttribute('src');
+                bgVideoSource.removeAttribute('src');
+                bgVideo.load();
+            }
+	        }
+
+        function normalizeLang(lang) {
+            return lang === 'fr' ? 'fr' : 'en';
+        }
+
+        function persistLanguage(lang) {
+            selectedLang = normalizeLang(lang);
+            localStorage.setItem('language', selectedLang);
+            document.documentElement.lang = selectedLang;
+            return selectedLang;
+        }
+
+        async function applyPageTranslations(pageName) {
+            if (!window.SpoliaI18n) return;
+            await window.SpoliaI18n.applyTranslations(document, pageName);
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function nextFrame() {
+            return new Promise(resolve => requestAnimationFrame(() => resolve()));
+        }
+
+        let homeRevealReadyPromise = null;
+
+        function prepareHomeReveal() {
+            if (homeRevealReadyPromise) return homeRevealReadyPromise;
+
+            const logos = [...document.querySelectorAll('.logos-bar img')];
+            homeRevealReadyPromise = Promise.all(logos.map(img => {
+                if (img.decode) return img.decode().catch(() => {});
+                if (img.complete) return Promise.resolve();
+                return new Promise(resolve => {
+                    img.onload = resolve;
+                    img.onerror = resolve;
+                });
+            })).then(async () => {
+                document.body.classList.add('home-prewarm');
+                await nextFrame();
+                await nextFrame();
+            });
+
+            return homeRevealReadyPromise;
+        }
+
+        function resetEntryStages() {
+            entryBrandStage.classList.remove('visible');
+            entryLinesStage.classList.remove('visible');
+            entryGroups.forEach(group => group.classList.remove('visible'));
+        }
+
+        function stopBackgroundFade() {
+            if (!backgroundFadeFrame) return;
+            cancelAnimationFrame(backgroundFadeFrame);
+            backgroundFadeFrame = null;
+        }
+
+        function fadeBackgroundToFull(duration = 4200) {
+            stopBackgroundFade();
+            if (!isSoundOn() || !soundUnlockedThisSession || audio.paused) return;
+            const startVolume = audio.volume;
+            const volumeDelta = backgroundFullVolume - startVolume;
+            const startTime = performance.now();
+
+            const step = now => {
+                const progress = Math.min((now - startTime) / duration, 1);
+                audio.volume = startVolume + volumeDelta * progress;
+                if (progress < 1) {
+                    backgroundFadeFrame = requestAnimationFrame(step);
+                } else {
+                    backgroundFadeFrame = null;
+                    audio.volume = backgroundFullVolume;
+                }
+            };
+
+            backgroundFadeFrame = requestAnimationFrame(step);
+        }
+
+        function resetPollenAudio() {
+            Object.values(pollenAudio).forEach(track => {
+                track.pause();
+                track.currentTime = 0;
+            });
+        }
+
+        function primePollenAudio() {
+            if (!isSoundOn() || !soundUnlockedThisSession) return;
+            const track = pollenAudio[normalizeLang(selectedLang)];
+            if (!track) return;
+            track.muted = true;
+            track.volume = 0;
+            track.play().then(() => {
+                track.pause();
+                track.currentTime = 0;
+                track.muted = false;
+                track.volume = 1;
+            }).catch(() => {
+                track.muted = false;
+                track.volume = 1;
+            });
+        }
+
+        function playPollenAudio() {
+            resetPollenAudio();
+            if (!isSoundOn() || !soundUnlockedThisSession) return;
+            const track = pollenAudio[normalizeLang(selectedLang)];
+            if (!track) return;
+            track.muted = false;
+            track.volume = 1;
+            track.play().catch(() => {});
+        }
+
+        async function showHomeFromNav({ replaceHistory = false, useVeil = false } = {}) {
+            const returningFromPage = currentPage !== null;
+            if (!returningFromPage && !replaceHistory) return;
+
+            if (useVeil && returningFromPage) {
+                veil.classList.add('show');
+                await sleep(450);
+            }
+
+            currentPage = null;
+            if (window.SpoliaContactSnake) window.SpoliaContactSnake.destroy(spaContent);
+            if (window.SpoliaI18n?.disconnectVideoObserver) window.SpoliaI18n.disconnectVideoObserver();
+            spaContent.querySelectorAll('video').forEach(v => {
+                v.pause();
+                v.removeAttribute('src');
+                v.querySelectorAll('source').forEach(s => s.removeAttribute('src'));
+                v.load();
+            });
+            spaContent.innerHTML = '';
+            spaContent.scrollTop = 0;
+            if (pageStyleEl) { pageStyleEl.remove(); pageStyleEl = null; }
+            document.body.classList.remove('spa-mode', 'entry-sequence', 'home-prewarm', 'home-ready', 'video-ready');
+            document.body.classList.add('landing-mode');
+            document.body.classList.add('entered');
+            document.querySelectorAll('#main-nav .nav-link').forEach(a => a.classList.remove('active'));
+            resetEntryStages();
+            if (replaceHistory) history.replaceState({}, '', 'index.html');
+            else history.pushState({}, '', 'index.html');
+            window.scrollTo(0, 0);
+            await resetAndPlayLandingVideo();
+            await landingVideoReady();
+            document.body.classList.add('video-ready');
+            await applyPageTranslations('index').catch(() => {});
+            await prepareHomeReveal().catch(() => {});
+            document.body.classList.remove('home-prewarm');
+            await nextFrame();
+            document.body.classList.add('home-ready');
+            fadeBackgroundToFull();
+
+            if (useVeil && returningFromPage) {
+                await sleep(120);
+                veil.classList.remove('show');
+            }
+        }
+
+        async function runLandingSequence() {
+            if (landingSequenceStarted || skipIntro) return;
+            landingSequenceStarted = true;
+            sequenceAborted = false;
+            document.body.classList.add('entry-sequence');
+            document.body.classList.remove('video-ready', 'home-ready');
+            resetEntryStages();
+
+            await sleep(420);
+            if (sequenceAborted) return;
+            entryBrandStage.classList.add('visible');
+            await sleep(4000);
+            if (sequenceAborted) return;
+            entryBrandStage.classList.remove('visible');
+
+            await sleep(900);
+            if (sequenceAborted) return;
+            await resetAndPlayLandingVideo();
+            document.body.classList.add('video-ready');
+            prepareHomeReveal();
+
+            await sleep(3000);
+            if (sequenceAborted) return;
+            entryLinesStage.classList.add('visible');
+            playPollenAudio();
+            for (const [index, group] of entryGroups.entries()) {
+                group.classList.add('visible');
+                await sleep(pollenLineDurations[index] || 1000);
+                if (sequenceAborted) return;
+            }
+
+            await sleep(pollenTextHoldAfterAudio);
+            if (sequenceAborted) return;
+            entryLinesStage.classList.remove('visible');
+            entryGroups.forEach(group => group.classList.remove('visible'));
+            resetPollenAudio();
+
+            await sleep(pollenTextFadeOutDuration);
+            await sleep(homeRevealDelayAfterPollen);
+            if (sequenceAborted) return;
+            await prepareHomeReveal();
+            document.body.classList.add('home-ready');
+            document.body.classList.remove('home-prewarm');
+            document.body.classList.remove('entry-sequence');
+            fadeBackgroundToFull();
+        }
+
+        function skipToHome() {
+            sequenceAborted = true;
+            resetPollenAudio();
+            showHomeFromNav({ replaceHistory: true }).catch(() => {});
+        }
+
+        document.getElementById('entry-skip-btn-brand').addEventListener('click', skipToHome);
+        document.getElementById('entry-skip-btn-lines').addEventListener('click', skipToHome);
+
+        function isSoundOn() {
+            return ['1', 'true'].includes(localStorage.getItem('soundEnabled'));
+        }
+        function isFsPreferred() {
+            return ['1', 'true'].includes(localStorage.getItem('fullscreenPreferred'));
+        }
+
+        // ── Sound helpers ──
+        function setSoundState(on) {
+            localStorage.setItem('soundEnabled', on ? '1' : '0');
+            sndBtn.classList.toggle('on', on);
+            gcSnd.classList.toggle('on', on);
+            if (lcSnd) lcSnd.classList.toggle('on', on);
+            if (on) {
+                soundUnlockedThisSession = true;
+                stopBackgroundFade();
+                audio.volume = document.body.classList.contains('home-ready') ? backgroundFullVolume : backgroundLowVolume;
+                // Retry once after a short delay if the first attempt fails.
+                audio.play().catch(() => {
+                    setTimeout(() => {
+                        if (isSoundOn() && soundUnlockedThisSession) audio.play().catch(() => {});
+                    }, 350);
+                });
+            } else {
+                soundUnlockedThisSession = false;
+                stopBackgroundFade();
+                audio.pause();
+                audio.volume = backgroundLowVolume;
+                resetPollenAudio();
+            }
+        }
+        // ── Fullscreen helpers ──
+        function setFsState(on) {
+            localStorage.setItem('fullscreenPreferred', on ? '1' : '0');
+            fsBtn.classList.toggle('on', on);
+            gcFs.classList.toggle('on', on);
+            if (lcFs) lcFs.classList.toggle('on', on);
+            if (on) document.documentElement.requestFullscreen().catch(() => {});
+            else    document.exitFullscreen().catch(() => {});
+        }
+        document.addEventListener('fullscreenchange', () => {
+            const on = !!document.fullscreenElement;
+            fsBtn.classList.toggle('on', on);
+            gcFs.classList.toggle('on', on);
+            if (lcFs) lcFs.classList.toggle('on', on);
+        });
+
+        gcSnd.classList.toggle('on', isSoundOn());
+        if (lcSnd) lcSnd.classList.toggle('on', isSoundOn());
+        gcFs.classList.toggle('on', isFsPreferred());
+        if (lcFs) lcFs.classList.toggle('on', isFsPreferred());
+
+        let overlaySoundOn = false;
+        let overlayFsOn = false;
+
+        // ── Settings overlay ──
+        if (skipIntro) {
+            persistLanguage(localStorage.getItem('language') || 'en');
+            preloadPageMedia();
+            showHomeFromNav({ replaceHistory: true }).catch(() => {});
+        } else {
+            persistLanguage('en');
+            document.body.classList.remove('video-ready', 'home-ready');
+        }
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const lang = persistLanguage(btn.dataset.lang);
+                await applyPageTranslations(currentPage ? currentPage.replace(/\.html$/, '') : 'index');
+                document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+            });
+        });
+        gcLang.addEventListener('click', async () => {
+            const nextLang = selectedLang === 'fr' ? 'en' : 'fr';
+            persistLanguage(nextLang);
+            await applyPageTranslations(currentPage ? currentPage.replace(/\.html$/, '') : 'index');
+        });
+        if (lcLang) {
+            lcLang.addEventListener('click', async () => {
+                const nextLang = selectedLang === 'fr' ? 'en' : 'fr';
+                persistLanguage(nextLang);
+                await applyPageTranslations(currentPage ? currentPage.replace(/\.html$/, '') : 'index');
+            });
+        }
+
+        sndBtn.addEventListener('click', () => {
+            overlaySoundOn = !overlaySoundOn;
+            sndBtn.classList.toggle('on', overlaySoundOn);
+            setSoundState(overlaySoundOn);
+        });
+        fsBtn.addEventListener('click',  () => {
+            overlayFsOn = !overlayFsOn;
+            fsBtn.classList.toggle('on', overlayFsOn);
+            setFsState(overlayFsOn);
+        });
+
+        document.getElementById('settings-enter').addEventListener('click', () => {
+            overlay.classList.remove('ready');
+            overlay.classList.add('hidden');
+            overlay.setAttribute('aria-hidden', 'true');
+            document.body.classList.add('entered');
+            primePollenAudio();
+
+            // Use display:none as the reliable final state after the fade,
+            // rather than depending only on remove() timing.
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 320);
+
+            preloadPageMedia();
+            runLandingSequence().catch(() => {});
+        });
+
+        // ── Nav sound / fullscreen controls ──
+        gcSnd.addEventListener('click', () => setSoundState(!isSoundOn()));
+        gcFs.addEventListener('click',  () => setFsState(!document.fullscreenElement));
+
+        // ── Landing bottom-left controls ──
+        if (lcSnd) lcSnd.addEventListener('click', () => setSoundState(!isSoundOn()));
+        if (lcFs) lcFs.addEventListener('click',  () => setFsState(!document.fullscreenElement));
+
+        // Never auto-play on load — user must explicitly click sound icon
+
+        // ── SPA Router ──
+        function initFadeObserver() {
+            if (fadeObserver) fadeObserver.disconnect();
+            fadeObserver = new IntersectionObserver(entries => {
+                entries.forEach(e => {
+                    if (e.isIntersecting) {
+                        e.target.classList.add('visible');
+                        fadeObserver.unobserve(e.target);
+                    }
+                });
+            }, { threshold: 0.08, root: spaContent });
+            spaContent.querySelectorAll('.fade-in').forEach(el => fadeObserver.observe(el));
+        }
+
+        function initPageVideos() {
+            if (window.SpoliaI18n?.initAutoplayVideos) {
+                window.SpoliaI18n.initAutoplayVideos(spaContent);
+                return;
+            }
+            spaContent.querySelectorAll('video').forEach(v => {
+                v.muted = true;
+                v.defaultMuted = true;
+                v.autoplay = true;
+                v.preload = 'auto';
+                v.setAttribute('muted', '');
+                v.setAttribute('autoplay', '');
+                v.setAttribute('playsinline', '');
+                v.setAttribute('webkit-playsinline', '');
+                v.setAttribute('preload', 'auto');
+                const p = v.play();
+                if (p) p.catch(() => {});
+                v.addEventListener('ended', () => { v.currentTime = 0; v.play().catch(() => {}); });
+            });
+        }
+
+        function updateNavActive(href) {
+            document.querySelectorAll('#main-nav .nav-link').forEach(a => {
+                a.classList.toggle('active', a.dataset.href === href);
+            });
+        }
+
+        function getResponsivePageOverrides() {
+            return `
+                @media (max-width: 1680px) {
+                    :root {
+                        --pad: 44px;
+                        --pad-sm: 24px;
+                    }
+
+                    .layout-right,
+                    .layout-left {
+                        grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr) !important;
+                    }
+                    .layout-left {
+                        grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr) !important;
+                    }
+                    .text-side {
+                        padding: calc(var(--nav-h) + 38px) 44px 42px 44px !important;
+                    }
+                    .page-title {
+                        font-size: clamp(20px, 2vw, 28px) !important;
+                        line-height: 1.18 !important;
+                        margin-bottom: 24px !important;
+                    }
+                    .layout-right .image-col,
+                    .layout-left .image-col {
+                        display: flex !important;
+                        align-items: center !important;
+                        justify-content: center !important;
+                        overflow: visible !important;
+                    }
+                    .layout-right .image-col > img,
+                    .layout-left .image-col > img {
+                        width: auto !important;
+                        height: auto !important;
+                        max-width: 100% !important;
+                        max-height: calc(100vh - var(--nav-h) - 56px) !important;
+                        object-fit: contain !important;
+                        object-position: center !important;
+                    }
+                    .image-col.with-caption-below .img-wrap {
+                        flex: 1 1 auto !important;
+                        display: flex !important;
+                        align-items: center !important;
+                        justify-content: center !important;
+                        overflow: visible !important;
+                    }
+                    .image-col.with-caption-below .img-wrap img {
+                        width: auto !important;
+                        height: auto !important;
+                        max-width: 100% !important;
+                        max-height: calc(100vh - var(--nav-h) - 116px) !important;
+                        object-fit: contain !important;
+                        object-position: center !important;
+                    }
+                    .layout-full .section-title {
+                        font-size: clamp(42px, 5vw, 74px) !important;
+                    }
+                }
+
+                @media (max-width: 1512px), (max-height: 860px) {
+                    :root {
+                        --pad: 36px;
+                        --pad-sm: 20px;
+                    }
+
+                    .text-side {
+                        padding: calc(var(--nav-h) + 28px) 36px 34px 36px !important;
+                    }
+                    .page-title {
+                        font-size: clamp(18px, 1.8vw, 24px) !important;
+                        margin-bottom: 18px !important;
+                    }
+                    .body-text p + p,
+                    .caption-below p + p {
+                        margin-top: 18px !important;
+                    }
+                    .layout-right .image-col > img,
+                    .layout-left .image-col > img {
+                        max-height: calc(100vh - var(--nav-h) - 72px) !important;
+                    }
+                    .image-col.with-caption-below .img-wrap img {
+                        max-height: calc(100vh - var(--nav-h) - 128px) !important;
+                    }
+                    .layout-full .section-title {
+                        font-size: clamp(36px, 4.6vw, 62px) !important;
+                    }
+                }
+
+                @media (max-width: 1366px), (max-height: 760px) {
+                    .layout-right,
+                    .layout-left {
+                        grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr) !important;
+                    }
+                    .text-side {
+                        padding: calc(var(--nav-h) + 22px) 30px 30px 30px !important;
+                    }
+                    .layout-right .image-col > img,
+                    .layout-left .image-col > img {
+                        max-height: calc(100vh - var(--nav-h) - 88px) !important;
+                    }
+                    .image-col.with-caption-below .img-wrap img {
+                        max-height: calc(100vh - var(--nav-h) - 140px) !important;
+                    }
+                }
+            `;
+        }
+
+        async function navigate(href, pushState = true) {
+            if (href === currentPage) return;
+
+            if (currentPage === null) {
+                persistLanguage(selectedLang);
+            }
+
+            pauseLandingVideo(true);
+
+            const transitioningFromPage = currentPage !== null;
+            if (transitioningFromPage) {
+                spaContent.classList.remove('loaded');
+                spaContent.classList.add('loading');
+                await new Promise(r => setTimeout(r, 220));
+            }
+
+            spaContent.classList.remove('loaded');
+            spaContent.classList.add('loading');
+            spaContent.scrollTop = 0;
+
+            try {
+                const res  = await fetch(href);
+                const html = await res.text();
+                const doc  = new DOMParser().parseFromString(html, 'text/html');
+
+                // Swap page styles
+                if (pageStyleEl) pageStyleEl.remove();
+                const combined = Array.from(doc.querySelectorAll('style')).map(s => s.textContent).join('\n');
+                pageStyleEl = document.createElement('style');
+                pageStyleEl.id = 'page-styles';
+                pageStyleEl.textContent = `${combined}\n${getResponsivePageOverrides()}`;
+                document.head.appendChild(pageStyleEl);
+
+                // Inject sections — release old video resources first so Safari/Chrome
+                // don't keep decoding multiple videos simultaneously.
+                if (window.SpoliaContactSnake) window.SpoliaContactSnake.destroy(spaContent);
+                if (window.SpoliaI18n?.disconnectVideoObserver) window.SpoliaI18n.disconnectVideoObserver();
+                spaContent.querySelectorAll('video').forEach(v => {
+                    v.pause();
+                    v.removeAttribute('src');
+                    v.querySelectorAll('source').forEach(s => s.removeAttribute('src'));
+                    v.load();
+                });
+                const sections = doc.querySelectorAll('section.page');
+                spaContent.innerHTML = '';
+                sections.forEach(s => spaContent.appendChild(document.adoptNode(s)));
+
+                // Auto-apply fade-in classes
+                spaContent.querySelectorAll(
+                    '.text-side, .image-col, .image-col-inner, .full-image, ' +
+                    '.caption-below-bar, .center-block, .overlay-text'
+                ).forEach(el => { if (!el.classList.contains('fade-in')) el.classList.add('fade-in'); });
+
+                await applyPageTranslations(href.replace(/\.html$/, ''));
+
+                currentPage = href;
+                visitedPages.add(href);
+                updateNavActive(href);
+
+                document.body.classList.remove('landing-mode', 'home-prewarm', 'home-ready', 'video-ready');
+                document.body.classList.add('spa-mode');
+                await nextFrame();
+                initFadeObserver();
+                initPageVideos();
+                if (window.SpoliaContactSnake) window.SpoliaContactSnake.init(spaContent);
+
+                if (pushState) history.pushState({ href }, '', href);
+
+            } catch (err) {
+                window.location.href = href;
+                return;
+            }
+
+            // Wait for the hero video to reach canplay AND for hero images to load,
+            // so the page reveals all-at-once with no black-video flash.
+            const heroVideo = spaContent.querySelector('video');
+            const heroImages = [...spaContent.querySelectorAll('img')].slice(0, 6);
+
+            const videoReady = heroVideo
+                ? new Promise(r => {
+                    if (heroVideo.readyState >= 3) { r(); return; }
+                    const done = () => {
+                        heroVideo.removeEventListener('canplay', done);
+                        heroVideo.removeEventListener('error', done);
+                        r();
+                    };
+                    heroVideo.addEventListener('canplay', done);
+                    heroVideo.addEventListener('error', done);
+                })
+                : Promise.resolve();
+
+            const imagesReady = Promise.all(heroImages.map(el => {
+                if (el.complete && el.naturalWidth > 0) return Promise.resolve();
+                return new Promise(r => { el.onload = r; el.onerror = r; });
+            }));
+
+            await Promise.race([
+                new Promise(r => setTimeout(r, 1200)),
+                Promise.all([videoReady, imagesReady])
+            ]);
+            await nextFrame();
+            spaContent.classList.remove('loading');
+            spaContent.classList.add('loaded');
+        }
+
+        // Nav link clicks
+        document.querySelectorAll('#main-nav .nav-link').forEach(a => {
+            a.addEventListener('click', e => {
+                e.preventDefault();
+                navigate(a.dataset.href);
+            });
+        });
+
+        // Brand → back to landing
+        navBrand.addEventListener('click', () => {
+            showHomeFromNav({ useVeil: true }).catch(() => {});
+        });
+
+        // Discover button → load About
+        discoverBtn.addEventListener('click', () => navigate('about.html'));
+
+        // Browser back/forward
+        window.addEventListener('popstate', e => {
+            const href = e.state?.href;
+            if (!href || href === 'index.html') {
+                showHomeFromNav({ replaceHistory: true, useVeil: true }).catch(() => {});
+            } else {
+                navigate(href, false);
+            }
+        });
+
+        // ── Landing video ──
+        if (bgVideo) {
+            bgVideo.defaultMuted = true;
+            bgVideo.muted = true;
+            bgVideo.load();
+            bgVideo.addEventListener('ended', () => {
+                bgVideo.currentTime = 0;
+                playLandingVideo();
+            });
+            if (skipIntro) {
+                resetAndPlayLandingVideo();
+            }
+        }
+
+        (function waitForI18n() {
+            if (window.SpoliaI18n) {
+                applyPageTranslations('index').catch(() => {});
+                return;
+            }
+            setTimeout(waitForI18n, 30);
+        })();
+    })();
+    </script>
+</body>
+</html>

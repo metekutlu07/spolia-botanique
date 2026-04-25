@@ -1,0 +1,2128 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spolia Botanique — AR Apps</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=EB+Garamond:ital,wght@0,400;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="site-nav.css" />
+    <script src="i18n.js" defer></script>
+    <style>
+      @font-face {
+        font-family: 'Neue Machina';
+        src: url('fonts/PPNeueMachina-PlainRegular.ttf') format('truetype');
+        font-weight: 400;
+      }
+      @font-face {
+        font-family: 'Neue Machina';
+        src: url('fonts/PPNeueMachina-PlainLight.ttf') format('truetype');
+        font-weight: 300;
+      }
+      @font-face {
+        font-family: 'Neue Machina';
+        src: url('fonts/PPNeueMachina-PlainUltrabold.ttf') format('truetype');
+        font-weight: 700;
+      }
+
+      *,
+      *::before,
+      *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --bg: #000000;
+        --fg: #ffffff;
+        --fg-dim: rgba(255, 255, 255, 0.55);
+        --green: #49dca4;
+        --pad: 60px;
+        --pad-sm: 32px;
+        --nav-h: 56px;
+        --ar-page-gap: 60px;
+        --ar-img-caption-text-padding: 40px var(--pad) 60px;
+        --ar-img-caption-image-min-height: 75vh;
+      }
+
+      html {
+        scroll-behavior: smooth;
+        background: var(--bg);
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--fg);
+        font-family: 'Neue Machina', sans-serif;
+        font-weight: 300;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* ─── NAV ─── */
+      .top-nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: var(--nav-h);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 var(--pad-sm);
+        background: rgba(0, 0, 0, 0.25);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        z-index: 100;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .nav-brand {
+        text-decoration: none;
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        color: var(--green);
+        flex-shrink: 0;
+        cursor: pointer;
+        transition: color 0.2s;
+      }
+      .nav-brand:hover {
+        color: white;
+      }
+      .nav-brand-spolia {
+        font-family: 'EB Garamond', serif;
+        font-style: italic;
+        font-size: 32px;
+        font-weight: 400;
+        letter-spacing: 0.5px;
+        color: var(--green);
+      }
+      .nav-brand-botanique {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 27px;
+        font-weight: 500;
+        letter-spacing: 1px;
+        color: var(--green);
+      }
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: var(--nav-link-gap);
+      }
+      .nav-link {
+        text-decoration: none;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: var(--nav-link-font-size);
+        letter-spacing: var(--nav-link-letter-spacing);
+        text-transform: uppercase;
+        color: var(--green);
+        transition: color 0.2s, border-color 0.2s;
+        padding-top: var(--nav-link-padding-top);
+        padding-bottom: var(--nav-link-padding-bottom);
+        border-bottom: 1px solid transparent;
+      }
+      .nav-link:hover {
+        color: white;
+      }
+
+      /* ─── NAV CONTROLS (sound + fullscreen) ─── */
+      .nav-controls {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        margin-left: 24px;
+      }
+      .nav-ctrl-btn {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 6px;
+        color: rgba(255, 255, 255, 0.5);
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        padding: 0;
+      }
+      .nav-ctrl-btn svg {
+        width: 18px;
+        height: 18px;
+        fill: currentColor;
+      }
+      .nav-ctrl-btn:hover {
+        border-color: rgba(255, 255, 255, 0.5);
+        color: white;
+      }
+      .nav-ctrl-btn.on {
+        border-color: var(--green);
+        color: var(--green);
+      }
+      .nav-lang-btn {
+        width: 48px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 12px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+      }
+      .nav-link.active {
+        color: white;
+        border-bottom: 1px solid white;
+      }
+
+      /* ─── SECTION BASE ─── */
+      .page {
+        position: relative;
+        min-height: 100vh;
+        width: 100%;
+        overflow: hidden;
+      }
+      .page + .page {
+        margin-top: var(--ar-page-gap);
+      }
+
+      /* ─── FADE-IN ─── */
+      .fade-in {
+        opacity: 0;
+        transform: translateY(28px);
+        transition: opacity 0.9s ease, transform 0.9s ease;
+      }
+      .fade-in.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      .fade-in.delay-1 {
+        transition-delay: 0.15s;
+      }
+      .fade-in.delay-2 {
+        transition-delay: 0.3s;
+      }
+
+      /* ─── BLINDS ─── */
+      .blinds {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: repeating-linear-gradient(
+          0deg,
+          rgba(0, 0, 0, 0.06) 0px,
+          rgba(0, 0, 0, 0.06) 2.5px,
+          transparent 2.5px,
+          transparent 5px
+        );
+        z-index: 1;
+      }
+
+      /* ─── LAYOUT: FULL SCREEN ─── */
+      .layout-full .bg-image {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+      }
+      .layout-full .bg-video {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+      }
+      .layout-full .overlay {
+        position: absolute;
+        inset: 0;
+        background: none;
+      }
+      .layout-full .section-badge {
+        position: absolute;
+        top: calc(var(--nav-h) + 36px);
+        left: var(--pad);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--fg-dim);
+        z-index: 2;
+      }
+      .layout-full .section-title {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, calc(-50% - 20px));
+        text-align: center;
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: clamp(48px, 6vw, 90px);
+        color: var(--fg);
+        line-height: 1;
+        letter-spacing: -1px;
+        z-index: 2;
+        width: 90%;
+      }
+      .layout-full .section-badge,
+      .layout-full .section-title {
+        z-index: 2;
+      }
+      .layout-full .section-subtitle {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, calc(-50% + 96px));
+        text-align: center;
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 400;
+        font-size: clamp(16px, 1.8vw, 24px);
+        line-height: 1.8;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--fg);
+        z-index: 2;
+        width: min(900px, 86%);
+      }
+
+      /* ─── Scroll Arrow ─── */
+      .scroll-arrow {
+        position: absolute;
+        bottom: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 44px;
+        height: 44px;
+        z-index: 3;
+        object-fit: contain;
+        animation: float 2s ease-in-out infinite;
+      }
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateX(-50%) translateY(0);
+        }
+        50% {
+          transform: translateX(-50%) translateY(10px);
+        }
+      }
+
+      /* ─── LAYOUT: SPLIT RIGHT / LEFT ─── */
+      .layout-right,
+      .layout-left {
+        display: grid;
+        min-height: 100vh;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .text-side {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: calc(var(--nav-h) + 60px) var(--pad) 60px var(--pad);
+      }
+      .layout-left .text-side {
+        order: 2;
+      }
+
+      .image-col {
+        position: relative;
+        overflow: hidden;
+      }
+      .layout-right .image-col {
+        order: 2;
+      }
+      .layout-left .image-col {
+        order: 1;
+      }
+
+      .image-col img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        display: block;
+      }
+
+      /* Partial-height image inside split (80vh) */
+      .image-col.h-80 {
+        display: flex;
+        align-items: flex-start;
+      }
+      .image-col.h-80 img {
+        height: 80vh;
+        width: auto;
+        max-width: 100%;
+        object-fit: contain;
+        margin-top: calc(var(--nav-h) + 20px);
+      }
+
+      /* ─── YOUTUBE VIDEOS SECTION ─── */
+      .layout-videos {
+        padding: 60px var(--pad);
+        min-height: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .videos-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 56px;
+        width: 100%;
+        max-width: 1400px;
+      }
+      .video-block {
+        width: 100%;
+      }
+      .videos-intro {
+        max-width: 980px;
+        margin-bottom: 52px;
+      }
+      .videos-intro .section-title-lg {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: clamp(36px, 4vw, 64px);
+        line-height: 1.15;
+        letter-spacing: -0.8px;
+        color: var(--fg);
+        margin-bottom: 22px;
+      }
+      .videos-intro .body-text {
+        max-width: 860px;
+      }
+      .video-container {
+        position: relative;
+        width: 100%;
+        padding-bottom: 56.25%;
+        height: 0;
+        overflow: hidden;
+      }
+      .video-container iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: none;
+      }
+      .video-quality-note {
+        margin-top: 40px;
+        text-align: center;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 14px;
+        color: var(--fg-dim);
+        line-height: 1.6;
+      }
+
+      /* ─── LAYOUT: LOCAL VIDEO ─── */
+      .layout-local-video {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: calc(var(--nav-h) + 60px) var(--pad) 60px;
+        min-height: 100vh;
+      }
+      .layout-local-video video {
+        height: 80vh;
+        width: auto;
+        max-width: 100%;
+        display: block;
+        object-fit: contain;
+      }
+      #video-roses video {
+        height: 90vh;
+        width: auto;
+        max-width: 100%;
+        object-fit: contain;
+        object-position: center;
+      }
+      #video-roses.layout-local-video {
+        padding: calc(var(--nav-h) + 20px) var(--pad) 20px;
+        overflow: visible;
+      }
+
+      /* ─── LAYOUT: CENTER WIDTH (90vw image) ─── */
+      .layout-center-w {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: calc(var(--nav-h) + 60px) 0 80px;
+        min-height: 100vh;
+      }
+      .layout-center-w .center-block {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 90vw;
+      }
+      .layout-center-w .center-block img {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+      .layout-center-w .caption-below {
+        width: 100%;
+        padding-top: 16px;
+      }
+
+      /* ─── LAYOUT: CENTER HEIGHT ─── */
+      .layout-center-h {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: calc(var(--nav-h) + 60px) var(--pad) 80px;
+        min-height: 100vh;
+      }
+      .layout-center-h .center-block {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .layout-center-h .center-block img {
+        height: 70vh;
+        width: auto;
+        max-width: 100%;
+        display: block;
+        object-fit: contain;
+      }
+      .layout-center-h.tall .center-block img {
+        height: 80vh;
+      }
+      .layout-center-h .caption-below {
+        margin-top: 16px;
+        text-align: center;
+        max-width: 80ch;
+      }
+
+      /* ─── LAYOUT: TEXT OVERLAY ─── */
+      .layout-text-overlay {
+        position: relative;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+      }
+      .layout-text-overlay .bg-image {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+      }
+      .layout-text-overlay .overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          to right,
+          rgba(0, 0, 0, 0.88) 0%,
+          rgba(0, 0, 0, 0.72) 40%,
+          rgba(0, 0, 0, 0.1) 65%,
+          rgba(0, 0, 0, 0) 100%
+        );
+      }
+      .layout-text-overlay .blinds {
+        z-index: 1;
+      }
+      .overlay-text {
+        position: relative;
+        z-index: 2;
+        max-width: 50%;
+        padding: calc(var(--nav-h) + 60px) var(--pad) 60px var(--pad);
+      }
+
+      /* ─── TYPOGRAPHY ─── */
+      .page-title {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: clamp(22px, 2.4vw, 34px);
+        color: var(--green);
+        line-height: 1.2;
+        letter-spacing: -0.3px;
+        margin-bottom: 32px;
+      }
+
+      .body-text p {
+        font-family: 'Neue Machina', sans-serif;
+        font-weight: 300;
+        font-size: 21px;
+        line-height: 1.8;
+        letter-spacing: 0.2px;
+        color: rgba(255, 255, 255, 0.85);
+        margin-bottom: 22px;
+      }
+      .body-text p:last-child {
+        margin-bottom: 0;
+      }
+
+      /* ─── GARDEN ENTRIES ─── */
+      .garden-entries {
+        margin-top: 28px;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+      .garden-entry {
+        border-left: 2px solid rgba(73, 220, 164, 0.35);
+        padding-left: 20px;
+      }
+      .garden-name {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: 16px;
+        color: var(--green);
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+      }
+      .garden-desc {
+        font-family: 'Neue Machina', sans-serif;
+        font-weight: 300;
+        font-size: 18px;
+        line-height: 1.75;
+        color: rgba(255, 255, 255, 0.8);
+      }
+
+      /* ─── CAPTION ─── */
+      .caption {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 17px;
+        line-height: 1.6;
+        letter-spacing: 0.5px;
+        color: rgba(255, 255, 255, 0.65);
+      }
+      .caption-below {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 17px;
+        line-height: 1.6;
+        letter-spacing: 0.5px;
+        color: var(--fg-dim);
+        padding-top: 14px;
+      }
+
+      /* ─── CAPTION OVERLAYS ─── */
+      .caption-overlay {
+        position: absolute;
+        padding: 14px 16px;
+        background: rgba(0, 0, 0, 0.35);
+        max-width: 340px;
+      }
+      .caption-br {
+        bottom: 24px;
+        right: 24px;
+        text-align: right;
+      }
+      .caption-bl {
+        bottom: 24px;
+        left: 24px;
+        text-align: left;
+      }
+      .caption-tl {
+        top: calc(var(--nav-h) + 24px);
+        left: 24px;
+        text-align: left;
+      }
+      .layout-full .caption-overlay {
+        z-index: 2;
+      }
+
+      /* ─── OVERLAY ELEMENTS (full layouts) ─── */
+      .overlay-title-top {
+        position: absolute;
+        top: calc(var(--nav-h) + 80px);
+        left: var(--pad);
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: clamp(22px, 2.4vw, 34px);
+        color: var(--green);
+        line-height: 1.2;
+        letter-spacing: -0.3px;
+        z-index: 2;
+        max-width: 600px;
+      }
+      .overlay-caption-body {
+        position: absolute;
+        top: calc(var(--nav-h) + 160px);
+        left: var(--pad);
+        z-index: 2;
+        max-width: 520px;
+        font-family: 'Neue Machina', sans-serif;
+        font-weight: 300;
+        font-size: 18px;
+        line-height: 1.75;
+        color: rgba(255, 255, 255, 0.8);
+      }
+      .overlay-center-bottom {
+        position: absolute;
+        bottom: 120px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 2;
+        text-align: center;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: clamp(16px, 1.8vw, 24px);
+        font-weight: 500;
+        color: var(--fg);
+        letter-spacing: 0.5px;
+        width: 80%;
+      }
+      .overlay-bottom-left-title {
+        position: absolute;
+        bottom: 120px;
+        left: var(--pad);
+        z-index: 2;
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: clamp(18px, 2vw, 28px);
+        color: var(--green);
+        line-height: 1.2;
+        letter-spacing: -0.3px;
+        max-width: 600px;
+      }
+
+      /* ─── LAYOUT: IMAGE + CAPTION BELOW ─── */
+      .layout-img-caption {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+      .img-cap-image {
+        position: relative;
+        flex: 1;
+        min-height: var(--ar-img-caption-image-min-height);
+        overflow: hidden;
+      }
+      .img-cap-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        display: block;
+      }
+      .img-cap-text {
+        padding: var(--ar-img-caption-text-padding);
+        background: var(--bg);
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .img-cap-title {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: clamp(18px, 2vw, 28px);
+        color: var(--green);
+        line-height: 1.2;
+        margin-bottom: 18px;
+      }
+      .img-cap-body {
+        font-family: 'Neue Machina', sans-serif;
+        font-weight: 300;
+        font-size: 19px;
+        line-height: 1.75;
+        color: rgba(255, 255, 255, 0.8);
+      }
+
+      /* ─── H-PADDED image column (User Experience sections) ─── */
+      .image-col.h-padded {
+        overflow: visible;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        padding: calc(var(--nav-h) + 48px) 48px 48px;
+      }
+      .image-col.h-padded img {
+        max-height: 85vh;
+        width: auto;
+        max-width: 100%;
+        object-fit: contain;
+        display: block;
+      }
+      .img-caption {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 17px;
+        line-height: 1.6;
+        letter-spacing: 0.5px;
+        color: var(--fg-dim);
+        text-align: center;
+        max-width: 900px;
+      }
+
+      /* ─── SUB-TITLE ─── */
+      .sub-title {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: 16px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--green);
+        margin-top: 40px;
+        margin-bottom: 14px;
+      }
+      .sub-title:first-child {
+        margin-top: 0;
+      }
+
+      /* ─── READING LAYOUT ─── */
+      .layout-reading {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: calc(var(--nav-h) + 80px) var(--pad) 80px;
+      }
+      .layout-reading .reading-inner {
+        max-width: 1100px;
+        margin: 0 auto;
+        width: 100%;
+      }
+
+      /* ─── TESTIMONIALS GRID ─── */
+      .testimonials-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 48px 64px;
+        margin-top: 48px;
+      }
+      .testimonial-name {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: 16px;
+        letter-spacing: 0.5px;
+        color: var(--green);
+        margin-bottom: 14px;
+        line-height: 1.4;
+      }
+      .testimonial .body-text p {
+        font-size: 19px;
+      }
+
+      /* ─── STYLED LIST (green dash bullets, body text size) ─── */
+      .styled-list {
+        margin-top: 8px;
+        padding-left: 0;
+        list-style: none;
+      }
+      .styled-list li {
+        font-family: 'Neue Machina', sans-serif;
+        font-weight: 300;
+        font-size: 21px;
+        line-height: 1.75;
+        color: rgba(255, 255, 255, 0.85);
+        padding-left: 28px;
+        position: relative;
+        margin-bottom: 10px;
+      }
+      .styled-list li::before {
+        content: '—';
+        position: absolute;
+        left: 0;
+        color: var(--green);
+        font-weight: 700;
+      }
+      .label {
+        font-family: 'Neue Machina', sans-serif;
+        font-weight: 400;
+        font-size: 21px;
+        line-height: 1.75;
+        color: rgba(255, 255, 255, 0.85);
+        margin-top: 24px;
+        margin-bottom: 4px;
+        display: block;
+      }
+
+      @media (min-width: 1141px) and (max-width: 1512px),
+        (min-width: 1141px) and (max-height: 860px) {
+        :root {
+          --ar-page-gap: 30px;
+        }
+
+        #page-52 + #page-53,
+        #page-53 + #page-54,
+        #page-54 + #page-55,
+        #page-60 + #page-61,
+        #page-100 + #page-101,
+        #page-101 + #page-102,
+        #page-102 + #page-103,
+        #page-103 + #page-104,
+        #page-104 + #page-105,
+        #page-105 + #page-106,
+        #page-106 + #page-107,
+        #page-107 + #page-108,
+        #page-108 + #page-109,
+        #page-109 + #page-110,
+        #page-110 + #page-111 {
+          margin-top: 60px;
+        }
+
+        #page-48,
+        #page-49,
+        #page-50,
+        #video-spolia-phone,
+        #page-51,
+        #page-56,
+        #video-roses,
+        #page-57,
+        #page-60,
+        #page-61,
+        #page-62,
+        #page-63,
+        #page-92,
+        #page-93,
+        #page-94,
+        #page-95,
+        #page-96,
+        #page-97,
+        #page-98,
+        #page-99 {
+          min-height: auto;
+          overflow: visible;
+        }
+
+        #page-48 .text-side,
+        #page-50 .text-side,
+        #page-55 .text-side,
+        #page-56 .text-side,
+        #page-92 .text-side,
+        #page-93 .text-side,
+        #page-94 .text-side,
+        #page-95 .text-side,
+        #page-97 .text-side,
+        #page-98 .text-side,
+        #page-99 .text-side {
+          padding-top: calc(var(--nav-h) + 36px);
+          padding-bottom: 36px;
+        }
+
+        #page-49.layout-center-w,
+        #page-51.layout-center-h,
+        #page-57.layout-center-w {
+          padding-top: calc(var(--nav-h) + 28px);
+          padding-bottom: 36px;
+        }
+
+        #video-spolia-phone.layout-local-video,
+        #video-roses.layout-local-video {
+          padding-top: calc(var(--nav-h) + 28px);
+          padding-bottom: 36px;
+        }
+
+        #video-roses.layout-local-video {
+          min-height: 100vh;
+          padding: calc(var(--nav-h) + 20px) var(--pad) 20px;
+        }
+
+        #video-roses video {
+          height: 90vh;
+          width: auto;
+          max-width: 100%;
+          object-fit: contain;
+          object-position: center;
+        }
+
+        #page-61.layout-img-caption,
+        #page-62.layout-img-caption,
+        #page-63.layout-img-caption {
+          min-height: auto;
+          overflow: visible;
+        }
+
+        #page-61 .img-cap-image,
+        #page-62 .img-cap-image,
+        #page-63 .img-cap-image {
+          flex: none;
+          min-height: 0;
+          max-height: calc(100vh - var(--nav-h) - 76px);
+        }
+
+        #page-61 .img-cap-image img,
+        #page-62 .img-cap-image img,
+        #page-63 .img-cap-image img {
+          height: auto;
+          object-fit: contain;
+        }
+
+        #page-61 .img-cap-text,
+        #page-62 .img-cap-text,
+        #page-63 .img-cap-text {
+          padding: 8px var(--pad) 18px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ═══════════════ TOP NAV ═══════════════ -->
+    <nav class="top-nav">
+      <a class="nav-brand" href="index.html?skipIntro=1">
+        <span class="nav-brand-spolia">Spolia</span>
+        <span class="nav-brand-botanique">botanique</span>
+      </a>
+      <div class="nav-links">
+        <a class="nav-link" href="about.html" data-i18n="nav.about">About</a>
+        <a class="nav-link" href="ultraviolet-city.html"
+           data-i18n="nav.ultraviolet-city">The Ultraviolet City</a
+        >
+        <a class="nav-link" href="immersive-sketching.html"
+           data-i18n="nav.immersive-sketching">Immersive Sketching</a
+        >
+        <a class="nav-link" href="holo-botanics.html" data-i18n="nav.holo-botanics">Holo Botanics</a>
+        <a class="nav-link active" href="ar-apps.html" data-i18n="nav.ar-apps">AR Apps</a>
+        <a class="nav-link" href="contact.html" data-i18n="nav.contact">Contact</a>
+      </div>
+      <div class="nav-controls">
+        <button class="nav-ctrl-btn nav-lang-btn" id="gc-lang" title="Switch to French" aria-label="Switch to French">EN</button>
+        <button class="nav-ctrl-btn" id="gc-snd" title="Sound">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"
+            />
+          </svg>
+        </button>
+        <button class="nav-ctrl-btn" id="gc-fs" title="Fullscreen">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"
+            />
+          </svg>
+        </button>
+      </div>
+    </nav>
+
+    <!-- ═══ PAGE 47 — Full screen cover ═══ -->
+    <section class="page layout-full" id="page-47">
+      <video
+        class="bg-image"
+        src="videos/bee04.mp4"
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="auto"
+        webkit-playsinline
+      ></video>
+      <div class="overlay"></div>
+      <div class="blinds"></div>
+      <div class="section-title fade-in delay-1" data-i18n="page-47.section-title-1">AR Apps</div>
+      <div class="section-subtitle fade-in delay-2" data-i18n="page-47.section-subtitle-1">
+        Festum Virtual · Spolia botanique<br />
+        Floral Tracer
+      </div>
+      <img class="scroll-arrow" src="images/chevron.png" alt="" />
+    </section>
+
+    <!-- ═══ YOUTUBE VIDEO ═══ -->
+    <section class="page layout-videos" id="youtube-video">
+      <div class="videos-grid">
+        <div class="video-block">
+          <div class="videos-intro">
+            <div class="section-title-lg" data-i18n="youtube-video.section-title-lg-1">Presentation of<br>the 3 AR apps</div>
+            <div class="body-text" data-i18n="youtube-video.body-text-1">
+              <p>
+                For the best viewing experience, please select the highest
+                available quality in the settings menu at the top right of the
+                video player.
+              </p>
+            </div>
+          </div>
+          <div class="video-container">
+            <iframe
+              id="video-apps"
+              src="https://www.youtube.com/embed/Je4fSZnnFDM?fs=1&modestbranding=1"
+              allowfullscreen=""
+              loading="eager"
+            ></iframe>
+          </div>
+        </div>
+      </div>
+      <div class="video-quality-note" data-i18n="youtube-video.video-quality-note-1">
+        <p>
+          Click the icon on the top right corner of the video to watch in 4K
+          high quality
+        </p>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 48 — Right image ═══ -->
+    <section class="page layout-right" id="page-48">
+      <div class="text-side">
+        <h2 class="page-title" data-i18n="page-48.page-title-1">Festum Virtual</h2>
+        <div class="body-text" data-i18n="page-48.body-text-1">
+          <p>
+            Festum Virtual enables the immersive exploration of digitized
+            gardens in augmented reality. Users can navigate the
+            three-dimensional botanical archive, experiencing the festival
+            gardens as both spatial and temporal records.
+          </p>
+        </div>
+      </div>
+      <div class="image-col h-80">
+        <img src="images/51.jpg" alt="Festum Virtual" />
+        <div class="blinds"></div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 49 — Center width (90vw) ═══ -->
+    <section class="page layout-center-w" id="page-49">
+      <div class="center-block">
+        <img src="images/52.jpg" alt="Festum Virtual screenshots" />
+        <div class="caption-below caption" data-i18n="page-49.caption-below-1">
+          Screenshots from the app: the scan list, the AR and 3D views.
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 50 — Right image ═══ -->
+    <section class="page layout-right" id="page-50">
+      <div class="text-side">
+        <h2 class="page-title" data-i18n="page-50.page-title-1">Spolia Botanique</h2>
+        <div class="body-text" data-i18n="page-50.body-text-1">
+          <p>
+            Spolia Botanique offers immersive experiences within virtual
+            gardens. These environments are created through the recycling and
+            recomposition of gardens that we have previously digitized. To
+            animate them, we integrated animal life and sound recordings
+            captured in forest environments. Hummingbirds move through the air,
+            while large butterflies rest upon the flowers. The application
+            presents three distinct gardens:
+          </p>
+        </div>
+        <div class="garden-entries">
+          <div class="garden-entry">
+            <div class="garden-name" data-i18n="page-50.garden-name-1">The Dream of Echinacea</div>
+            <div class="garden-desc" data-i18n="page-50.garden-desc-1">
+              Provides an atmospheric augmentation of the immediate environment.
+              One walks through drifting particles of flowers suspended in the
+              air. This garden does not replace the surrounding physical space,
+              but introduces a volumetric enrichment.
+            </div>
+          </div>
+          <div class="garden-entry">
+            <div class="garden-name" data-i18n="page-50.garden-name-2">The Botanist's Gate</div>
+            <div class="garden-desc" data-i18n="page-50.garden-desc-2">
+              Merges the physical environment with an imaginary architecture. It
+              invites the exploration of virtual ruins where diverse flowers
+              have found refuge and a renewed form of existence.
+            </div>
+          </div>
+          <div class="garden-entry">
+            <div class="garden-name" data-i18n="page-50.garden-name-3">The Dahlia Forest</div>
+            <div class="garden-desc" data-i18n="page-50.garden-desc-3">
+              Transports the user into a dense and elevated virtual forest.
+              Here, the physical surroundings are replaced by an immersive
+              botanical dream of abundant vegetation.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="image-col h-80">
+        <img src="images/53.jpg" alt="Spolia Botanique" />
+        <div class="blinds"></div>
+      </div>
+    </section>
+
+    <!-- ═══ VIDEO — Spolia Phone ═══ -->
+    <section class="page layout-local-video" id="video-spolia-phone">
+      <video autoplay muted loop playsinline preload="auto" webkit-playsinline>
+        <source src="videos/spolia-phone01.mp4" type="video/mp4" />
+      </video>
+    </section>
+
+    <!-- ═══ PAGE 51 — Center height (70vh) ═══ -->
+    <section class="page layout-center-h" id="page-51">
+      <div class="center-block">
+        <img src="images/54.jpg" alt="Three immersive gardens" />
+        <div class="caption-below caption" data-i18n="page-51.caption-below-1">Three immersive gardens</div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 52 — Full screen ═══ -->
+    <section class="page layout-full" id="page-52">
+      <img class="bg-image" src="images/55.jpg" alt="The Echinacea Garden" />
+      <div class="overlay"></div>
+      <div class="blinds"></div>
+      <div class="caption caption-overlay caption-br" data-i18n="page-52.caption-1">The Echinacea Garden</div>
+    </section>
+
+    <!-- ═══ PAGE 53 — Full screen ═══ -->
+    <section class="page layout-full" id="page-53">
+      <img class="bg-image" src="images/56.jpg" alt="The Botanist's Gate" />
+      <div class="overlay"></div>
+      <div class="blinds"></div>
+      <div class="caption caption-overlay caption-br" data-i18n="page-53.caption-1">The Botanist's Gate</div>
+    </section>
+
+    <!-- ═══ PAGE 54 — Full screen ═══ -->
+    <section class="page layout-full" id="page-54">
+      <img class="bg-image" src="images/57.jpg" alt="The Dahlia Forest" />
+      <div class="overlay"></div>
+      <div class="blinds"></div>
+      <div class="caption caption-overlay caption-br" data-i18n="page-54.caption-1">The Dahlia Forest</div>
+    </section>
+
+    <!-- ═══ PAGE 55 — Right image ═══ -->
+    <section class="page layout-right" id="page-55">
+      <div class="text-side">
+        <h2 class="page-title" data-i18n="page-55.page-title-1">Floral Tracer</h2>
+        <div class="body-text" data-i18n="page-55.body-text-1">
+          <p>
+            Floral Tracer is an experimental tool for immersive design that
+            translates bodily movement into virtual gardens. Imagine your body
+            as a brush painting petunias, and space as a botanical canvas: your
+            surroundings are transformed into a living vegetal dream.
+          </p>
+          <p>
+            Beyond its role as a professional design tool, the application
+            offers a distinctive artistic experience accessible to all. Within
+            this environment, participants are invited to perceive architecture
+            through the movements it generates and to consider themselves as a
+            vital source of vegetal life.
+          </p>
+          <p>
+            Join this experience of virtual botany and explore the relationship
+            between the human body and hybrid spaces in which image and
+            intelligence are spatialized.
+          </p>
+        </div>
+      </div>
+      <div class="image-col h-80">
+        <img src="images/58.jpg" alt="Floral Tracer" />
+        <div class="blinds"></div>
+      </div>
+    </section>
+
+    <!-- ═══ VIDEO — Roses ═══ -->
+    <section class="page layout-local-video" id="video-roses">
+      <video autoplay muted loop playsinline preload="auto" webkit-playsinline>
+        <source src="videos/rosesx.mp4" type="video/mp4" />
+      </video>
+    </section>
+
+    <!-- ═══ PAGE 56 — Right image (full height) ═══ -->
+    <section class="page layout-right" id="page-56">
+      <div class="text-side">
+        <div class="body-text" data-i18n="page-56.body-text-1">
+          <p>
+            Users of the application can populate the streets around them with
+            fantastical gardens. They have access to a series of base
+            compositions created by students, derived from the digitizations
+            conducted at the Garden Festival of Chaumont-sur-Loire. These
+            festival gardens, virtually recycled by Comet Lab and reworked by
+            architecture students, can in turn be reappropriated and recomposed
+            by anyone wishing to construct a botanical utopia within their own
+            city. In this way, we extend our principle of botanical spolia: the
+            reuse of vegetal resources at a planetary scale.
+          </p>
+
+          <p>
+            Once a street has been transformed into a botanical utopia, the user
+            can capture an image of their creation, which is then automatically
+            uploaded to the application. Over time, these images form a map that
+            reveals the progressive construction of a virtual botanical fabric
+            spreading across cities worldwide. One might thus witness the
+            emergence of the suspended gardens of Paris along Rue de Rivoli,
+            those of Venice in Piazza San Marco, or those of Tokyo at Shibuya
+            Crossing.
+          </p>
+
+          <p>
+            Accessible to all, this map becomes the interface for a new form of
+            social exchange mediated through the vegetal imaginaries of urban
+            space. Tracing a virtual botanosphere across global cities, it
+            reveals a chlorophyll-infused vision of the city: one that is more
+            inclusive, more egalitarian, and more holistic in its understanding
+            of the relationship between urban life and nature.
+          </p>
+        </div>
+      </div>
+      <div class="image-col">
+        <img src="images/59.jpg" alt="Floral Tracer in the city" />
+        <div class="blinds"></div>
+        <div class="caption caption-overlay caption-br" data-i18n="page-56.caption-1">
+          <em>Dahlia pinnata</em> Scan no. s013, Étables, Domaine de
+          Chaumont-sur-Loire
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 57 — Center width (90vw) ═══ -->
+    <section class="page layout-center-w" id="page-57">
+      <div class="center-block">
+        <img src="images/60.jpg" alt="Compositions in progress" />
+        <div class="caption-below caption" data-i18n="page-57.caption-below-1">
+          Screenshots of compositions in progress
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 60 ═══ -->
+    <section class="page layout-img-caption" id="page-60">
+      <div class="img-cap-text fade-in">
+        <h3 class="img-cap-title" data-i18n="page-60.img-cap-title-1">Experiment with Apple Vision Pro</h3>
+        <p class="img-cap-body" data-i18n="page-60.img-cap-body-1">
+          As the applications are developed using Apple's ecosystem, they are
+          fully compatible with the company's mixed reality headset, scheduled
+          for release in France in 2024.
+        </p>
+      </div>
+      <div class="img-cap-image">
+        <img src="images/63.jpg" alt="Apple Vision Pro" />
+        <div class="blinds"></div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 61 ═══ -->
+    <section class="page layout-img-caption" id="page-61">
+      <div class="img-cap-image">
+        <img src="images/64.jpg" alt="Holographic gardens" />
+        <div class="blinds"></div>
+      </div>
+      <div class="img-cap-text fade-in">
+        <p class="img-cap-body" data-i18n="page-61.img-cap-body-1">
+          Invoke holographic gardens within your own space.
+        </p>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 62 ═══ -->
+    <section class="page layout-img-caption" id="page-62">
+      <div class="img-cap-image">
+        <img src="images/65.jpg" alt="Holographic gardens" />
+        <div class="blinds"></div>
+      </div>
+      <div class="img-cap-text fade-in">
+        <p class="img-cap-body" data-i18n="page-62.img-cap-body-1">
+          Invoke holographic gardens within your own space.
+        </p>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 63 ═══ -->
+    <section class="page layout-img-caption" id="page-63">
+      <div class="img-cap-image">
+        <img src="images/66.ong.jpg" alt="Dream of Echinacea" />
+        <div class="blinds"></div>
+      </div>
+      <div class="img-cap-text fade-in">
+        <div class="caption" data-i18n="page-63.caption-1">
+          The Dream of Echinacea in Your Living Room: An Atmospheric
+          Augmentation
+        </div>
+      </div>
+    </section>
+
+    <section class="page layout-full" id="page-100">
+      <img class="bg-image" src="images/103.jpg" alt="User Experience" />
+      <div class="blinds"></div>
+      <div class="section-title fade-in delay-1" data-i18n="page-100.section-title-1">User Experience</div>
+    </section>
+
+    <!-- ═══ PAGE 101 — Left image, intro ═══ -->
+    <section class="page layout-left" id="page-101">
+      <div class="image-col h-padded">
+        <img src="images/104.jpg" alt="Student placing virtual flower" />
+        <div class="img-caption" data-i18n="page-101.img-caption-1">
+          Screenshot of a student who has placed a virtual flower in front of a
+          group of students observing other flowers on the tablet, thereby
+          creating and merging fragmentary spaces.
+        </div>
+      </div>
+      <div class="text-side">
+        <div class="body-text" data-i18n="page-101.body-text-1">
+          <p>
+            We conducted our user experience study with a group of 14 Master's
+            students from ENSA Paris-Belleville on March 18 and June 10, 2024.
+            This cohort, aged 21 to 24, provided a balanced representation of
+            both men and women.
+          </p>
+
+          <p>
+            The primary objective of the experiment was to explore the potential
+            of "immersive design" for architecture students and to evaluate the
+            effectiveness of our application, Floral Tracer, in facilitating
+            this experience. We sought to determine if our tool could tangibly
+            improve and enrich their creative workflows.
+          </p>
+
+          <p>
+            While our focus remained primarily on Floral Tracer, the two
+            additional applications, Spolia Botanique and Festum Virtual, were
+            also evaluated. This allowed us to measure the students' mental and
+            physical adaptation to augmented environments in which physical and
+            virtual spaces merge into a singular experience.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 102 — Right image, User Involvement ═══ -->
+    <section class="page layout-right" id="page-102">
+      <div class="text-side">
+        <h2 class="page-title" data-i18n="page-102.page-title-1">User Involvement</h2>
+        <div class="body-text" data-i18n="page-102.body-text-1">
+          <p>
+            The students were fully engaged from the outset, demonstrating a
+            high level of involvement and a rapid capture of their attention.
+            The interfaces of all three applications proved effective and
+            intuitive, allowing for seamless navigation between different views.
+            Furthermore, the instructions provided at the start of each session
+            facilitated a smooth experimental flow that required no external
+            intervention.
+          </p>
+
+          <p>
+            They perceived the hybrid design environment—woven by the
+            application between physical and virtual realms—as a natural setting
+            that encouraged exploration and curiosity. For the majority of
+            students, the fusion of these spaces felt entirely intuitive,
+            reaching a degree of fluid integration that exceeded our
+            expectations. Previously, we had conducted tests with participants
+            over the age of 50, where the tendency was to perceive the augmented
+            environment on the screen as a traditional, flat image. For that
+            demographic, it was often difficult to interpret the screen as a
+            window into a three-dimensional place; they remained relatively
+            static and required a significantly longer adaptation period.
+          </p>
+
+          <p>
+            In contrast, the students expressed that the virtual gardens were
+            perceived as tangible and physical entities, comparable to real
+            botanical environments. They would occasionally stop abruptly to
+            avoid stepping on a virtual flower or colliding with a virtual tree,
+            even while sometimes bumping into physical furniture in their
+            pursuit of a specific digital composition. For these users, the
+            environments were lived and experienced as authentically real.
+          </p>
+        </div>
+      </div>
+      <div class="image-col h-padded">
+        <img src="images/105.jpg" alt="Students creating virtual gardens" />
+        <div class="img-caption" data-i18n="page-102.img-caption-1">
+          Students creating virtual gardens in the classroom
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 103 — Left image, Technical Performance ═══ -->
+    <section class="page layout-left" id="page-103">
+      <div class="image-col h-padded">
+        <img src="images/106.jpg" alt="Student creating a coneflower garden" />
+        <div class="img-caption" data-i18n="page-103.img-caption-1">
+          A student creating a coneflower garden around the tables in Floral
+          Tracer.
+        </div>
+      </div>
+      <div class="text-side">
+        <h2 class="page-title" data-i18n="page-103.page-title-1">Technical Performance</h2>
+        <div class="body-text" data-i18n="page-103.body-text-1">
+          <p>
+            The applications performed reliably, operating without bugs or
+            technical malfunctions throughout the study. To maintain peak
+            performance, we intentionally omitted certain advanced features,
+            such as occlusion. Currently, the application overlays 3D models on
+            the camera feed without allowing physical elements, like a hand or
+            foot, to appear in front of the digital objects. This limitation
+            slightly reduces the immersive impact; for instance, one student
+            noted that while walking over virtual plants, he could not see his
+            feet on the virtual ground. While this feature could be integrated,
+            it would require further optimization of the models to maintain
+            stability.
+          </p>
+          <p>
+            The experiment took place in a standard classroom, where the
+            applications demonstrated a sophisticated ability to recognize and
+            map the physical environment. The virtual garden models were
+            integrated into the space with high precision. We encountered no
+            "model drift," a common issue in augmented reality caused by poor
+            environmental detection. Instead, the applications provided
+            consistent scene recognition, ensuring an intuitive and continuous
+            design experience for every participant.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 104 — Right image, Impact on the Design Process ═══ -->
+    <section class="page layout-right" id="page-104">
+      <div class="text-side">
+        <h2 class="page-title" data-i18n="page-104.page-title-1">Impact on the Design Process</h2>
+        <div class="body-text" data-i18n="page-104.body-text-1">
+          <p>
+            Each student naturally possesses their preferred tools; some favor
+            paper and pencil, while others lean toward design software.
+            Traditionally, these two groups are perceived as opposites in terms
+            of their approaches, styles, and underlying schools of thought.
+            However, while using our application, all students—regardless of
+            their prior preferences—remained fully engaged and at ease. They
+            reported that, much like with traditional sketching, their hands
+            were directly involved in the design process, but with the vital
+            advantage of creating directly within a three-dimensional
+            environment rather than being restricted to two-dimensional
+            representation.
+          </p>
+
+          <p>
+            The ability to generate 3D environments at their fingertips through
+            various bodily gestures was crucial to the application's appeal
+            across this diverse cohort. Participants indicated that this
+            approach allowed them to transcend the conventional opposition
+            between digital enthusiasts and proponents of classical methods.
+            When the virtual image becomes spatialized and tangible, the
+            application succeeds in merging the paradigms of artisanal and
+            digital design: reconciling the hand and the pixel, and establishing
+            a direct, manual relationship with the virtual universe.
+          </p>
+        </div>
+      </div>
+      <div class="image-col h-padded">
+        <img src="images/107.jpg" alt="Student drawing a floral tower" />
+        <div class="img-caption" data-i18n="page-104.img-caption-1">
+          A student drawing a floral tower with his gestures<br>and the resulting
+          garden
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 105 — Left image, continuation ═══ -->
+    <section class="page layout-left" id="page-105">
+      <div class="image-col h-padded">
+        <img src="images/108.jpg" alt="Student body movement in design" />
+      </div>
+      <div class="text-side">
+        <div class="body-text" data-i18n="page-105.body-text-1">
+          <p>
+            A key factor in the students' interest lay in the application's
+            integration of bodily movement, which transformed a traditionally
+            passive design process into a playful, kinesthetic experience.
+            Instead of remaining seated at a desk—drawing on paper or a
+            screen—the students walked, stretched, leaned, and navigated the
+            classroom. This physical activity allowed them to develop an
+            increased awareness of their immediate surroundings, constantly
+            questioning its limits and potential. As their movements were
+            instantaneously converted into virtual gardens integrated into the
+            physical environment, they developed a perception of their body as
+            an active agent in the creation of space.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 106 — Right image, Innovative Aspects ═══ -->
+    <section class="page layout-right" id="page-106">
+      <div class="text-side">
+        <h2 class="page-title" data-i18n="page-106.page-title-1">Innovative Aspects</h2>
+        <div class="body-text" data-i18n="page-106.body-text-1">
+          <p>
+            The students quickly adapted to these hybrid environments and began
+            to produce designs that leverage the unique characteristics of
+            immersive design, distinguishing it from conventional 3D modeling on
+            a computer.
+          </p>
+
+          <p>
+            By creating their designs directly within the image captured by the
+            camera, the students utilized a canvas that was not the abstract,
+            blank surface of a page, but a site animated by people and events.
+            As a result, their creations showed a stronger connection with the
+            activities taking place in the classroom and with the subtle details
+            of the furniture and walls.
+          </p>
+
+          <p>
+            The students' creations were further distinguished by a specific
+            volumetric plasticity. The gardens were not designed and generated
+            in 2D, plan by plan; instead, they were the result of an
+            instantaneous, three-dimensional creativity. They occupied not only
+            the flat planes of the classroom, such as the floor and walls, but
+            also the full volume of the room. The air—situated between the walls
+            and often left as a white void on a traditional architectural
+            plan—became a place that could host a variety of shapes and colors.
+            It served as the direct medium of design rather than a
+            consequential, unconsidered space assumed to be empty. These gardens
+            were clearly not derived from plans and sections, but rather from
+            depth and height: from the thickness of the space and the spatial
+            paradigm that the image traversed.
+          </p>
+        </div>
+      </div>
+      <div class="image-col h-padded">
+        <img src="images/109.jpg" alt="A floral arch drawn by a student" />
+        <div class="img-caption" data-i18n="page-106.img-caption-1">
+          A floral arch drawn by a student around me while explaining the
+          exercise.
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 107 — Left image, continuation ═══ -->
+    <section class="page layout-left" id="page-107">
+      <div class="image-col h-padded">
+        <img src="images/110.jpg" alt="Belleville Hanging Gardens" />
+        <div class="img-caption" data-i18n="page-107.img-caption-1">Belleville Hanging Gardens</div>
+      </div>
+      <div class="text-side">
+        <div class="body-text" data-i18n="page-107.body-text-1">
+          <p>
+            The designs also demonstrated that the virtual space with which we
+            extend our physical reality does not necessarily have to be
+            Newtonian or Euclidean. It is a realm where traditional laws of
+            physics, such as gravity, can be entirely abandoned. In this way, a
+            fantastic and unusual reality becomes an integral part of daily life
+            in a tangible and interactive manner. The conventional perception of
+            space and time becomes fundamentally invalid, even within the most
+            mundane activities. The application proved that this new spatial
+            paradigm requires tools that prepare students for such a shift,
+            allowing them to design space in a more fluid and malleable manner.
+            By embracing this freedom, the designer moves beyond the rigid
+            constraints of the physical world toward a more speculative and
+            liberated architectural practice.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 108 — Right image, Educational Value ═══ -->
+    <section class="page layout-right" id="page-108">
+      <div class="text-side">
+        <h2 class="page-title" data-i18n="page-108.page-title-1">Educational Value</h2>
+        <div class="sub-title" data-i18n="page-108.sub-title-1">Discussion</div>
+        <div class="body-text" data-i18n="page-108.body-text-1">
+          <p>
+            Our user experience test demonstrated that the application is more
+            than a design aid; it serves as a catalyst for creative debate
+            regarding architecture in the era of the climate crisis and
+            artificial intelligence. Ultimately, the experiment prompted
+            students to question fundamental aspects of architectural education
+            and the design process. While proving their potential as generative
+            tools, our applications enabled students to rethink architecture in
+            relation to technology and nature. They were encouraged to
+            reconsider the role of the body and the senses in space, moving
+            beyond traditional oppositions such as virtual versus physical,
+            nature versus technology, or body versus architecture.
+          </p>
+
+          <p>
+            The final discussion addressed a wide range of topics related to
+            architectural design, including sensory and chromatic approaches,
+            plant philosophies, new materialism, and "digital crafts." Students
+            also examined the various design processes and teaching methods
+            practiced in schools across France and abroad, enriching the debate
+            with their international experiences and knowledge of diverse art,
+            design, and fashion institutions. Ultimately, the experiment
+            fostered an interdisciplinary and collaborative dialogue on the
+            future of contemporary architecture.
+          </p>
+        </div>
+      </div>
+      <div class="image-col h-padded">
+        <img src="images/111.jpg" alt="Educational Value" />
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 109 — Left image, Experimental Approaches ═══ -->
+    <section class="page layout-left" id="page-109">
+      <div class="image-col h-padded">
+        <img
+          src="images/112.jpg"
+          alt="A student exploring an immersive forest"
+        />
+        <div class="img-caption" data-i18n="page-109.img-caption-1">A student exploring an immersive forest</div>
+      </div>
+      <div class="text-side">
+        <div class="sub-title" data-i18n="page-109.sub-title-1">Experimental Approaches</div>
+        <div class="body-text" data-i18n="page-109.body-text-1">
+          <p>
+            The students had not previously encountered the concept of
+            "immersive design" or experienced such a methodology. The
+            applications we proposed were fundamentally distinct from any tools
+            they had utilized during their studies at ENSA Paris-Belleville.
+            Consequently, the experiment had an emancipatory and inspiring
+            effect on the participants. They expressed that the application
+            offered a new creative perspective for perceiving architectural
+            space and the human body, inviting them to imagine novel
+            compositions and sensations within the discipline.
+          </p>
+
+          <p>
+            Beyond the specific immersive design process we proposed, the
+            experience encouraged them to develop more personalized methods and
+            to reappropriate conventional design tools in experimental ways.
+            This shift empowered them to cultivate more innovative architectural
+            projects that challenge standard practices.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 110 — Right image, Kinesthetic Design & Model Export ═══ -->
+    <section class="page layout-right" id="page-110">
+      <div class="text-side">
+        <div class="sub-title" data-i18n="page-110.sub-title-1">Kinesthetic Design</div>
+        <div class="body-text" data-i18n="page-110.body-text-1">
+          <p>
+            The students demonstrated a profound interest in this active,
+            kinesthetic design process. We are observing a growing trend among
+            our students toward practices involving manual labor and direct
+            human interaction, such as the artisanal traditions of carpentry and
+            masonry. This interest extends to creative environments like
+            studios, construction sites, workshops, and fablabs; our application
+            appeared to directly address these evolving needs.
+          </p>
+        </div>
+
+        <div class="sub-title" data-i18n="page-110.sub-title-2">Model Export</div>
+
+        <div class="body-text" data-i18n="page-110.body-text-2">
+          <p>
+            The students also inquired about the possibility of exporting their
+            models to a computer for further refinement. This functionality is
+            already integrated into the application, and the participants found
+            it highly advantageous to incorporate this innovative tool into more
+            conventional architectural workflows.
+          </p>
+        </div>
+      </div>
+      <div class="image-col h-padded">
+        <img src="images/113.jpg" alt="Kinesthetic design process" />
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 111 — Student Feedback ═══ -->
+    <section class="page layout-reading" id="page-111">
+      <div class="reading-inner">
+        <h2 class="page-title" data-i18n="page-111.page-title-1">Student Feedback</h2>
+        <div class="body-text" data-i18n="page-111.body-text-1">
+          <p>
+            We observed varying levels of immersion, distinct degrees of
+            adaptation, and unique expectations shaped by the tools each student
+            had already mastered, as well as the specific subjects they
+            prioritize in their work. The feedback revealed that the application
+            interacted dynamically with these diverse methods while offering
+            fresh opportunities to question fundamental aspects of architectural
+            design.
+          </p>
+        </div>
+
+        <div class="sub-title" style="margin-top: 48px" data-i18n="page-111.sub-title-1">
+          Individual Perspectives
+        </div>
+
+        <div class="testimonials-grid">
+          <div class="testimonial fade-in">
+            <div class="testimonial-name">Jérémie Bourbon — Master 1</div>
+            <div class="body-text" data-i18n="page-111.body-text-2">
+              <p>
+                Working on floral patterns in Neapolitan earthenware, Jérémie
+                realized that the flowers are consistently positioned at the
+                same angle, parallel to the ground, regardless of the angle at
+                which the phone is held. He noted that rotating the flowers in
+                accordance with hand movement could significantly increase
+                immersion. However, he also observed that Floral Tracer
+                fundamentally alters the design process, allowing for a deeper
+                interrogation of scale, the body, perception, material, and
+                color.
+              </p>
+            </div>
+          </div>
+          <div class="testimonial fade-in delay-1">
+            <div class="testimonial-name">Doriann Delaive — Master 1</div>
+            <div class="body-text" data-i18n="page-111.body-text-3">
+              <p>
+                Working on innovative forms of urbanism in the suburbs of Seoul,
+                Doriann adopted the application with remarkable speed and began
+                drawing gardens almost immediately. He remarked several times
+                that the virtual gardens appeared so "present" that he almost
+                tripped over a virtual stone or altered his path to avoid one.
+                He also highlighted the positive impact of the app on the
+                heightened perception of space and materials.
+              </p>
+            </div>
+          </div>
+          <div class="testimonial fade-in">
+            <div class="testimonial-name">Julie Zyka — Master 1</div>
+            <div class="body-text" data-i18n="page-111.body-text-4">
+              <p>
+                Working on sensory experiences in Stockholm, Julie expressed a
+                slight lack of immersion and realism regarding the ground plane.
+                Focusing on "promenades" in her research, she reported that the
+                virtual ground is not visualized under the user’s feet, but
+                rather appears layered on top of them. Despite this, she
+                appreciated how the tool allows for a radical reconsideration of
+                the interactions between the body and space, and how material
+                and color influence sensory perception.
+              </p>
+            </div>
+          </div>
+          <div class="testimonial fade-in delay-1">
+            <div class="testimonial-name">Mathilde Grillon — Master 1</div>
+            <div class="body-text" data-i18n="page-111.body-text-5">
+              <p>
+                Working on precarious Indian habitats, Mathilde required
+                additional time to accept the screen image as a
+                three-dimensional environment. Unlike students who primarily
+                work on computers, Mathilde—who favors hand drawing—initially
+                needed more time to view the mobile phone as a window opening
+                onto a hybrid world, moving within the space rather than
+                observing it from a fixed position. Nevertheless, she recognized
+                that the application opens new perspectives regarding spatial
+                design and the nuanced understanding of scales and materials.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page layout-full" id="page-91">
+      <img class="bg-image" src="images/94.jpg" alt="Final Assessment" />
+      <div class="blinds"></div>
+      <div class="section-title fade-in delay-1" data-i18n="page-91.section-title-1">Final Assessment</div>
+    </section>
+
+    <!-- ═══ PAGE 92 — Right image ═══ -->
+    <section class="page layout-right" id="page-92">
+      <div class="text-side">
+        <h2 class="page-title" data-i18n="page-92.page-title-1">Evaluation of Objectives</h2>
+        <div class="body-text" data-i18n="page-92.body-text-1">
+          <p>
+            We successfully achieved all the objectives defined at the proposal
+            stage.
+          </p>
+        </div>
+        <div class="label" data-i18n="page-92.label-1">In terms of research, we examined:</div>
+        <ul class="styled-list" data-i18n="page-92.styled-list-1">
+          <li>
+            Diverse methods for integrating augmented reality into architectural
+            project methodologies and established design processes.
+          </li>
+          <li>
+            The inherent potentials and challenges associated with an immersive
+            approach.
+          </li>
+          <li>Distinct modes of spatial augmentation.</li>
+          <li>The resulting effects on spatial perception.</li>
+        </ul>
+        <div class="label" data-i18n="page-92.label-2">In terms of creation, we developed:</div>
+        <ul class="styled-list" data-i18n="page-92.styled-list-2">
+          <li>
+            An application serving as a digital extension of the Festival.
+          </li>
+          <li>A specialized botanical immersion application.</li>
+          <li>A playful, kinesthetic immersive design application.</li>
+        </ul>
+        <div class="label" data-i18n="page-92.label-3">We also produced:</div>
+        <ul class="styled-list" data-i18n="page-92.styled-list-3">
+          <li>An animation presenting the core project concept.</li>
+          <li>
+            An immersive animation designed as a standalone exhibition piece.
+          </li>
+        </ul>
+      </div>
+      <div class="image-col">
+        <img src="images/95.jpg" alt="Evaluation of Objectives" />
+        <div class="blinds"></div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 93 — Left image ═══ -->
+    <section class="page layout-left" id="page-93">
+      <div class="image-col">
+        <img src="images/96.jpg" alt="Analysis of Replicable Features" />
+        <div class="blinds"></div>
+      </div>
+      <div class="text-side">
+        <h2 class="page-title" data-i18n="page-93.page-title-1">Analysis of Replicable Features</h2>
+        <div class="body-text" data-i18n="page-93.body-text-1">
+          <p>We developed two application models within the project:</p>
+        </div>
+        <ul class="styled-list" data-i18n="page-93.styled-list-1">
+          <li>the immersive museum</li>
+          <li>the immersive design</li>
+        </ul>
+        <div class="body-text" style="margin-top: 24px" data-i18n="page-93.body-text-2">
+          <p>Both models rely on a shared set of basic components:</p>
+        </div>
+        <ul class="styled-list" data-i18n="page-93.styled-list-2">
+          <li>presentation screen</li>
+          <li>home page</li>
+          <li>about page</li>
+          <li>list view</li>
+          <li>detail view</li>
+        </ul>
+        <div class="body-text" style="margin-top: 24px" data-i18n="page-93.body-text-3">
+          <p>
+            These foundational elements are combined with different 3D
+            components to create two distinct augmented reality experiences,
+            opening up two complementary paths for replication.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 94 — Right image ═══ -->
+    <section class="page layout-right" id="page-94">
+      <div class="text-side">
+        <h2 class="page-title" data-i18n="page-94.page-title-1">Immersive Museum</h2>
+        <div class="body-text" data-i18n="page-94.body-text-1">
+          <p>
+            This model enables the exploration of places or objects through two
+            distinct modes: standard 3D and augmented reality. It provides a
+            versatile framework for both interactive 3D viewing and
+            context-aware AR visualization.
+          </p>
+          <p>
+            The system is particularly suited for the design of exhibitions,
+            immersive museums, or virtual archives for diverse 3D datasets.
+            Furthermore, it serves as a powerful research tool for scholars in
+            the digital humanities. For instance, a researcher studying the
+            remains of Pompeii could digitize artifacts in 3D rather than
+            relying on traditional photography, later examining them within an
+            immersive environment as if physically present.
+          </p>
+          <p>
+            Initially developed for the Festum Virtual application, this model
+            has already been successfully integrated into Spolia Botanique,
+            demonstrating its adaptability across different research and
+            creative contexts.
+          </p>
+        </div>
+      </div>
+      <div class="image-col">
+        <img src="images/97.jpg" alt="Immersive Museum" />
+        <div class="blinds"></div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 95 — Left image ═══ -->
+    <section class="page layout-left" id="page-95">
+      <div class="image-col">
+        <img src="images/98.jpg" alt="Immersive Design" />
+        <div class="blinds"></div>
+      </div>
+      <div class="text-side">
+        <h2 class="page-title" data-i18n="page-95.page-title-1">Immersive Design</h2>
+        <div class="body-text" data-i18n="page-95.body-text-1">
+          <p>
+            This model captures the precise position and orientation of the
+            mobile device, calculating these fluctuations to generate a virtual
+            trajectory onto which 3D objects are anchored.
+          </p>
+          <p>
+            By prioritizing the recording of bodily movement, this model serves
+            as a foundation for projects centered on gesture and motion. Its
+            applications extend across various disciplines, from dance and
+            experimental artistic practice to educational tools designed to
+            introduce complex topics to younger audiences through physical
+            engagement.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 96 — Text overlay (full screen) ═══ -->
+    <section class="page layout-text-overlay" id="page-96">
+      <img class="bg-image" src="images/99.jpg" alt="Key Success Factors" />
+      <div class="overlay"></div>
+      <div class="blinds"></div>
+      <div class="overlay-text">
+        <h2 class="page-title" data-i18n="page-96.page-title-1">Key Success Factors</h2>
+        <div class="body-text" data-i18n="page-96.body-text-1">
+          <p>
+            The three applications are intrinsically complementary, each
+            offering a distinct and transformative experience that distinguishes
+            them from existing market tools.
+          </p>
+          <p>
+            Their native compatibility with Apple Vision Pro provides a
+            significant competitive advantage, positioning the project at the
+            forefront of high-fidelity spatial computing.
+          </p>
+          <p>
+            Furthermore, the applications are unified within a coherent visual
+            universe, reinforced by two specialized animations designed for
+            broad dissemination across social media and immersive exhibition
+            contexts.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 97 — Right image ═══ -->
+    <section class="page layout-right" id="page-97">
+      <div class="text-side">
+        <h2 class="page-title" data-i18n="page-97.page-title-1">Barriers to Development</h2>
+        <div class="sub-title" data-i18n="page-97.sub-title-1">Link with Teaching</div>
+        <div class="body-text" data-i18n="page-97.body-text-1">
+          <p>
+            Initially, we intended to conduct experiments with student cohorts
+            over a full semester or through intensive workshops, as collective
+            engagement was essential to the project's methodology. Although ENSA
+            Paris-Belleville was a partner, administrative constraints made it
+            impossible to establish a formal course. Furthermore, the academic
+            year was significantly disrupted by student strikes.
+          </p>
+          <p>
+            In response to these challenges, we welcomed two architecture
+            students as interns. Their involvement allowed us to rigorously test
+            various methods, tools, and approaches within the realm of immersive
+            design. These experiences proved highly beneficial, contributing to
+            the technical refinement of the project while providing deep
+            insights into the opportunities and limitations of integrating
+            augmented reality into architectural practice.
+          </p>
+        </div>
+      </div>
+      <div class="image-col">
+        <img src="images/100.jpg" alt="Barriers to Development" />
+        <div class="blinds"></div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 98 — Left image ═══ -->
+    <section class="page layout-left" id="page-98">
+      <div class="image-col">
+        <img src="images/101.jpg" alt="Limitations in Development" />
+        <div class="blinds"></div>
+      </div>
+      <div class="text-side">
+        <h2 class="page-title" data-i18n="page-98.page-title-1">Limitations in Development</h2>
+        <div class="body-text" data-i18n="page-98.body-text-1">
+          <p>
+            While all initial objectives were successfully achieved, we had
+            originally envisioned a broader scope for the project. In
+            particular, we aimed to integrate a mapping interface within the
+            application to aggregate user-generated botanical transformations of
+            urban spaces—effectively creating a form of botanical communication
+            unfolding within augmented space. However, this feature could not be
+            implemented during this phase due to technical compatibility
+            conflicts between the various development tools.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 99 — Right image ═══ -->
+    <section class="page layout-right" id="page-99">
+      <div class="text-side">
+        <h2 class="page-title" data-i18n="page-99.page-title-1">Perspectives</h2>
+        <ul class="styled-list" data-i18n="page-99.styled-list-1">
+          <li>
+            Securing strategic partnerships and funding to extend development,
+            with a specific focus on the cartographic exchange system.
+          </li>
+          <li>
+            Doctoral dissemination and the academic valorization of research
+            findings.
+          </li>
+          <li>Direct integration into architectural pedagogy and education.</li>
+          <li>
+            Collaborations with specialized institutions such as the École
+            Nationale Supérieure de Paysage, horticultural schools (e.g., École
+            du Breuil, Institut National d'Horticulture et de Paysage),
+            landscape and architecture schools (e.g., ENSAP Bordeaux, ENSAP
+            Lille), and landscape engineering programs.
+          </li>
+          <li>
+            Broad dissemination across digital platforms, social networks, and
+            architectural journals.
+          </li>
+          <li>Active participation in international design competitions.</li>
+          <li>
+            Exploration of potential exhibition opportunities and immersive
+            installations.
+          </li>
+        </ul>
+      </div>
+      <div class="image-col">
+        <img src="images/102.jpg" alt="Perspectives" />
+        <div class="blinds"></div>
+      </div>
+    </section>
+
+    <script>
+      // Auto-apply fade-in to content blocks
+      document
+        .querySelectorAll(
+          '.text-side, .image-col, .image-col-inner, .full-image, .caption-below-bar, ' +
+            '.center-block, .overlay-text'
+        )
+        .forEach(el => {
+          if (!el.classList.contains('fade-in')) el.classList.add('fade-in')
+        })
+
+      const observer = new IntersectionObserver(
+        entries => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible')
+              observer.unobserve(entry.target)
+            }
+          })
+        },
+        { threshold: 0.08 }
+      )
+
+      document.querySelectorAll('.fade-in').forEach(el => observer.observe(el))
+    </script>
+
+    <audio id="global-audio" loop>
+      <source src="sounds/merry.mp3" type="audio/mpeg" />
+    </audio>
+    <script>
+      ;(function () {
+        const audio = document.getElementById('global-audio')
+        const langBtn = document.getElementById('gc-lang')
+        const sndBtn = document.getElementById('gc-snd')
+        const fsBtn = document.getElementById('gc-fs')
+
+        function setSnd(on) {
+          localStorage.setItem('soundEnabled', on ? '1' : '0')
+          sndBtn.classList.toggle('on', on)
+          if (on) audio.play().catch(() => {})
+          else audio.pause()
+        }
+
+        const soundWasEnabled = ['1', 'true'].includes(localStorage.getItem('soundEnabled'))
+        const fullscreenWasPreferred = ['1', 'true'].includes(
+          localStorage.getItem('fullscreenPreferred')
+        )
+
+        // Restore sound
+        if (soundWasEnabled) {
+          audio.play().catch(() => {})
+          sndBtn.classList.add('on')
+        }
+
+        // Restore fullscreen indicator (user can re-enter by clicking fullscreen button)
+        if (fullscreenWasPreferred) {
+          fsBtn.classList.add('on')
+        }
+
+        function setFs(on) {
+          localStorage.setItem('fullscreenPreferred', on ? '1' : '0')
+          if (on) document.documentElement.requestFullscreen().catch(() => {})
+          else document.exitFullscreen().catch(() => {})
+        }
+
+        sndBtn.addEventListener('click', () =>
+          setSnd(!['1', 'true'].includes(localStorage.getItem('soundEnabled')))
+        )
+        langBtn.addEventListener('click', async () => {
+          const nextLang = localStorage.getItem('language') === 'fr' ? 'en' : 'fr'
+          if (window.SpoliaI18n) {
+            window.SpoliaI18n.setLanguage(nextLang)
+            await window.SpoliaI18n.applyTranslations(document, 'ar-apps')
+          } else {
+            localStorage.setItem('language', nextLang)
+            window.location.reload()
+          }
+        })
+        fsBtn.addEventListener('click', () =>
+          setFs(!document.fullscreenElement)
+        )
+        document.addEventListener('fullscreenchange', () =>
+          fsBtn.classList.toggle('on', !!document.fullscreenElement)
+        )
+      })()
+    </script>
+  </body>
+</html>

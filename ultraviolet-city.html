@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spolia Botanique — The Ultraviolet City</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=EB+Garamond:ital,wght@0,400;1,400;1,500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="site-nav.css" />
+    <script src="i18n.js" defer></script>
+    <style>
+      @font-face {
+        font-family: 'Neue Machina';
+        src: url('fonts/PPNeueMachina-PlainRegular.ttf') format('truetype');
+        font-weight: 400;
+      }
+      @font-face {
+        font-family: 'Neue Machina';
+        src: url('fonts/PPNeueMachina-PlainLight.ttf') format('truetype');
+        font-weight: 300;
+      }
+      @font-face {
+        font-family: 'Neue Machina';
+        src: url('fonts/PPNeueMachina-PlainUltrabold.ttf') format('truetype');
+        font-weight: 700;
+      }
+
+      *,
+      *::before,
+      *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --bg: #000000;
+        --fg: #ffffff;
+        --fg-dim: rgba(255, 255, 255, 0.55);
+        --green: #49dca4;
+        --pad: 60px;
+        --pad-sm: 32px;
+        --nav-h: 56px;
+        --uv-page-gap: 60px;
+        --uv-page-gap-loose: 100px;
+      }
+
+      html {
+        scroll-behavior: smooth;
+        background: var(--bg);
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--fg);
+        font-family: 'Neue Machina', sans-serif;
+        font-weight: 300;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* ─── NAV ─── */
+      .top-nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: var(--nav-h);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 var(--pad-sm);
+        background: rgba(0, 0, 0, 0.25);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        z-index: 100;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .nav-brand {
+        text-decoration: none;
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        color: var(--green);
+        flex-shrink: 0;
+        cursor: pointer;
+        transition: color 0.2s;
+      }
+      .nav-brand:hover {
+        color: white;
+      }
+      .nav-brand-spolia {
+        font-family: 'EB Garamond', serif;
+        font-style: italic;
+        font-size: 32px;
+        font-weight: 400;
+        letter-spacing: 0.5px;
+        color: var(--green);
+      }
+      .nav-brand-botanique {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 27px;
+        font-weight: 500;
+        letter-spacing: 1px;
+        color: var(--green);
+      }
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: var(--nav-link-gap);
+      }
+      .nav-link {
+        text-decoration: none;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: var(--nav-link-font-size);
+        letter-spacing: var(--nav-link-letter-spacing);
+        text-transform: uppercase;
+        color: var(--green);
+        transition: color 0.2s, border-color 0.2s;
+        padding-top: var(--nav-link-padding-top);
+        padding-bottom: var(--nav-link-padding-bottom);
+        border-bottom: 1px solid transparent;
+      }
+      .nav-link:hover {
+        color: white;
+      }
+
+      /* ─── NAV CONTROLS (sound + fullscreen) ─── */
+      .nav-controls {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        margin-left: 24px;
+      }
+      .nav-ctrl-btn {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 6px;
+        color: rgba(255, 255, 255, 0.5);
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        padding: 0;
+      }
+      .nav-ctrl-btn svg {
+        width: 18px;
+        height: 18px;
+        fill: currentColor;
+      }
+      .nav-ctrl-btn:hover {
+        border-color: rgba(255, 255, 255, 0.5);
+        color: white;
+      }
+      .nav-ctrl-btn.on {
+        border-color: var(--green);
+        color: var(--green);
+      }
+      .nav-lang-btn {
+        width: 48px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 12px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+      }
+      .nav-link.active {
+        color: white;
+        border-bottom: 1px solid white;
+      }
+
+      /* ─── SECTION BASE ─── */
+      .page {
+        position: relative;
+        min-height: 100vh;
+        width: 100%;
+        overflow: hidden;
+      }
+      .page + .page {
+        margin-top: var(--uv-page-gap);
+      }
+      #page-15 + .page,
+      #page-16 + .page,
+      #page-17 + .page {
+        margin-top: var(--uv-page-gap-loose);
+      }
+      #page-25 + .page {
+        margin-top: 0;
+      }
+
+      /* Collapse sections that contain only images — no empty 100vh */
+      #page-15,
+      #page-16 {
+        min-height: auto;
+      }
+      #page-17,
+      #page-18 {
+        min-height: auto;
+      }
+      #page-25,
+      #page-26 {
+        min-height: auto;
+        padding-top: calc(var(--nav-h) + 20px);
+        padding-bottom: 20px;
+      }
+
+      /* ─── FADE-IN ─── */
+      .fade-in {
+        opacity: 0;
+        transform: translateY(28px);
+        transition: opacity 0.9s ease, transform 0.9s ease;
+      }
+      .fade-in.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      .fade-in.delay-1 {
+        transition-delay: 0.15s;
+      }
+      .fade-in.delay-2 {
+        transition-delay: 0.3s;
+      }
+
+      /* ─── LAYOUT: FULL SCREEN ─── */
+      .layout-full .bg-image {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+      }
+      .layout-full .bg-video {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+      }
+      .layout-full .overlay {
+        position: absolute;
+        inset: 0;
+        background: none;
+      }
+      .layout-full .section-badge {
+        position: absolute;
+        top: calc(var(--nav-h) + 36px);
+        left: var(--pad);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--fg-dim);
+        z-index: 2;
+      }
+      .layout-full .section-title {
+        position: absolute;
+        bottom: 120px;
+        left: var(--pad);
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: clamp(48px, 6vw, 90px);
+        color: var(--fg);
+        line-height: 1;
+        letter-spacing: -1px;
+        z-index: 2;
+      }
+
+      /* ─── Scroll Arrow ─── */
+      .scroll-arrow {
+        position: absolute;
+        bottom: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 44px;
+        height: 44px;
+        z-index: 3;
+        object-fit: contain;
+        animation: float 2s ease-in-out infinite;
+      }
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateX(-50%) translateY(0);
+        }
+        50% {
+          transform: translateX(-50%) translateY(10px);
+        }
+      }
+
+      /* ─── LAYOUT: SPLIT ─── */
+      .layout-right,
+      .layout-left {
+        display: grid;
+        min-height: 100vh;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .text-side {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: calc(var(--nav-h) + 60px) var(--pad) 60px var(--pad);
+      }
+      .layout-left .text-side {
+        order: 2;
+      }
+
+      .image-col {
+        position: relative;
+        overflow: hidden;
+      }
+      .layout-right .image-col {
+        order: 2;
+      }
+      .layout-left .image-col {
+        order: 1;
+      }
+
+      .image-col img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        display: block;
+      }
+
+      /* ─── IMAGE FIT (show full image, no crop) ─── */
+      .image-col.image-fit {
+        overflow: visible;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+      .image-col.image-fit img {
+        width: auto;
+        height: auto;
+        max-width: 100%;
+        max-height: 72vh;
+        object-fit: contain;
+      }
+
+      /* Partial height images */
+      .image-col.h-70 {
+        display: flex;
+        align-items: flex-start;
+        justify-content: flex-end;
+      }
+      .image-col.h-70 img {
+        height: 70%;
+        width: auto;
+        max-width: 100%;
+        object-fit: contain;
+        object-position: top right;
+        margin-top: calc(var(--nav-h) + 40px);
+      }
+      .image-col.h-90 {
+        display: flex;
+        align-items: flex-start;
+        justify-content: flex-end;
+      }
+      .image-col.h-90 img {
+        height: 90%;
+        width: auto;
+        max-width: 100%;
+        object-fit: contain;
+        object-position: top right;
+        margin-top: calc(var(--nav-h) + 20px);
+      }
+
+      /* ─── CENTERED LAYOUT ─── */
+      .layout-center {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: calc(var(--nav-h) + 60px) var(--pad) 80px;
+        min-height: 100vh;
+      }
+      .layout-center .center-image {
+        width: 100%;
+        max-width: 900px;
+        margin-bottom: 32px;
+      }
+      .layout-center .center-image img {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+      .layout-center .caption-below {
+        max-width: 900px;
+        width: 100%;
+        text-align: left;
+      }
+      .layout-center .body-text {
+        max-width: 900px;
+        width: 100%;
+        margin-top: 40px;
+      }
+
+      /* ─── FULL IMAGE + CAPTION BELOW ─── */
+      .layout-full-caption {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+      .layout-full-caption .full-image {
+        flex: 0;
+        position: relative;
+        overflow: hidden;
+        max-height: 70vh;
+      }
+      .layout-full-caption .full-image img {
+        width: 100%;
+        height: auto;
+        object-fit: contain;
+        display: block;
+      }
+      .layout-full-caption .caption-below-bar {
+        padding: 4px var(--pad) 18px;
+        background: var(--bg);
+      }
+
+      /* ─── COMPARISON LAYOUT (pages 24–26) ─── */
+      .layout-compare {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: calc(var(--nav-h) + 60px) var(--pad) 80px;
+        min-height: 100vh;
+      }
+      .compare-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 32px;
+        width: 100%;
+        max-width: 1400px;
+      }
+      .compare-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .compare-item img {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+      .compare-caption {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 17px;
+        line-height: 1.6;
+        letter-spacing: 0.5px;
+        color: var(--fg-dim);
+        text-align: center;
+        margin-top: 16px;
+        max-width: 480px;
+      }
+
+      /* ─── TYPOGRAPHY ─── */
+      .page-title {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: clamp(22px, 2.4vw, 34px);
+        color: var(--green);
+        line-height: 1.2;
+        letter-spacing: -0.3px;
+        margin-bottom: 32px;
+      }
+
+      .body-text p {
+        font-family: 'Neue Machina', sans-serif;
+        font-weight: 300;
+        font-size: 21px;
+        line-height: 1.8;
+        letter-spacing: 0.2px;
+        color: rgba(255, 255, 255, 0.85);
+        margin-bottom: 22px;
+      }
+      .body-text p:last-child {
+        margin-bottom: 0;
+      }
+
+      /* Questions / highlight lines */
+      .questions {
+        margin-top: 28px;
+        border-left: 2px solid var(--green);
+        padding-left: 24px;
+      }
+      .questions p {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 21px;
+        line-height: 1.6;
+        color: var(--green);
+        margin-bottom: 16px;
+      }
+      .questions p:last-child {
+        margin-bottom: 0;
+      }
+
+      /* Pull quote */
+      .pull-quote {
+        margin-top: 32px;
+        padding: 24px 28px;
+        border-left: 3px solid var(--green);
+        background: rgba(73, 220, 164, 0.05);
+      }
+      .pull-quote p {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 21px;
+        line-height: 1.6;
+        color: var(--green);
+        font-weight: 400;
+      }
+
+      /* List */
+      .styled-list {
+        margin-top: 20px;
+        padding-left: 0;
+        list-style: none;
+      }
+      .styled-list li {
+        font-family: 'Neue Machina', sans-serif;
+        font-weight: 300;
+        font-size: 21px;
+        line-height: 1.75;
+        color: rgba(255, 255, 255, 0.85);
+        padding-left: 28px;
+        position: relative;
+        margin-bottom: 10px;
+      }
+      .styled-list li::before {
+        content: '—';
+        position: absolute;
+        left: 0;
+        color: var(--green);
+      }
+
+      /* ─── CAPTIONS ─── */
+      .caption {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 17px;
+        line-height: 1.6;
+        letter-spacing: 0.5px;
+        color: rgba(255, 255, 255, 0.65);
+      }
+      .caption-overlay {
+        position: absolute;
+        padding: 14px 16px;
+        background: rgba(0, 0, 0, 0.35);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        max-width: 340px;
+      }
+      .caption-br {
+        bottom: 24px;
+        right: 24px;
+        text-align: right;
+      }
+      .caption-bl {
+        bottom: 24px;
+        left: 24px;
+        text-align: left;
+      }
+      .caption-tl {
+        top: calc(var(--nav-h) + 24px);
+        left: 24px;
+        text-align: left;
+      }
+      .caption-below {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 17px;
+        line-height: 1.6;
+        letter-spacing: 0.5px;
+        color: var(--fg-dim);
+        padding-top: 14px;
+      }
+      .caption-img-below {
+        display: block;
+        margin-top: 26px;
+      }
+      .image-col-inner {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+      .image-col-inner .caption-below {
+        padding: 12px var(--pad-sm) 0 0;
+      }
+
+      /* ─── BLINDS ─── */
+      .blinds {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: repeating-linear-gradient(
+          0deg,
+          rgba(0, 0, 0, 0.06) 0px,
+          rgba(0, 0, 0, 0.06) 2.5px,
+          transparent 2.5px,
+          transparent 5px
+        );
+        z-index: 1;
+      }
+      .layout-full .section-title,
+      .layout-full .section-badge,
+      .layout-full .caption-overlay {
+        z-index: 2;
+      }
+
+      /* ─── COVER TITLE GROUP (centered, title + subtitle stacked) ─── */
+      .layout-full .title-group {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, calc(-50% - 20px));
+        z-index: 2;
+        text-align: center;
+        width: 90%;
+      }
+      .title-group .section-title {
+        position: static;
+      }
+      .layout-full .section-subtitle {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 400;
+        font-size: clamp(16px, 1.8vw, 24px);
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--fg);
+        margin-top: 28px;
+      }
+
+      @media (min-width: 1141px) and (max-width: 1512px),
+        (min-width: 1141px) and (max-height: 860px) {
+        :root {
+          --uv-page-gap: 30px;
+          --uv-page-gap-loose: 30px;
+        }
+
+        #page-13,
+        #page-14,
+        #page-15,
+        #page-18,
+        #page-19,
+        #page-20,
+        #page-21,
+        #page-22,
+        #page-23,
+        #page-24,
+        #page-25 {
+          min-height: auto;
+        }
+
+        #page-13.layout-right,
+        #page-14.layout-left,
+        #page-18.layout-right,
+        #page-19.layout-right,
+        #page-21.layout-left,
+        #page-22.layout-right,
+        #page-23.layout-left {
+          min-height: auto;
+        }
+
+        #page-20.layout-center,
+        #page-24.layout-compare,
+        #page-25.layout-compare {
+          min-height: auto;
+        }
+
+        #page-13 + #page-14,
+        #page-14 + #page-15,
+        #page-15 + #page-16,
+        #page-16 + #page-17 {
+          margin-top: 100px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ═══════════════ TOP NAV ═══════════════ -->
+    <nav class="top-nav">
+      <a class="nav-brand" href="index.html?skipIntro=1">
+        <span class="nav-brand-spolia">Spolia</span>
+        <span class="nav-brand-botanique">botanique</span>
+      </a>
+      <div class="nav-links">
+        <a class="nav-link" href="about.html" data-i18n="nav.about">About</a>
+        <a class="nav-link active" href="ultraviolet-city.html"
+           data-i18n="nav.ultraviolet-city">The Ultraviolet City</a
+        >
+        <a class="nav-link" href="immersive-sketching.html"
+           data-i18n="nav.immersive-sketching">Immersive Sketching</a
+        >
+        <a class="nav-link" href="holo-botanics.html" data-i18n="nav.holo-botanics">Holo Botanics</a>
+        <a class="nav-link" href="ar-apps.html" data-i18n="nav.ar-apps">AR Apps</a>
+        <a class="nav-link" href="contact.html" data-i18n="nav.contact">Contact</a>
+      </div>
+      <div class="nav-controls">
+        <button class="nav-ctrl-btn nav-lang-btn" id="gc-lang" title="Switch to French" aria-label="Switch to French">EN</button>
+        <button class="nav-ctrl-btn" id="gc-snd" title="Sound">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"
+            />
+          </svg>
+        </button>
+        <button class="nav-ctrl-btn" id="gc-fs" title="Fullscreen">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"
+            />
+          </svg>
+        </button>
+      </div>
+    </nav>
+
+    <!-- ═══ PAGE 10 — Full screen ═══ -->
+    <section class="page layout-full" id="page-10">
+      <video
+        class="bg-video"
+        src="videos/bee05.mp4"
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="auto"
+        webkit-playsinline
+      ></video>
+      <div class="overlay"></div>
+      <div class="blinds"></div>
+      <div class="title-group fade-in delay-1">
+        <div class="section-title" data-i18n="page-10.section-title-1">The Ultraviolet City</div>
+        <div class="section-subtitle" data-i18n="page-10.section-subtitle-1">Designing for the Interspecies Eye</div>
+      </div>
+      <img class="scroll-arrow" src="images/chevron.png" alt="" />
+    </section>
+
+    <!-- ═══ PAGE 11 — Right image ═══ -->
+    <section class="page layout-right" id="page-11">
+      <div class="text-side">
+        <h2 class="page-title" data-i18n="page-11.page-title-1">Philosophy of Plant Life</h2>
+        <div class="body-text" data-i18n="page-11.body-text-1">
+          <p>
+            The aim of this research is to examine and outline the foundations
+            of a possible alliance between the botanical and the digital, while
+            envisioning the potential such an alliance may hold for the design
+            of future urban habitats.
+          </p>
+
+          <p>
+            As evidenced by the growing body of scientific literature on
+            artificial life, neurobiology, and plant intelligence, we are
+            currently re-examining and redefining fundamental concepts such as
+            "intelligence" and "life." This research seeks to engage with and
+            expand these contemporary currents of thought, including posthuman
+            critique. This perspective integrates multiple forms of intelligence
+            within a single, inclusive planetary ecology that encompasses
+            vegetal, animal, human, and artificial forms.
+          </p>
+
+          <p>
+            The project also aims to deepen reflection on the development of new
+            approaches of architectural and urban design. These approaches move
+            beyond anthropocentric frameworks, instead relying on the balanced
+            collaboration of artificial, plant, and animal forms of life.
+          </p>
+        </div>
+      </div>
+      <div class="image-col">
+        <img src="images/11.jpg" alt="Philosophy of Plant Life" />
+        <div class="blinds"></div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 12 — Left image ═══ -->
+    <section class="page layout-left" id="page-12">
+      <div class="image-col">
+        <img src="images/12.jpg" alt="Botanical communication systems" />
+        <div class="blinds"></div>
+      </div>
+      <div class="text-side">
+        <div class="body-text" data-i18n="page-12.body-text-1">
+          <p>
+            Our research in the field of botany focuses on the systems of
+            communication, intelligence, and interspecies collaboration that
+            often remain invisible and elusive. Through an experimental mapping
+            of plant habitats as perceived within the entomological world, we
+            aim to render these microscopic, subterranean, and airborne networks
+            more tangible. Our goal is to highlight the reciprocity between
+            species coexisting within a shared ecology.
+          </p>
+        </div>
+        <div class="questions" data-i18n="page-12.questions-1">
+          <p>What does it feel like to be a peony flower?</p>
+          <p>How does a bee perceive the world?</p>
+        </div>
+        <div class="body-text" style="margin-top: 28px" data-i18n="page-12.body-text-2">
+          <p>
+            Addressing such questions requires, first, a study of the unique
+            sensory capacities of specific plants and insects, their modes of
+            existence, and the ways in which they experience space and time.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 13 — Right image ═══ -->
+    <section class="page layout-right" id="page-13">
+      <div class="text-side">
+        <h2 class="page-title" data-i18n="page-13.page-title-1">Speculative Vegetation</h2>
+        <div class="body-text" data-i18n="page-13.body-text-1">
+          <p>
+            To facilitate the weaving of connections between urban space, the
+            digital realm, and the vegetal world, we studied selected works of
+            science fiction where plant life is fundamental to imagining the
+            cities of the future, whether fantastical, utopian, or dystopian.
+          </p>
+
+          <p>
+            Within these works, authors envision new types of spaces where human
+            and vegetal life converge. These narratives challenge the
+            conventional divide between human and non-human worlds, questioning
+            traditional taxonomic separations. As critiques of anthropocentric
+            attitudes and certain transhumanist aspirations, these stories
+            propose, for instance:
+          </p>
+        </div>
+
+        <ul class="styled-list" data-i18n="page-13.styled-list-1">
+          <li>
+            "Flower-cities" constructed from vegetal matter as the final refuge
+            of civilization in a post-apocalyptic world;
+          </li>
+          <li>
+            Communication systems based entirely on pollen and pheromones;
+          </li>
+          <li>
+            Aromas capable of bending space-time and nectars that weave
+            connections between distant cities;
+          </li>
+          <li>Living houses that grow from seeds like flowers.</li>
+        </ul>
+      </div>
+      <div class="image-col image-fit">
+        <img src="images/13.jpg" alt="Speculative Vegetation" />
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 14 — Left image ═══ -->
+    <section class="page layout-left" id="page-14">
+      <div class="image-col image-fit">
+        <img src="images/14.jpg" alt="Floral cities" />
+      </div>
+      <div class="text-side">
+        <div class="body-text" data-i18n="page-14.body-text-1">
+          <p>
+            While technophile scenarios imagine the future city dweller as a
+            cyborg, part human and part machine, these narratives of floral
+            renaissance conceive of a chimeric being: half human and half plant.
+          </p>
+
+          <p>
+            These literary works serve as a vital source of inspiration for
+            developing compelling urban scenarios. We also examine the
+            representation of imaginary vegetal environments in science fiction
+            cinema, seeking visual references to inform and enrich these
+            explorations.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 15 — Full caption ═══ -->
+    <section class="page layout-full-caption" id="page-15">
+      <div class="full-image">
+        <img src="images/15.jpg" alt="The Mystery of the Third Planet" />
+        <div class="blinds"></div>
+      </div>
+      <div class="caption-below-bar" data-i18n="page-15.caption-below-bar-1">
+        <div class="caption caption-below" data-i18n="page-15.caption-below-1">
+          <em>The Mystery of the Third Planet</em> (1982) explores variations of
+          scale and color that resonate with the visual strategies later used in
+          <em>Avatar</em> to construct fantastical, extraterrestrial vegetal
+          environments.
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 16 — Full caption ═══ -->
+    <section class="page layout-full-caption" id="page-16">
+      <div class="full-image">
+        <img src="images/16.jpg" alt="Avatar — Pandora" />
+        <div class="blinds"></div>
+      </div>
+      <div class="caption-below-bar" data-i18n="page-16.caption-below-bar-1">
+        <div class="caption caption-below" data-i18n="page-16.caption-below-1">
+          The vegetal cities and imaginary flora of the planet Pandora in
+          <em>Avatar</em> (2009) feature bioluminescent plants that evoke
+          ultraviolet photography of flowers. Their exaggerated proportions
+          generate landscapes that appear both immersive and radically alien.
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 17 — Left image ═══ -->
+    <section class="page layout-left" id="page-17">
+      <div class="image-col image-fit">
+        <img src="images/17.jpg" alt="Hanging Gardens of Babylon" />
+        <p class="caption caption-img-below" data-i18n="page-17.caption-1">
+          Neo-Assyrian representations of terraced gardens, canals, aqueducts,
+          and monuments. Drawings traced from bas-reliefs of wall panels,
+          Nineveh (Iraq), circa 7th century BCE.
+        </p>
+      </div>
+      <div class="text-side">
+        <h2 class="page-title" data-i18n="page-17.page-title-1">Hanging Gardens of Babylon</h2>
+        <div class="body-text" data-i18n="page-17.body-text-1">
+          <p>
+            The legendary accounts of the Hanging Gardens of Babylon represent a
+            historical and utopian model for our experimental conception of a
+            fusion between the contemporary city and nature in the age of
+            artificial intelligence. These narratives convey a timeless dream
+            held since the earliest cities: the aspiration to merge the urban
+            environment with the natural world.
+          </p>
+
+          <p>
+            These gardens embody a dual urban symbolism that is both nostalgic
+            and forward-looking. On one hand, they evoke the traces of our
+            original habitat, reflecting the condition in which humans lived as
+            hunter-gatherers within nature itself. This period gave rise to
+            myths of the Garden of Eden, the tradition of Persian gardens, and
+            broader imaginaries of a floral Paradise.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 18 — Right image ═══ -->
+    <section class="page layout-right" id="page-18">
+      <div class="text-side">
+        <div class="body-text" data-i18n="page-18.body-text-1">
+          <p>
+            On the other hand, these gardens represent the technological
+            capacity of urban society to shape its natural and cultural
+            environments by materializing its urban reveries. Complex irrigation
+            systems, large-scale water-lifting mechanisms, extensive networks of
+            canals and aqueducts, and advanced construction techniques such as
+            fired brick all contributed to this achievement. In this way, the
+            Babylonians realized the dream of a garden-city through the
+            constructive and urban possibilities afforded by their technologies.
+          </p>
+
+          <p>
+            These narratives provide a design model in which technology, nature,
+            and the city are inextricably intertwined. Our aim is to reactivate
+            this ancient vision through contemporary digital tools, replacing
+            Babylonian hydraulic networks with networks of Wi-Fi, algorithms,
+            and pixels to revive a holistic urban vision.
+          </p>
+        </div>
+        <div class="pull-quote" data-i18n="page-18.pull-quote-1">
+          <p>
+            To rethink the Hanging Gardens of Babylon in the age of artificial
+            intelligence, to adapt them to contemporary cities, and to weave a
+            planetary network of suspended gardens.
+          </p>
+        </div>
+      </div>
+      <div class="image-col image-fit">
+        <img src="images/18.jpg" alt="Hanging Gardens — contemporary vision" />
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 19 — Right image ═══ -->
+    <section class="page layout-right" id="page-19">
+      <div class="text-side">
+        <h2 class="page-title" data-i18n="page-19.page-title-1">Through the Eyes of a Bee</h2>
+        <div class="body-text" data-i18n="page-19.body-text-1">
+          <p>
+            Artistic reference: an immersive online experience designed by
+            Marshmallow Laser Feast, based on the 3D scanning of a forest
+            environment as part of their project
+            <em>In the Eyes of the Animal</em>. The primary work consisted of a
+            virtual reality experience set within an English forest, where a VR
+            headset allowed participants to perceive the environment through the
+            unique sensory worlds of different animals.
+          </p>
+
+          <p>
+            The accompanying online platform and the animated film released on
+            YouTube extended the project's reach, ensuring the work could be
+            shared more widely and preserved beyond the duration of the initial
+            physical installation.
+          </p>
+        </div>
+      </div>
+      <div class="image-col">
+        <img src="images/19.jpg" alt="Through the Eyes of a Bee" />
+        <div class="blinds"></div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 20 — Centered image ═══ -->
+    <section class="page layout-center" id="page-20">
+      <div class="center-image fade-in">
+        <img src="images/20.jpg" alt="Bee vision simulation" />
+      </div>
+      <div
+        class="caption-below fade-in delay-1"
+        style="max-width: 900px; width: 100%"
+       data-i18n="page-20.caption-below-1">
+        Images of a floral bouquet within the human-visible spectrum, captured
+        using a mechano-optical device that closely approximates the spatial
+        resolution of bee vision. The first image shows a segment that could
+        easily be mistaken for fragmented parts of a scene, while the second
+        reveals how a holistic view discloses the true form and structure of the
+        flowers. The third suggests the potential completion and processing of
+        the image within the brain.
+      </div>
+
+      <div
+        class="body-text fade-in delay-2"
+        style="max-width: 900px; width: 100%; margin-top: 36px"
+       data-i18n="page-20.body-text-1">
+        <p>
+          While humans readily perceive the Gestalt of a scene, it was long
+          assumed that insects such as bees relied only on elementary visual
+          cues. Recent research, however, demonstrates that bees favor global
+          processing while retaining the ability to attend to local elements
+          within complex visual environments.
+        </p>
+
+        <p style="font-size: 15px; color: var(--fg-dim); margin-top: 12px">
+          A.G. Dyer and S.K. Williams, "Mechano-optical lens array to simulate
+          insect vision photographically," <em>Imaging Science Journal</em>,
+          vol. 53, 2005, pp. 209–213.
+        </p>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 21 — Left image ═══ -->
+    <section class="page layout-left" id="page-21">
+      <div class="image-col">
+        <img src="images/21.jpg" alt="Orchid as perceived by a bee" />
+        <div class="blinds"></div>
+      </div>
+      <div class="text-side">
+        <div class="caption caption-below" data-i18n="page-21.caption-below-1">
+          Hypothetical images of an orchid flower as perceived by a bee. (a)
+          Photograph of a single flower and (b) an inflorescence of Orchis
+          caspia. The reconstructed images (c, d, e, f) display the quantum
+          captures of the three types of bee photoreceptors in false color.
+          Image (c) corresponds to the resolution of the camera, while (d), (e),
+          and (f) show how the flower is projected onto the ommatidial lattice
+          at distances of 4, 8, and 12 cm, respectively.
+        </div>
+
+        <div
+          class="caption caption-below"
+          style="
+            margin-top: 20px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.4);
+          "
+         data-i18n="page-21.caption-below-2">
+          After Vorobyev et al., Institut für Neurobiologie, Freie Universität
+          Berlin, 1997.
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 22 — Right image ═══ -->
+    <section class="page layout-right" id="page-22">
+      <div class="text-side">
+        <h2 class="page-title" data-i18n="page-22.page-title-1">Ultraviolet Macro Photography</h2>
+        <div class="body-text" data-i18n="page-22.body-text-1">
+          <p>
+            One of our primary objectives during the digitization phase is to
+            reveal the colors and forms of the fantastic worlds that coexist
+            alongside our own. Through this lens, one might perceive the world
+            from the perspective of an ant climbing the peduncle of a jasmine
+            flower, or a bee gathering pollen from the stamens of a hibiscus. A
+            blue petal that appears relatively uniform to human vision may thus
+            unfold into a rolling landscape—an extraterrestrial topography
+            marked by hundreds of tonal variations.
+          </p>
+
+          <p>
+            To this end, we combine macro photography with ultraviolet imaging
+            to construct three-dimensional environments that simulate the
+            sensory worlds of insects. At present, there are no existing
+            examples of 3D digitization that integrate these two distinct
+            approaches.
+          </p>
+        </div>
+      </div>
+      <div class="image-col">
+        <img src="images/22.jpg" alt="Ultraviolet macro photography" />
+        <div class="blinds"></div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 23 — Left image ═══ -->
+    <section class="page layout-left" id="page-23">
+      <div class="image-col">
+        <img src="images/23.jpg" alt="Macro and ultraviolet photography" />
+        <div class="blinds"></div>
+      </div>
+      <div class="text-side">
+        <div class="body-text" data-i18n="page-23.body-text-1">
+          <p>
+            Through the use of specialized lenses, macro photography enables a
+            dramatic shift in scale, bringing us closer to the perceptual
+            viewpoint of the insect. Textures, patterns, reliefs, and color
+            gradients that previously remained unseen begin to delineate a
+            floral architecture and organic landscapes that are at once familiar
+            and foreign, appearing as if they emerged from a fantastical or
+            extraterrestrial world.
+          </p>
+
+          <p>
+            Ultraviolet photography further enhances the perceptual capacity of
+            the human eye by utilizing UV illumination to access colors beyond
+            the visible spectrum. Unlike humans, most insects are capable of
+            perceiving ultraviolet light. Under these conditions, nectar
+            acquires a fluorescent appearance, tracing patterns across petals
+            that remain invisible to human sight and appearing as luminous
+            landing guides for pollinating insects.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 24 — Side-by-side comparison: alstroemeria ═══ -->
+    <section class="page layout-compare" id="page-24">
+      <div class="compare-row">
+        <div class="compare-item fade-in">
+          <img src="images/24.jpg" alt="Alstroemeria visible light" />
+          <div class="compare-caption" data-i18n="page-24.compare-caption-1">
+            A white alstroemeria under visible light
+          </div>
+        </div>
+        <div class="compare-item fade-in delay-1">
+          <img src="images/25.jpg" alt="Alstroemeria ultraviolet" />
+          <div class="compare-caption" data-i18n="page-24.compare-caption-2">
+            A white alstroemeria under ultraviolet light, with its fluorescent
+            pollen
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 25 — Side-by-side comparison: althaea ═══ -->
+    <section class="page layout-compare" id="page-25">
+      <div class="compare-row">
+        <div class="compare-item fade-in">
+          <img src="images/26.jpg" alt="Althaea visible light" />
+          <div class="compare-caption" data-i18n="page-25.compare-caption-1">A pink althaea under visible light</div>
+        </div>
+        <div class="compare-item fade-in delay-1">
+          <img src="images/27.jpg" alt="Althaea ultraviolet" />
+          <div class="compare-caption" data-i18n="page-25.compare-caption-2">
+            A pink althaea under ultraviolet light, with its fluorescent pollen
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 26 — Side-by-side comparison: geranium ═══ -->
+    <section class="page layout-compare" id="page-26">
+      <div class="compare-row">
+        <div class="compare-item fade-in">
+          <img src="images/28.jpg" alt="Geranium visible light" />
+          <div class="compare-caption" data-i18n="page-26.compare-caption-1">
+            A white geranium under visible light
+          </div>
+        </div>
+        <div class="compare-item fade-in delay-1">
+          <img src="images/29.jpg" alt="Geranium ultraviolet" />
+          <div class="compare-caption" data-i18n="page-26.compare-caption-2">
+            A white geranium under ultraviolet light, with its fluorescent
+            pollen
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 27 — AI Reinterpretations ═══ -->
+    <section class="page layout-full-caption" id="page-27">
+      <div
+        style="
+          text-align: center;
+          padding: calc(var(--nav-h) + 40px) var(--pad) 32px;
+          z-index: 2;
+        "
+      >
+        <h2 class="page-title" style="margin: 0; color: #49dca4" data-i18n="page-27.page-title-1">
+          AI Reinterpretations
+        </h2>
+      </div>
+      <div
+        class="full-image"
+        style="
+          flex: none;
+          height: auto;
+          overflow: visible;
+          max-height: none;
+          padding: 0 var(--pad) 40px;
+        "
+      >
+        <img
+          src="images/30.jpg"
+          alt="AI Reinterpretations"
+          style="
+            max-height: 72vh;
+            width: auto;
+            max-width: 100%;
+            display: block;
+            margin: 0 auto;
+          "
+        />
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 28 ═══ -->
+    <section class="page layout-full" id="page-28">
+      <img class="bg-image" src="images/31.jpg" alt="" />
+      <div class="overlay"></div>
+      <div class="blinds"></div>
+    </section>
+
+    <script>
+      // Auto-apply fade-in to content blocks
+      document
+        .querySelectorAll(
+          '.text-side, .image-col, .image-col-inner, .full-image, .caption-below-bar, .compare-row'
+        )
+        .forEach(el => {
+          if (!el.classList.contains('fade-in')) el.classList.add('fade-in')
+        })
+
+      const observer = new IntersectionObserver(
+        entries => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible')
+              observer.unobserve(entry.target)
+            }
+          })
+        },
+        { threshold: 0.08 }
+      )
+
+      document.querySelectorAll('.fade-in').forEach(el => observer.observe(el))
+    </script>
+
+    <audio id="global-audio" loop>
+      <source src="sounds/merry.mp3" type="audio/mpeg" />
+    </audio>
+    <script>
+      ;(function () {
+        const audio = document.getElementById('global-audio')
+        const langBtn = document.getElementById('gc-lang')
+        const sndBtn = document.getElementById('gc-snd')
+        const fsBtn = document.getElementById('gc-fs')
+
+        function setSnd(on) {
+          localStorage.setItem('soundEnabled', on ? '1' : '0')
+          sndBtn.classList.toggle('on', on)
+          if (on) audio.play().catch(() => {})
+          else audio.pause()
+        }
+
+        const soundWasEnabled = ['1', 'true'].includes(localStorage.getItem('soundEnabled'))
+        const fullscreenWasPreferred = ['1', 'true'].includes(
+          localStorage.getItem('fullscreenPreferred')
+        )
+
+        // Restore sound
+        if (soundWasEnabled) {
+          audio.play().catch(() => {})
+          sndBtn.classList.add('on')
+        }
+
+        // Restore fullscreen indicator (user can re-enter by clicking fullscreen button)
+        if (fullscreenWasPreferred) {
+          fsBtn.classList.add('on')
+        }
+
+        function setFs(on) {
+          localStorage.setItem('fullscreenPreferred', on ? '1' : '0')
+          if (on) document.documentElement.requestFullscreen().catch(() => {})
+          else document.exitFullscreen().catch(() => {})
+        }
+
+        sndBtn.addEventListener('click', () =>
+          setSnd(!['1', 'true'].includes(localStorage.getItem('soundEnabled')))
+        )
+        langBtn.addEventListener('click', async () => {
+          const nextLang = localStorage.getItem('language') === 'fr' ? 'en' : 'fr'
+          if (window.SpoliaI18n) {
+            window.SpoliaI18n.setLanguage(nextLang)
+            await window.SpoliaI18n.applyTranslations(document, 'ultraviolet-city')
+          } else {
+            localStorage.setItem('language', nextLang)
+            window.location.reload()
+          }
+        })
+        fsBtn.addEventListener('click', () =>
+          setFs(!document.fullscreenElement)
+        )
+        document.addEventListener('fullscreenchange', () =>
+          fsBtn.classList.toggle('on', !!document.fullscreenElement)
+        )
+      })()
+    </script>
+  </body>
+</html>

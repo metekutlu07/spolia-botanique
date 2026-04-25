@@ -1,0 +1,1509 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spolia Botanique — About</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=EB+Garamond:ital,wght@0,400;1,400;1,500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="site-nav.css" />
+    <script src="i18n.js" defer></script>
+    <style>
+      @font-face {
+        font-family: 'Neue Machina';
+        src: url('fonts/PPNeueMachina-PlainRegular.ttf') format('truetype');
+        font-weight: 400;
+      }
+      @font-face {
+        font-family: 'Neue Machina';
+        src: url('fonts/PPNeueMachina-PlainLight.ttf') format('truetype');
+        font-weight: 300;
+      }
+      @font-face {
+        font-family: 'Neue Machina';
+        src: url('fonts/PPNeueMachina-PlainUltrabold.ttf') format('truetype');
+        font-weight: 700;
+      }
+
+      *,
+      *::before,
+      *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --bg: #000000;
+        --fg: #ffffff;
+        --fg-dim: rgba(255, 255, 255, 0.55);
+        --green: #49dca4;
+        --pad: 60px;
+        --pad-sm: 32px;
+        --nav-h: 56px;
+      }
+
+      html {
+        scroll-behavior: smooth;
+        background: var(--bg);
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--fg);
+        font-family: 'Neue Machina', sans-serif;
+        font-weight: 300;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* ─── NAV ─── */
+      .top-nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: var(--nav-h);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 var(--pad-sm);
+        background: rgba(0, 0, 0, 0.25);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        z-index: 100;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .nav-brand {
+        text-decoration: none;
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        color: var(--green);
+        flex-shrink: 0;
+        cursor: pointer;
+        transition: color 0.2s;
+      }
+      .nav-brand:hover {
+        color: white;
+      }
+      .nav-brand-spolia {
+        font-family: 'EB Garamond', serif;
+        font-style: italic;
+        font-size: 32px;
+        font-weight: 400;
+        letter-spacing: 0.5px;
+        color: var(--green);
+      }
+      .nav-brand-botanique {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 27px;
+        font-weight: 500;
+        letter-spacing: 1px;
+        color: var(--green);
+      }
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: var(--nav-link-gap);
+      }
+      .nav-link {
+        text-decoration: none;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: var(--nav-link-font-size);
+        letter-spacing: var(--nav-link-letter-spacing);
+        text-transform: uppercase;
+        color: var(--green);
+        transition: color 0.2s, border-color 0.2s;
+        padding-top: var(--nav-link-padding-top);
+        padding-bottom: var(--nav-link-padding-bottom);
+        border-bottom: 1px solid transparent;
+      }
+      .nav-link:hover {
+        color: white;
+      }
+
+      /* ─── NAV CONTROLS (sound + fullscreen) ─── */
+      .nav-controls {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        margin-left: 24px;
+      }
+      .nav-ctrl-btn {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 6px;
+        color: rgba(255, 255, 255, 0.5);
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        padding: 0;
+      }
+      .nav-ctrl-btn svg {
+        width: 18px;
+        height: 18px;
+        fill: currentColor;
+      }
+      .nav-ctrl-btn:hover {
+        border-color: rgba(255, 255, 255, 0.5);
+        color: white;
+      }
+      .nav-ctrl-btn.on {
+        border-color: var(--green);
+        color: var(--green);
+      }
+      .nav-lang-btn {
+        width: 48px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 12px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+      }
+      .nav-link.active {
+        color: white;
+        border-bottom: 1px solid white;
+      }
+
+      /* ─── SECTION BASE ─── */
+      .page {
+        position: relative;
+        min-height: 100vh;
+        width: 100%;
+        overflow: hidden;
+      }
+      .page + .page {
+        margin-top: 60px;
+      }
+
+      /* ─── FADE-IN ─── */
+      .fade-in {
+        opacity: 0;
+        transform: translateY(28px);
+        transition: opacity 0.9s ease, transform 0.9s ease;
+      }
+      .fade-in.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      .fade-in.delay-1 {
+        transition-delay: 0.15s;
+      }
+      .fade-in.delay-2 {
+        transition-delay: 0.3s;
+      }
+
+      /* ─── LAYOUT: FULL SCREEN ─── */
+      .layout-full .bg-image {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+      }
+      .layout-full .bg-video {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+      }
+      .layout-full .overlay {
+        position: absolute;
+        inset: 0;
+        background: none;
+      }
+      .layout-full .section-badge {
+        position: absolute;
+        top: calc(var(--nav-h) + 36px);
+        left: var(--pad);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--fg-dim);
+      }
+      .layout-full .section-title {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, calc(-50% - 20px));
+        text-align: center;
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: clamp(48px, 6vw, 90px);
+        color: var(--fg);
+        line-height: 1;
+        letter-spacing: -1px;
+        z-index: 2;
+        width: 90%;
+      }
+
+      /* ─── Scroll Arrow ─── */
+      .scroll-arrow {
+        position: absolute;
+        bottom: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 44px;
+        height: 44px;
+        z-index: 3;
+        object-fit: contain;
+        animation: float 2s ease-in-out infinite;
+      }
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateX(-50%) translateY(0);
+        }
+        50% {
+          transform: translateX(-50%) translateY(10px);
+        }
+      }
+
+      /* ─── LAYOUT: SPLIT (image right or left) ─── */
+      .layout-right,
+      .layout-left {
+        display: grid;
+        min-height: 100vh;
+      }
+      .layout-right {
+        grid-template-columns: 1fr 1fr;
+      }
+      .layout-left {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .text-side {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: calc(var(--nav-h) + 60px) var(--pad) 60px var(--pad);
+      }
+      .layout-left .text-side {
+        order: 2;
+      }
+      #page-4 .text-side {
+        transform: translateY(-28px);
+      }
+
+      .image-col {
+        position: relative;
+        overflow: hidden;
+      }
+      .layout-right .image-col {
+        order: 2;
+      }
+      .layout-left .image-col {
+        order: 1;
+      }
+
+      .image-col img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        display: block;
+      }
+      .image-col.contain img {
+        object-fit: contain;
+        object-position: center;
+      }
+
+      /* smaller images: 70 / 90% height, still right-edge */
+      .image-col.h-70 {
+        display: flex;
+        align-items: flex-start;
+        justify-content: flex-end;
+        background: transparent;
+      }
+      .image-col.h-70 img {
+        height: 70%;
+        width: auto;
+        max-width: 100%;
+        object-fit: contain;
+        object-position: top right;
+        margin-top: calc(var(--nav-h) + 40px);
+      }
+      .image-col.h-90 {
+        display: flex;
+        align-items: flex-start;
+        justify-content: flex-end;
+        background: transparent;
+      }
+      .image-col.h-90 img {
+        height: 90%;
+        width: auto;
+        max-width: 100%;
+        object-fit: contain;
+        object-position: top right;
+        margin-top: calc(var(--nav-h) + 20px);
+      }
+
+      /* ─── TYPOGRAPHY ─── */
+      .page-title {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: clamp(22px, 2.4vw, 34px);
+        color: var(--green);
+        line-height: 1.2;
+        letter-spacing: -0.3px;
+        margin-bottom: 32px;
+      }
+
+      .body-text p {
+        font-family: 'Neue Machina', sans-serif;
+        font-weight: 300;
+        font-size: var(--page-body-font-size);
+        line-height: var(--page-body-line-height);
+        letter-spacing: 0.2px;
+        color: rgba(255, 255, 255, 0.85);
+        margin-bottom: 22px;
+      }
+      .body-text p:last-child {
+        margin-bottom: 0;
+      }
+
+      .questions {
+        margin-top: 28px;
+        border-left: 1px solid rgba(255, 255, 255, 0.2);
+        padding-left: 24px;
+      }
+      .questions p {
+        font-family: 'Neue Machina', sans-serif;
+        font-weight: 300;
+        font-style: normal;
+        font-size: var(--page-body-font-size);
+        line-height: var(--page-body-line-height);
+        color: var(--green);
+        margin-bottom: 16px;
+      }
+      .questions p:last-child {
+        margin-bottom: 0;
+      }
+      #page-6 .page-title {
+        line-height: 1.2;
+      }
+
+      /* ─── TEAM STYLES ─── */
+      .team-group {
+        margin-bottom: 48px;
+      }
+      .team-group:last-child {
+        margin-bottom: 0;
+      }
+
+      .team-group-label {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 10px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--fg-dim);
+        margin-bottom: 24px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      }
+
+      .team-member {
+        margin-bottom: 28px;
+      }
+      .team-member:last-child {
+        margin-bottom: 0;
+      }
+
+      .team-name {
+        font-family: 'Neue Machina', sans-serif;
+        font-weight: 700;
+        font-size: 19px;
+        letter-spacing: 0.3px;
+        margin-bottom: 8px;
+        color: #fff;
+      }
+
+      .team-bio {
+        font-family: 'Neue Machina', sans-serif;
+        font-weight: 300;
+        font-size: var(--page-body-font-size);
+        line-height: var(--page-body-line-height);
+        color: rgba(255, 255, 255, 0.75);
+      }
+
+      /* ─── CAPTIONS ─── */
+      /* Over image — corner variants */
+      .caption {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: var(--page-caption-font-size);
+        line-height: var(--page-caption-line-height);
+        letter-spacing: var(--page-caption-letter-spacing);
+        color: rgba(255, 255, 255, 0.65);
+      }
+      .caption-overlay {
+        position: absolute;
+        padding: 14px 16px;
+        background: transparent;
+        white-space: nowrap;
+      }
+      .caption-br {
+        bottom: 24px;
+        right: 24px;
+        text-align: right;
+      }
+      /* Raise caption above scroll arrow on full-screen hero */
+      .layout-full .caption-br {
+        bottom: 120px;
+        right: 32px;
+      }
+      .caption-bl {
+        bottom: 24px;
+        left: 24px;
+        text-align: left;
+      }
+      .caption-tl {
+        top: calc(var(--nav-h) + 24px);
+        left: 24px;
+        text-align: left;
+      }
+      /* Below image */
+      .caption-below {
+        padding: 12px 0 0 0;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: var(--page-caption-font-size);
+        line-height: var(--page-caption-line-height);
+        letter-spacing: var(--page-caption-letter-spacing);
+        color: var(--fg-dim);
+      }
+
+      /* For pages where image is partial height — caption sits below img inside col */
+      .image-col-inner {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        padding-bottom: 20px;
+      }
+      .image-col-inner .caption-below {
+        padding: 8px 0 0 0;
+        white-space: nowrap;
+      }
+      /* ─── PAGE 5 & 6: pull caption tight to image ─── */
+      #page-5 .image-col-inner,
+      #page-6 .image-col-inner {
+        height: auto;
+      }
+      #page-5 .image-col.h-90 img,
+      #page-6 .image-col.h-90 img {
+        height: auto;
+        max-height: 74vh;
+      }
+      #page-5 .image-col {
+        overflow: visible;
+      }
+
+      /* ─── PAGE 3 & 5 — image left, off viewport edge ─── */
+      #page-3 .image-col {
+        padding-left: 60px;
+      }
+      #page-5 .image-col {
+        padding-left: 120px;
+      }
+      /* Page 5 h-90: was right-aligned; flip to left */
+      #page-5 .image-col.h-90 {
+        justify-content: flex-start;
+      }
+      #page-5 .image-col.h-90 img {
+        object-position: top left;
+      }
+
+      /* ─── PAGE 6 — right padding + expand image ─── */
+      #page-6 .image-col.h-90 {
+        padding-right: 30px;
+        padding-left: 20px;
+      }
+      #page-6 .image-col-inner {
+        width: 100%;
+      }
+      #page-6 .image-col.h-90 img {
+        max-height: 82vh;
+        width: 100%;
+        object-fit: contain;
+        object-position: top right;
+      }
+
+      /* ─── PAGE 8 — caption padding (doesn't touch column edges) ─── */
+      #page-8 .image-col.with-caption-below > .caption-below {
+        padding-left: 24px;
+        padding-right: 24px;
+      }
+
+      /* ─── PAGE 9 — caption close to image ─── */
+      #page-9 .image-col.with-caption-below {
+        align-self: start;
+        padding-top: calc(var(--nav-h) + 40px);
+      }
+      #page-9 .img-wrap {
+        flex: none;
+        height: auto; /* let image set the height */
+      }
+      #page-9 .img-wrap img {
+        width: 100%; /* fill full column width */
+        height: auto; /* natural proportions */
+        max-height: 78vh;
+      }
+
+      /* ─── IMAGE COL WITH BELOW CAPTION (replaces overlay on full-height cols) ─── */
+      .image-col.with-caption-below {
+        overflow: visible;
+        display: flex;
+        flex-direction: column;
+      }
+      .image-col.with-caption-below .img-wrap {
+        flex: 1;
+        position: relative;
+        overflow: hidden;
+        min-height: 0;
+      }
+      .image-col.with-caption-below .img-wrap img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        display: block;
+      }
+      .image-col.contain.with-caption-below .img-wrap img {
+        object-fit: contain;
+      }
+      .image-col.with-caption-below > .caption-below {
+        flex-shrink: 0;
+        padding: 10px 0 0 0;
+        white-space: normal;
+      }
+
+      /* ─── BLINDS (subtle, matches landing) ─── */
+      .blinds {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: repeating-linear-gradient(
+          0deg,
+          rgba(0, 0, 0, 0.06) 0px,
+          rgba(0, 0, 0, 0.06) 2.5px,
+          transparent 2.5px,
+          transparent 5px
+        );
+        z-index: 1;
+      }
+      .layout-full .section-title,
+      .layout-full .section-badge,
+      .layout-full .caption-overlay {
+        z-index: 2;
+      }
+
+      /* ─── LAYOUT: READING (bibliography) ─── */
+      .layout-reading {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: calc(var(--nav-h) + 80px) var(--pad) 80px;
+      }
+      .layout-reading .reading-inner {
+        max-width: 1100px;
+        margin: 0 auto;
+        width: 100%;
+      }
+      .bib-grid {
+        columns: 2;
+        column-gap: 64px;
+        margin-top: 40px;
+      }
+      .bib-entry {
+        font-family: 'Neue Machina', sans-serif;
+        font-weight: 300;
+        font-size: 18px;
+        line-height: 1.65;
+        color: rgba(255, 255, 255, 0.75);
+        padding-left: 20px;
+        text-indent: -20px;
+        break-inside: avoid;
+        margin-bottom: 20px;
+      }
+
+      @media (max-width: 1512px), (max-height: 860px) {
+        #page-3,
+        #page-4 {
+          min-height: auto;
+        }
+
+        #page-3 {
+          margin-top: 30px;
+        }
+
+        #page-3 .text-side,
+        #page-4 .text-side {
+          padding-top: calc(var(--nav-h) + 34px);
+          padding-bottom: 36px;
+        }
+
+        #page-4 .text-side {
+          transform: none;
+        }
+
+        #page-3 .image-col.with-caption-below {
+          align-self: start;
+          padding-top: calc(var(--nav-h) + 34px);
+          padding-left: 36px;
+        }
+
+        #page-3 .image-col.with-caption-below .img-wrap {
+          flex: none;
+          height: auto;
+        }
+
+        #page-3 .image-col.with-caption-below .img-wrap img {
+          height: auto;
+          max-height: 68vh;
+          object-fit: contain;
+        }
+
+        #page-3 .image-col.with-caption-below > .caption-below {
+          padding-top: 8px;
+        }
+
+        #page-4 .image-col.h-70 {
+          align-items: flex-start;
+          padding-top: calc(var(--nav-h) + 34px);
+        }
+
+        #page-4 .image-col-inner {
+          height: auto;
+          padding-bottom: 0;
+        }
+
+        #page-4 .image-col.h-70 img {
+          margin-top: 0;
+          height: auto;
+          max-height: 60vh;
+        }
+
+        #page-4 .image-col-inner .caption-below {
+          padding-top: 8px;
+        }
+
+        #page-6 .page-title {
+          line-height: 1.36 !important;
+        }
+
+        #page-7 .image-col.with-caption-below,
+        #page-8 .image-col.with-caption-below {
+          align-self: start;
+          padding-top: calc(var(--nav-h) + 34px);
+        }
+
+        #page-7 .image-col.with-caption-below .img-wrap,
+        #page-8 .image-col.with-caption-below .img-wrap {
+          flex: none;
+          height: auto;
+        }
+
+        #page-7 .image-col.with-caption-below .img-wrap img,
+        #page-8 .image-col.with-caption-below .img-wrap img {
+          height: auto;
+          max-height: 68vh;
+          object-fit: contain;
+        }
+
+        #page-7 .image-col.with-caption-below > .caption-below,
+        #page-8 .image-col.with-caption-below > .caption-below {
+          padding-top: 8px;
+        }
+
+        #page-7,
+        #page-8 {
+          min-height: auto;
+        }
+
+        #page-8 {
+          margin-top: 15px;
+        }
+
+        .caption-below,
+        .caption-below p,
+        .caption,
+        .caption-overlay,
+        .caption-img-below,
+        .image-col-inner .caption-below {
+          font-family: 'Neue Machina', sans-serif !important;
+          font-weight: 300 !important;
+          font-size: var(--page-caption-font-size) !important;
+          line-height: var(--page-caption-line-height) !important;
+          letter-spacing: var(--page-caption-letter-spacing) !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ═══════════════ TOP NAV ═══════════════ -->
+    <nav class="top-nav">
+      <a class="nav-brand" href="index.html?skipIntro=1">
+        <span class="nav-brand-spolia">Spolia</span>
+        <span class="nav-brand-botanique">botanique</span>
+      </a>
+      <div class="nav-links">
+        <a class="nav-link active" href="about.html" data-i18n="nav.about">About</a>
+        <a class="nav-link" href="ultraviolet-city.html"
+           data-i18n="nav.ultraviolet-city">The Ultraviolet City</a
+        >
+        <a class="nav-link" href="immersive-sketching.html"
+           data-i18n="nav.immersive-sketching">Immersive Sketching</a
+        >
+        <a class="nav-link" href="holo-botanics.html" data-i18n="nav.holo-botanics">Holo Botanics</a>
+        <a class="nav-link" href="ar-apps.html" data-i18n="nav.ar-apps">AR Apps</a>
+        <a class="nav-link" href="contact.html" data-i18n="nav.contact">Contact</a>
+      </div>
+      <div class="nav-controls">
+        <button class="nav-ctrl-btn nav-lang-btn" id="gc-lang" title="Switch to French" aria-label="Switch to French">EN</button>
+        <button class="nav-ctrl-btn" id="gc-snd" title="Sound">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"
+            />
+          </svg>
+        </button>
+        <button class="nav-ctrl-btn" id="gc-fs" title="Fullscreen">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"
+            />
+          </svg>
+        </button>
+      </div>
+    </nav>
+
+    <!-- ═══════════════ PAGE 1 — Full screen ═══════════════ -->
+    <section class="page layout-full" id="page-1">
+      <video
+        class="bg-video"
+        src="videos/holos01.mp4"
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="auto"
+        webkit-playsinline
+      ></video>
+      <div class="overlay"></div>
+      <div class="blinds"></div>
+      <div class="section-title fade-in delay-1" data-i18n="page-1.section-title-1">About</div>
+      <img class="scroll-arrow" src="images/chevron.png" alt="" />
+      <div class="caption caption-overlay caption-br fade-in delay-2" data-i18n="page-1.caption-1">
+        A neon breaker,<br />
+        3D scan of <em>echeveria,</em><br />
+        Garden Route, South Africa.
+      </div>
+    </section>
+
+    <!-- ═══════════════ PAGE 2 — Right image ═══════════════ -->
+    <section class="page layout-right" id="page-2">
+      <div class="text-side">
+        <h2 class="page-title" data-i18n="page-2.page-title-1">A Virtual Canvas of Botanical Dreams</h2>
+        <div class="body-text" data-i18n="page-2.body-text-1">
+          <p>
+            <strong>Spolia botanique</strong> invites architecture students,
+            along with a wider public, to compose a virtual canvas of botanical
+            dreams woven into the streets and squares of contemporary cities.
+            Through playful mobile applications and immersive experiences, the
+            project fosters forms of collaboration on a global scale while
+            opening a space for reflection on the botano-digital future of urban
+            environments. It calls forth the latent vegetal life concealed
+            within the mineral fabric of the city, sketching the horizon of a
+            chlorophyll-infused future in which floral imagination begins to
+            permeate both architecture and technological thought.
+          </p>
+          <p>
+            These experimental applications allow users, wherever they are in
+            the world, to transform their immediate surroundings into a vegetal
+            utopia and to explore it through augmented reality. Equipped with a
+            smartphone, each participant can enter this expanded form of urban
+            space through an “augmented botanical walk,” where physical and
+            virtual environments converge, and where botanical life and digital
+            systems become deeply entangled.
+          </p>
+          <p>
+            The project seeks to provide inhabitants with an intuitive means of
+            shaping the urban imaginary of their own city. Within this
+            perspective, the figure of the metropolitan resident is redefined
+            through the dual lens of <em>Homo Ludens</em> and
+            <em>Homo Faber</em>, the human who plays and the human who makes, as
+            articulated in utopian thought. Urban space thus emerges as a field
+            of creative action and playful exchange.
+          </p>
+        </div>
+      </div>
+      <div class="image-col with-caption-below">
+        <div class="img-wrap">
+          <img src="images/02.jpg" alt="Anatomy of a protea" />
+          <div class="blinds"></div>
+        </div>
+        <div class="caption caption-below" data-i18n="page-2.caption-below-1">
+          Anatomy of a <em>protea,</em><br />
+          3D scan, Garden Route, South Africa.
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════ PAGE 3 — Right image ═══════════════ -->
+    <section class="page layout-left" id="page-3">
+      <div class="text-side">
+        <div class="body-text" data-i18n="page-3.body-text-1">
+          <p>
+            In architecture, <em>spolia</em> designates the reuse of fragments
+            taken from existing buildings and reassembled within new
+            constructions. Here, the term is extended into a botanical and
+            virtual domain, where the vegetal world is captured through
+            meticulous 3D scanning and reconstituted as digital matter. These
+            virtual gardens, assembled piece by piece, become a new kind of
+            resource, akin to brick or stone, through which the city is
+            reimagined as an immersive and shared botanical environment.
+          </p>
+          <p>
+            The project was developed in partnership with the Domaine de
+            Chaumont-sur-Loire, the École nationale supérieure d’architecture de
+            Paris-Belleville, and the joint research unit AUSser. The school
+            functioned as a laboratory for experimentation, engaging students in
+            the process, while AUSser ensured the scientific dissemination and
+            articulation of the results. The festival offered a singular terrain
+            for gathering the vegetal material that underpins the project.
+          </p>
+        </div>
+      </div>
+      <div class="image-col with-caption-below">
+        <div class="img-wrap">
+          <img src="images/03.jpg" alt="A hologram dahlia" />
+          <div class="blinds"></div>
+        </div>
+        <div class="caption caption-below" data-i18n="page-3.caption-below-1">
+          A hologram dahlia,<br />
+          Domaine de Chaumont-sur-Loire.
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════ PAGE 4 — Right image, 70% height ═══════════════ -->
+    <section class="page layout-right" id="page-4">
+      <div class="text-side">
+        <div class="body-text" data-i18n="page-4.body-text-1">
+          <p>
+            In 2022, Comet Lab was selected as one of twenty winners invited to
+            design a garden for the Festival International des Jardins, hosted
+            by the Domaine de Chaumont-sur-Loire. In tandem with this project,
+            we partnered with the Domaine to develop a second initiative: Spolia
+            botanique. This project was designed as an artistic and digital
+            intervention set within the festival gardens.
+          </p>
+          <p>
+            Since 1992, the Festival International des Jardins at
+            Chaumont-sur-Loire has served as a premier global laboratory for
+            contemporary garden design and landscape architecture. As a vital
+            incubator for new ideas, the festival constantly revitalizes the art
+            of gardening. It engages both the public and industry professionals
+            by introducing unique plant varieties, innovative materials, and
+            visionary concepts.
+          </p>
+        </div>
+      </div>
+      <div class="image-col h-70">
+        <div class="image-col-inner">
+          <img src="images/04.jpg" alt="Domaine de Chaumont-sur-Loire" />
+          <div class="caption caption-below" data-i18n="page-4.caption-below-1">
+            Domaine de Chaumont-sur-Loire,<br />
+            Centre-Val de Loire Region.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════ PAGE 5 — Right image, 90% height ═══════════════ -->
+    <section class="page layout-left" id="page-5">
+      <div class="text-side">
+        <div class="body-text" data-i18n="page-5.body-text-1">
+          <p>
+            <em>The Jardin d'Eaurmus</em>, designed for this festival, featured
+            a pathway centered around a menhir-like fountain. This structure
+            generated a series of vortices in the flow of water in order to
+            re-energize it. Like the nineteen other temporary gardens, it was
+            dismantled after six months to make way for new creations by the
+            following year's winners.
+          </p>
+          <p>
+            To preserve these ephemeral works, we used 3D scanning to digitize
+            selected segments, effectively building a three-dimensional
+            botanical archive. These high-resolution scans capture the rich
+            plant and mineral details with remarkable precision. We then
+            integrated the resulting virtual fragments into the
+            <em>Festum Virtual</em>
+            application, allowing for an immersive exploration of these
+            environments.
+          </p>
+        </div>
+      </div>
+      <div class="image-col h-90">
+        <div class="image-col-inner">
+          <img src="images/05.jpg" alt="Le Jardin d'Eaurmus" />
+          <div class="caption caption-below" data-i18n="page-5.caption-below-1">
+            <em>The Jardin d'Eaurmus,</em><br />
+            Laureate of the International Garden Festival,<br />
+            at the Domaine de Chaumont-sur-Loire in 2022.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════ PAGE 6 — Right image, 90% height ═══════════════ -->
+    <section class="page layout-right" id="page-6">
+      <div class="text-side">
+        <h2 class="page-title" data-i18n="page-6.page-title-1">Digital Craft:<br />A Doctoral Inquiry</h2>
+        <div class="body-text" data-i18n="page-6.body-text-1">
+          <p>
+            The <em>Spolia botanique</em> project explores the concept of
+            digital craftsmanship within the field of architecture, viewed as a
+            convergence of the artisanal age and the digital era. This approach
+            aligns with contemporary theoretical frameworks such as postmodern
+            medievalism, digital archaism, and the primitive future, as explored
+            by thinkers like Régis Debray and Jacques Lucan, and by architects
+            such as Sou Fujimoto and Toyo Ito.
+          </p>
+          <p>
+            This line of inquiry is also central to the doctoral research of
+            Mete Kutlu, the project lead and a former resident artist of the
+            Villa Medici. He developed these ideas in his article "A
+            Trans-Temporal Inquiry in Architecture," published in
+            <em>Culture et Recherche</em> (no. 141, 2020). The project serves as
+            a significant case study within his dissertation, which he defended
+            in November 2025.
+          </p>
+          <p>
+            Traditionally, architects design projects using small-scale
+            representations, often working within a studio far from the
+            construction site. Our augmented reality application changes this
+            dynamic by enabling design directly on-site and at full scale. The
+            architect becomes immersed in the environment they are creating,
+            establishing a more immediate and embodied relationship with the
+            context. This aligns the design process with the spatial and sensory
+            reality of the site.
+          </p>
+          <p>
+            The use of augmented reality reactivates the intuitive, hands-on
+            bond that the medieval master builder shared with the construction
+            site. It reimagines the site as a collaborative space where artisans
+            worked and invisible imaginaries intersected. This technological
+            shift challenges the architectural paradigm established during the
+            Italian Renaissance, where the architect moved their imagination
+            onto paper through systematic and abstract drawings.
+          </p>
+        </div>
+      </div>
+      <div class="image-col h-90">
+        <div class="image-col-inner">
+          <img src="images/06.jpg" alt="3D scan of an enameled column" />
+          <div class="caption caption-below" data-i18n="page-6.caption-below-1">
+            3D scan of an enameled column,<br />
+            Samarkand, Uzbekistan, 2022.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════ PAGE 7 — Right image ═══════════════ -->
+    <section class="page layout-right" id="page-7">
+      <div class="text-side">
+        <h2 class="page-title" data-i18n="page-7.page-title-1">Immersive Design</h2>
+        <div class="body-text" data-i18n="page-7.body-text-1">
+          <p>
+            Comet Lab offers architecture students a mobile application that
+            enables them to design botanical and virtual augmentations of urban
+            spaces. Through this platform, we seek to explore the following
+            questions:
+          </p>
+        </div>
+        <div class="questions" data-i18n="page-7.questions-1">
+          <p>
+            How can immersive design be developed through augmented reality
+            tools to conceive future habitats where physical and virtual spaces
+            are seamlessly interwoven?
+          </p>
+          <p>
+            How can contemporary cities be transformed into utopian urban
+            scenarios, enhanced by suspended virtual gardens?
+          </p>
+          <p>
+            How might we imagine a virtual extension of a physical building; for
+            example, a new digital façade for a Haussmannian structure, or a
+            botanical urban skin that is variable, adaptable, and customizable
+            according to the desires of each inhabitant?
+          </p>
+        </div>
+      </div>
+      <div class="image-col with-caption-below">
+        <div class="img-wrap">
+          <img src="images/07.jpg" alt="Neon Breakers — Echeveria" />
+          <div class="blinds"></div>
+        </div>
+        <div class="caption caption-below" data-i18n="page-7.caption-below-1">
+          Neon breakers in the desert,<br />
+          3D scan of<em>echeveria,</em><br />
+          Garden Route, South Africa.
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════ PAGE 8 — Left image ═══════════════ -->
+    <section class="page layout-left" id="page-8">
+      <div class="image-col with-caption-below">
+        <div class="img-wrap">
+          <img src="images/08.jpg" alt="A hologram rose" />
+          <div class="blinds"></div>
+        </div>
+        <div class="caption caption-below" data-i18n="page-8.caption-below-1">
+          A hologram rose<br />
+          3D scan, Paris.
+        </div>
+      </div>
+      <div class="text-side">
+        <div class="body-text" data-i18n="page-8.body-text-1">
+          <p>
+            The experience of our immersive design application serves as a
+            crucial intellectual exercise for anticipating how the architect's
+            role and tools will evolve in the age of artificial intelligence. It
+            requires thinking within a hybrid and unprecedented environment,
+            situated at the threshold between the physical world and the virtual
+            domain.
+          </p>
+
+          <p>
+            The primary challenge lies in the need for precise integration of
+            virtual constructions with existing buildings and urban settings.
+            This condition compels the architect to operate simultaneously
+            across both realms, perceiving virtual space as a direct extension
+            of the physical environment. Ultimately, the goal is to conceive of
+            these two domains as a fluid and symbiotic continuum.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════ PAGE 9 — Right image, team ═══════════════ -->
+    <section class="page layout-right" id="page-9">
+      <div class="text-side">
+        <h2 class="page-title" data-i18n="page-9.page-title-1">The Team</h2>
+
+        <div class="team-group">
+          <div class="team-member">
+            <div class="team-name">Mete Kutlu</div>
+            <div class="team-bio">
+              Project lead, creative technologist, architect and researcher in
+              cosmotechnics with a PhD from Université Gustave Eiffel. His work
+              operates at the intersection of spatial computation, visual
+              cultures, and cosmology, with a focus on augmented reality and
+              algorithmic processes. His doctoral research examines how
+              premodern visual systems and contemporary digital technologies
+              converge in the construction of space across architectural and
+              cosmic scales. A former fellow of Villa Medici, the French School
+              in Rome, the French Institute of Anatolian Studies, the French
+              Institute of Central Asian Studies, and the Fondazione Giorgio
+              Cini, he has conducted research across the Mediterranean and the
+              Silk Road, and currently teaches at ENSA Paris-Belleville.
+            </div>
+          </div>
+          <div class="team-member">
+            <div class="team-name">Theuns Botta</div>
+            <div class="team-bio">
+              Developer specializing in the design and creation of augmented
+              reality applications.
+            </div>
+          </div>
+          <div class="team-member">
+            <div class="team-name">Émilien François</div>
+            <div class="team-bio">
+              Web developer specializing in the development of immersive online
+              platforms.
+            </div>
+          </div>
+          <div class="team-member">
+            <div class="team-name">Cem Karahan Aydın</div>
+            <div class="team-bio">
+              Sound designer specializing in the composition of spatial audio
+              environments.
+            </div>
+          </div>
+        </div>
+
+        <div class="team-group">
+          <div class="team-group-label">Senior Experts</div>
+          <div class="team-member">
+            <div class="team-name">Cristiana Mazzoni</div>
+            <div class="team-bio">
+              Architect, urban planner, and professor of urban studies at ENSA
+              Paris-Belleville (project partner). As the doctoral supervisor of
+              Mete Kutlu and director of the joint research unit AUSser (project
+              partner), she closely oversees the development of the project. She
+              contributes her extensive expertise in urbanism, ecological issues
+              within contemporary metropolitan contexts, architectural
+              education, and academic research.
+            </div>
+          </div>
+          <div class="team-member">
+            <div class="team-name">Jean-Louis Sivade</div>
+            <div class="team-bio">
+              Computer engineer who worked for many years at IBM France,
+              specializing in artificial intelligence, human-computer
+              interaction, and digital tool testing. As a technical expert, his
+              guidance supports the ergonomic and technical quality of the
+              project.
+            </div>
+          </div>
+        </div>
+
+        <div class="team-group">
+          <div class="team-group-label">Interns</div>
+          <div class="team-member">
+            <div class="team-name">Tuğçe Topada</div>
+            <div class="team-bio">
+              Architecture student. Contributed to digitization campaigns and
+              various stages of 3D modeling.
+            </div>
+          </div>
+          <div class="team-member">
+            <div class="team-name">Sahiti Vemavarapu</div>
+            <div class="team-bio">
+              Architecture student. Contributed to digitization campaigns and
+              various stages of 3D modeling.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="image-col contain with-caption-below">
+        <div class="img-wrap">
+          <img src="images/09x.jpg" alt="A hologram dahlia" />
+          <div class="blinds"></div>
+        </div>
+        <div class="caption caption-below" data-i18n="page-9.caption-below-1">
+          Presenting Spolia botanique,<br />
+          Maison des Métallos, Paris.
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PAGE 10 — Bibliography ═══ -->
+    <section class="page layout-reading" id="page-10">
+      <div class="reading-inner">
+        <h2 class="page-title" data-i18n="page-10.page-title-1">Bibliography</h2>
+        <div class="bib-grid">
+          <p class="bib-entry">
+            Ahrens, Chandler, Aaron Sprecher, et al.
+            <em
+              >Instabilities and Potentialities: Notes on the Nature of
+              Knowledge in Digital Architecture</em
+            >, Routledge, 2019.
+          </p>
+          <p class="bib-entry">
+            Ars Electronica. <em>Ars Electronica 2021: A New Digital Deal</em>,
+            Hatje Cantz, 2021.
+          </p>
+          <p class="bib-entry">
+            Bec, Louis. "Upwelling" in <em>The Aesthetics of Uncertainty</em>,
+            ed. Carlos Basualdo and Reinaldo Laddaga, 2009.
+          </p>
+          <p class="bib-entry">
+            Benjamin, Walter. "The Work of Art in the Age of Mechanical
+            Reproduction," in <em>Illuminations</em>, Schocken Books, 1969.
+          </p>
+          <p class="bib-entry">
+            Benyus, Janine M.
+            <em>Biomimicry: Innovation Inspired by Nature</em>, HarperCollins,
+            1997.
+          </p>
+          <p class="bib-entry">
+            Brayer, Marie-Ange, and Frédéric Migayrou, eds.
+            <em>Naturaliser l'architecture</em>, HYX, 2013.
+          </p>
+          <p class="bib-entry">
+            Carpo, Mario. <em>The Alphabet and the Algorithm</em>, MIT Press,
+            2011.
+          </p>
+          <p class="bib-entry">
+            Carpo, Mario.
+            <em>The Second Digital Turn: Design Beyond Intelligence</em>, MIT
+            Press, 2017.
+          </p>
+          <p class="bib-entry">
+            Cascone, Kim. "The Aesthetics of Failure: 'Post-Digital' Tendencies
+            in Contemporary Computer Music," <em>Computer Music Journal</em>,
+            24(4), 2000.
+          </p>
+          <p class="bib-entry">
+            Colomina, Beatriz, and Mark Wigley.
+            <em>Are We Human? Notes on an Archaeology of Design</em>, Lars
+            Müller Publishers, 2016.
+          </p>
+          <p class="bib-entry">
+            Cramer, Florian. "What is 'Post-digital'?" in
+            <em>A Peer-Reviewed Journal About Post-Digital Research</em>, vol.
+            3, 2014.
+          </p>
+          <p class="bib-entry">
+            Delanda, Manuel. <em>Intensive Science and Virtual Philosophy</em>,
+            Continuum, 2002.
+          </p>
+          <p class="bib-entry">
+            Deleuze, Gilles, and Félix Guattari.
+            <em>A Thousand Plateaus: Capitalism and Schizophrenia</em>,
+            University of Minnesota Press, 1987.
+          </p>
+          <p class="bib-entry">
+            Drucker, Johanna.
+            <em>Graphesis: Visual Forms of Knowledge Production</em>, Harvard
+            University Press, 2014.
+          </p>
+          <p class="bib-entry">
+            Flusser, Vilém. <em>Into the Universe of Technical Images</em>,
+            University of Minnesota Press, 2011.
+          </p>
+          <p class="bib-entry">
+            Flusser, Vilém. <em>Towards a Philosophy of Photography</em>,
+            Reaktion Books, 2000.
+          </p>
+          <p class="bib-entry">
+            Goodfellow, Ian, Jean Pouget-Abadie, et al. "Generative Adversarial
+            Nets," <em>Advances in Neural Information Processing Systems</em>,
+            27, 2014.
+          </p>
+          <p class="bib-entry">
+            Grosz, Elizabeth.
+            <em
+              >Architecture from the Outside: Essays on Virtual and Real
+              Space</em
+            >, MIT Press, 2001.
+          </p>
+          <p class="bib-entry">
+            Haraway, Donna J.
+            <em>Staying with the Trouble: Making Kin in the Chthulucene</em>,
+            Duke University Press, 2016.
+          </p>
+          <p class="bib-entry">
+            Hayles, N. Katherine.
+            <em
+              >How We Became Posthuman: Virtual Bodies in Cybernetics,
+              Literature, and Informatics</em
+            >, University of Chicago Press, 1999.
+          </p>
+          <p class="bib-entry">
+            Hensel, Michael, Achim Menges, and Michael Weinstock, eds.
+            <em>Emergence: Morphogenetic Design Strategies</em>, Wiley-Academy,
+            2004.
+          </p>
+          <p class="bib-entry">
+            Jencks, Charles. <em>The Architecture of the Jumping Universe</em>,
+            Academy Editions, 1995.
+          </p>
+          <p class="bib-entry">
+            Kwinter, Sanford.
+            <em
+              >Architectures of Time: Toward a Theory of the Event in Modernist
+              Culture</em
+            >, MIT Press, 2001.
+          </p>
+          <p class="bib-entry">
+            Latour, Bruno.
+            <em
+              >Reassembling the Social: An Introduction to
+              Actor-Network-Theory</em
+            >, Oxford University Press, 2005.
+          </p>
+          <p class="bib-entry">
+            LeCun, Yann, Yoshua Bengio, and Geoffrey Hinton. "Deep Learning,"
+            <em>Nature</em>, 521, 2015.
+          </p>
+          <p class="bib-entry">
+            Lévy, Pierre.
+            <em
+              >Collective Intelligence: Mankind's Emerging World in
+              Cyberspace</em
+            >, Perseus Books, 1997.
+          </p>
+          <p class="bib-entry">
+            Lippard, Lucy R.
+            <em
+              >The Lure of the Local: Senses of Place in a Multicentered
+              Society</em
+            >, The New Press, 1997.
+          </p>
+          <p class="bib-entry">
+            Lynn, Greg. <em>Animate Form</em>, Princeton Architectural Press,
+            1999.
+          </p>
+          <p class="bib-entry">
+            Manovich, Lev. <em>The Language of New Media</em>, MIT Press, 2001.
+          </p>
+          <p class="bib-entry">
+            Maturana, Humberto R., and Francisco J. Varela.
+            <em
+              >The Tree of Knowledge: The Biological Roots of Human
+              Understanding</em
+            >, Shambhala, 1987.
+          </p>
+          <p class="bib-entry">
+            McCorduck, Pamela.
+            <em
+              >Machines Who Think: A Personal Inquiry into the History and
+              Prospects of Artificial Intelligence</em
+            >, A K Peters, 2004.
+          </p>
+          <p class="bib-entry">
+            Menges, Achim, and Sean Ahlquist, eds.
+            <em>Computational Design Thinking</em>, Wiley, 2011.
+          </p>
+          <p class="bib-entry">
+            Mitchell, W. J. T.
+            <em>What Do Pictures Want? The Lives and Loves of Images</em>,
+            University of Chicago Press, 2005.
+          </p>
+          <p class="bib-entry">
+            Morin, Edgar. <em>Introduction à la pensée complexe</em>, ESF
+            Éditeur, 1990.
+          </p>
+          <p class="bib-entry">
+            Negroponte, Nicholas. <em>Being Digital</em>, Knopf, 1995.
+          </p>
+          <p class="bib-entry">
+            Picon, Antoine. <em>Digital Culture in Architecture</em>,
+            Birkhäuser, 2010.
+          </p>
+          <p class="bib-entry">
+            Ramachandran, V. S., and William Hirstein. "The Science of Art: A
+            Neurological Theory of Aesthetic Experience,"
+            <em>Journal of Consciousness Studies</em>, 6(6–7), 1999.
+          </p>
+          <p class="bib-entry">
+            Rancière, Jacques.
+            <em>The Politics of Aesthetics: The Distribution of the Sensible</em
+            >, Continuum, 2004.
+          </p>
+          <p class="bib-entry">
+            Shanken, Edward A. "Art in the Information Age: Technology and
+            Conceptual Art," <em>Leonardo</em>, 35(4), 2002.
+          </p>
+          <p class="bib-entry">
+            Thompson, D'Arcy Wentworth. <em>On Growth and Form</em>, Cambridge
+            University Press, 1917.
+          </p>
+          <p class="bib-entry">
+            Turkle, Sherry.
+            <em
+              >Alone Together: Why We Expect More from Technology and Less from
+              Each Other</em
+            >, Basic Books, 2011.
+          </p>
+          <p class="bib-entry">
+            Wilson, Stephen.
+            <em
+              >Information Arts: Intersections of Art, Science, and
+              Technology</em
+            >, MIT Press, 2002.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <script>
+      // Auto-apply fade-in to content blocks
+      document
+        .querySelectorAll('.text-side, .image-col, .image-col-inner')
+        .forEach(el => {
+          el.classList.add('fade-in')
+        })
+
+      const observer = new IntersectionObserver(
+        entries => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible')
+              observer.unobserve(entry.target)
+            }
+          })
+        },
+        { threshold: 0.08 }
+      )
+
+      document.querySelectorAll('.fade-in').forEach(el => observer.observe(el))
+    </script>
+
+    <audio id="global-audio" loop>
+      <source src="sounds/merry.mp3" type="audio/mpeg" />
+    </audio>
+    <script>
+      ;(function () {
+        const audio = document.getElementById('global-audio')
+        const langBtn = document.getElementById('gc-lang')
+        const sndBtn = document.getElementById('gc-snd')
+        const fsBtn = document.getElementById('gc-fs')
+
+        function setSnd(on) {
+          localStorage.setItem('soundEnabled', on ? '1' : '0')
+          sndBtn.classList.toggle('on', on)
+          if (on) audio.play().catch(() => {})
+          else audio.pause()
+        }
+
+        const soundWasEnabled = ['1', 'true'].includes(localStorage.getItem('soundEnabled'))
+        const fullscreenWasPreferred = ['1', 'true'].includes(
+          localStorage.getItem('fullscreenPreferred')
+        )
+
+        // Restore sound
+        if (soundWasEnabled) {
+          audio.play().catch(() => {})
+          sndBtn.classList.add('on')
+        }
+
+        // Restore fullscreen indicator (user can re-enter by clicking fullscreen button)
+        if (fullscreenWasPreferred) {
+          fsBtn.classList.add('on')
+        }
+
+        function setFs(on) {
+          localStorage.setItem('fullscreenPreferred', on ? '1' : '0')
+          if (on) document.documentElement.requestFullscreen().catch(() => {})
+          else document.exitFullscreen().catch(() => {})
+        }
+
+        sndBtn.addEventListener('click', () =>
+          setSnd(!['1', 'true'].includes(localStorage.getItem('soundEnabled')))
+        )
+        langBtn.addEventListener('click', async () => {
+          const nextLang = localStorage.getItem('language') === 'fr' ? 'en' : 'fr'
+          if (window.SpoliaI18n) {
+            window.SpoliaI18n.setLanguage(nextLang)
+            await window.SpoliaI18n.applyTranslations(document, 'about')
+          } else {
+            localStorage.setItem('language', nextLang)
+            window.location.reload()
+          }
+        })
+        fsBtn.addEventListener('click', () =>
+          setFs(!document.fullscreenElement)
+        )
+        document.addEventListener('fullscreenchange', () =>
+          fsBtn.classList.toggle('on', !!document.fullscreenElement)
+        )
+      })()
+    </script>
+  </body>
+</html>
