@@ -950,9 +950,58 @@
       }
 
       @media (max-width: 767px) {
+        /* Page layouts */
+        #page-48.layout-right,
+        #page-50.layout-right,
+        #page-55.layout-right {
+          grid-template-columns: 1fr !important;
+        }
+        #page-48 .image-col,
+        #page-50 .image-col,
+        #page-55 .image-col {
+          order: 1 !important;
+        }
+        #page-48 .text-side,
+        #page-50 .text-side,
+        #page-55 .text-side {
+          order: 2 !important;
+        }
+
+        /* Page 51: reduce gap around image */
+        #page-51.layout-center-h {
+          padding: calc(var(--nav-h) + 20px) 20px 20px;
+        }
+        #page-51 .center-block img {
+          height: auto;
+          max-height: 60vh;
+        }
+
+        /* Student feedback section: padding for title and text */
+        .layout-reading {
+          padding: calc(var(--nav-h) + 20px) 20px 20px;
+        }
+        .layout-reading .reading-inner {
+          max-width: none;
+        }
+        .layout-reading .page-title {
+          padding: 0;
+        }
+        .layout-reading .body-text {
+          padding: 0;
+        }
+
+        /* Individual perspectives: single column */
+        .testimonials-grid {
+          grid-template-columns: 1fr;
+          gap: 48px 0;
+        }
+
+        /* Title and subtitle overlay */
         #page-47 .section-subtitle {
           transform: translate(-50%, calc(-50% + 48px));
         }
+
+        /* Videos */
         .layout-videos {
           padding: 60px 20px;
         }
