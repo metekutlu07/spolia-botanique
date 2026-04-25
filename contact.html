@@ -353,6 +353,33 @@
           padding: 0 var(--pad-sm);
         }
       }
+
+      @media (max-width: 767px) {
+        .snake-canvas,
+        .snake-bottom-bar,
+        .snake-game-over,
+        .contact-controls-hint {
+          display: none !important;
+        }
+        .contact-card {
+          border: none;
+          background: rgba(0, 0, 0, 0.25);
+          box-shadow: none;
+          padding: 38px 24px 42px;
+        }
+        .contact-bg-video {
+          display: block !important;
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          z-index: 0;
+        }
+        .contact-content {
+          background: rgba(0, 0, 0, 0.35);
+        }
+      }
     </style>
   </head>
   <body>
@@ -385,6 +412,9 @@
     </nav>
 
     <section class="page" id="page-contact">
+      <video autoplay muted loop playsinline class="contact-bg-video" style="display: none;">
+        <source src="videos/bee05.mp4" type="video/mp4" />
+      </video>
       <canvas class="snake-canvas" aria-hidden="true"></canvas>
       <div class="contact-content">
         <div class="contact-stack">
