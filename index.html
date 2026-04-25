@@ -1282,16 +1282,30 @@
 	        const discoverBtn = document.getElementById('discover-btn');
 	        const veil        = document.getElementById('page-veil');
         const mobileMedia = window.matchMedia('(max-width: 767px)');
-        const backgroundLowVolume = () => mobileMedia.matches ? 0.012 : 0.1;
-        const backgroundFullVolume = () => mobileMedia.matches ? 0.12 : 0.7;
+        const backgroundLowVolume = () => mobileMedia.matches ? 0.05 : 0.1;
+        const backgroundNarrationVolume = () => mobileMedia.matches ? 0.025 : backgroundLowVolume();
+        const backgroundFullVolume = () => 0.7;
         let backgroundFadeFrame = null;
-        audio.volume = backgroundLowVolume();
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        let audioContext = null;
+        let backgroundSourceNode = null;
+        let backgroundGainNode = null;
+        let pollenGainNode = null;
+        let activePollenSource = null;
+        let desiredBackgroundVolume = backgroundLowVolume();
         const pollenAudio = {
             en: new Audio('sounds/pollen2-en.mp3'),
             fr: new Audio('sounds/pollen2-fr.mp3')
         };
+        const pollenAudioSources = {
+            en: 'sounds/pollen2-en.mp3',
+            fr: 'sounds/pollen2-fr.mp3'
+        };
+        const pollenBuffers = {};
+        const pollenBufferPromises = {};
         Object.values(pollenAudio).forEach(track => {
             track.preload = 'auto';
+            track.volume = 1;
         });
         const pollenLineDurations = [2000, 2500, 3000, 3000, 2500];
         const pollenTextHoldAfterAudio = 1000;
@@ -1467,15 +1481,99 @@
             settingsHint.innerHTML = `<span class="settings-hint-desktop">${copy.desktop}</span><span class="settings-hint-mobile">${copy.mobile}</span>`;
         }
 
+        function ensureAudioGraph() {
+            if (!AudioContextClass) return false;
+
+            try {
+                if (!audioContext) audioContext = new AudioContextClass();
+                if (!backgroundGainNode) {
+                    backgroundGainNode = audioContext.createGain();
+                    backgroundGainNode.gain.value = desiredBackgroundVolume;
+                    backgroundGainNode.connect(audioContext.destination);
+                }
+                if (!backgroundSourceNode) {
+                    backgroundSourceNode = audioContext.createMediaElementSource(audio);
+                    backgroundSourceNode.connect(backgroundGainNode);
+                }
+                if (!pollenGainNode) {
+                    pollenGainNode = audioContext.createGain();
+                    pollenGainNode.gain.value = 1;
+                    pollenGainNode.connect(audioContext.destination);
+                }
+                audio.volume = 1;
+                return true;
+            } catch (_) {
+                return false;
+            }
+        }
+
+        function resumeAudioGraph() {
+            const usingGraph = ensureAudioGraph();
+            if (usingGraph && audioContext.state !== 'running') {
+                audioContext.resume().catch(() => {});
+            }
+            return usingGraph;
+        }
+
+        function setBackgroundVolume(value) {
+            desiredBackgroundVolume = Math.max(0, Math.min(1, value));
+            if (backgroundGainNode && audioContext) {
+                backgroundGainNode.gain.setValueAtTime(desiredBackgroundVolume, audioContext.currentTime);
+                audio.volume = 1;
+            } else {
+                audio.volume = desiredBackgroundVolume;
+            }
+            audio.dataset.effectiveVolume = String(desiredBackgroundVolume);
+        }
+
+        function getBackgroundVolume() {
+            return backgroundGainNode ? backgroundGainNode.gain.value : audio.volume;
+        }
+
+        function decodeAudioData(buffer) {
+            return new Promise((resolve, reject) => {
+                const maybePromise = audioContext.decodeAudioData(buffer, resolve, reject);
+                if (maybePromise && typeof maybePromise.then === 'function') {
+                    maybePromise.then(resolve, reject);
+                }
+            });
+        }
+
+        function loadPollenBuffer(lang) {
+            const normalized = normalizeLang(lang);
+            if (!audioContext) return Promise.reject(new Error('AudioContext unavailable'));
+            if (pollenBuffers[normalized]) return Promise.resolve(pollenBuffers[normalized]);
+            if (!pollenBufferPromises[normalized]) {
+                pollenBufferPromises[normalized] = fetch(pollenAudioSources[normalized])
+                    .then(response => response.arrayBuffer())
+                    .then(buffer => decodeAudioData(buffer))
+                    .then(decoded => {
+                        pollenBuffers[normalized] = decoded;
+                        return decoded;
+                    });
+            }
+            return pollenBufferPromises[normalized];
+        }
+
+        function preloadPollenAudio() {
+            if (audioContext) {
+                Object.keys(pollenAudioSources).forEach(lang => {
+                    loadPollenBuffer(lang).catch(() => {});
+                });
+                return;
+            }
+
+            Object.values(pollenAudio).forEach(track => {
+                try { track.load(); } catch (_) {}
+            });
+        }
+
+        setBackgroundVolume(desiredBackgroundVolume);
+
         mobileMedia.addEventListener?.('change', () => {
-            audio.volume = document.body.classList.contains('home-ready')
+            setBackgroundVolume(document.body.classList.contains('home-ready')
                 ? backgroundFullVolume()
-                : backgroundLowVolume();
-        });
-        audio.addEventListener('play', () => {
-            audio.volume = document.body.classList.contains('home-ready')
-                ? backgroundFullVolume()
-                : backgroundLowVolume();
+                : backgroundLowVolume());
         });
 
         async function applyPageTranslations(pageName) {
@@ -1528,19 +1626,19 @@
         function fadeBackgroundToFull(duration = 4200) {
             stopBackgroundFade();
             if (!isSoundOn() || !soundUnlockedThisSession || audio.paused) return;
-            const startVolume = audio.volume;
+            const startVolume = getBackgroundVolume();
             const targetVolume = backgroundFullVolume();
             const volumeDelta = targetVolume - startVolume;
             const startTime = performance.now();
 
             const step = now => {
                 const progress = Math.min((now - startTime) / duration, 1);
-                audio.volume = startVolume + volumeDelta * progress;
+                setBackgroundVolume(startVolume + volumeDelta * progress);
                 if (progress < 1) {
                     backgroundFadeFrame = requestAnimationFrame(step);
                 } else {
                     backgroundFadeFrame = null;
-                    audio.volume = targetVolume;
+                    setBackgroundVolume(targetVolume);
                 }
             };
 
@@ -1548,54 +1646,52 @@
         }
 
         function resetPollenAudio() {
+            if (activePollenSource) {
+                try { activePollenSource.stop(); } catch (_) {}
+                try { activePollenSource.disconnect(); } catch (_) {}
+                activePollenSource = null;
+            }
             Object.values(pollenAudio).forEach(track => {
                 track.pause();
                 track.currentTime = 0;
-            });
-        }
-
-        function primePollenAudio() {
-            if (!isSoundOn() || !soundUnlockedThisSession) return;
-            const track = pollenAudio[normalizeLang(selectedLang)];
-            if (!track) return;
-            track.muted = true;
-            track.volume = 0;
-            track.play().then(() => {
-                track.pause();
-                track.currentTime = 0;
-                track.muted = false;
-                track.volume = 1;
-            }).catch(() => {
-                track.muted = false;
-                track.volume = 1;
-            });
-        }
-
-        function unlockPollenAudio() {
-            if (!isSoundOn() || !soundUnlockedThisSession) return;
-            Object.values(pollenAudio).forEach(track => {
-                track.muted = true;
-                track.volume = 0;
-                track.play().then(() => {
-                    track.pause();
-                    track.currentTime = 0;
-                    track.muted = false;
-                    track.volume = 1;
-                }).catch(() => {
-                    track.muted = false;
-                    track.volume = 1;
-                });
             });
         }
 
         function playPollenAudio() {
             resetPollenAudio();
             if (!isSoundOn() || !soundUnlockedThisSession) return;
-            const track = pollenAudio[normalizeLang(selectedLang)];
+            stopBackgroundFade();
+            setBackgroundVolume(backgroundNarrationVolume());
+
+            const lang = normalizeLang(selectedLang);
+            if (resumeAudioGraph()) {
+                loadPollenBuffer(lang).then(buffer => {
+                    if (!isSoundOn() || !soundUnlockedThisSession || !document.body.classList.contains('entry-sequence')) return;
+                    resetPollenAudio();
+                    const source = audioContext.createBufferSource();
+                    source.buffer = buffer;
+                    source.connect(pollenGainNode);
+                    source.onended = () => {
+                        if (activePollenSource === source) activePollenSource = null;
+                    };
+                    activePollenSource = source;
+                    source.start(0);
+                }).catch(() => {
+                    const track = pollenAudio[lang];
+                    if (!track) return;
+                    track.muted = false;
+                    track.volume = 1;
+                    track.currentTime = 0;
+                    track.play().catch(() => {});
+                });
+                return;
+            }
+
+            const track = pollenAudio[lang];
             if (!track) return;
             track.muted = false;
             track.volume = 1;
-            if (!audio.paused) audio.volume = backgroundLowVolume();
+            track.currentTime = 0;
             track.play().catch(() => {});
         }
 
@@ -1716,8 +1812,9 @@
             if (on) {
                 soundUnlockedThisSession = true;
                 stopBackgroundFade();
-                audio.volume = document.body.classList.contains('home-ready') ? backgroundFullVolume() : backgroundLowVolume();
-                unlockPollenAudio();
+                resumeAudioGraph();
+                setBackgroundVolume(document.body.classList.contains('home-ready') ? backgroundFullVolume() : backgroundLowVolume());
+                preloadPollenAudio();
                 // Retry once after a short delay if the first attempt fails.
                 audio.play().catch(() => {
                     setTimeout(() => {
@@ -1728,7 +1825,7 @@
                 soundUnlockedThisSession = false;
                 stopBackgroundFade();
                 audio.pause();
-                audio.volume = backgroundLowVolume();
+                setBackgroundVolume(backgroundLowVolume());
                 resetPollenAudio();
             }
         }
