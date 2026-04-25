@@ -258,6 +258,10 @@ body.spa-mode #main-nav {
   line-height: 1;
 }
 
+.team-mobile-image {
+  display: none;
+}
+
 @media (max-width: 1680px) {
   :root {
     --nav-link-gap: 22px;
@@ -469,11 +473,11 @@ body.spa-mode #main-nav {
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 34px !important;
+    gap: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
     min-height: 100vh !important;
-    padding: calc(var(--nav-h) + 28px) var(--pad-sm) 48px var(--pad-sm) !important;
+    padding: calc(var(--nav-h) + 48px) var(--pad-sm) calc(112px + env(safe-area-inset-bottom)) var(--pad-sm) !important;
     background: #000 !important;
     opacity: 0 !important;
     visibility: hidden !important;
@@ -503,7 +507,7 @@ body.spa-mode #main-nav {
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 0 !important;
+    gap: 22px !important;
     margin: 0 !important;
     padding: 0 !important;
     background: transparent !important;
@@ -526,27 +530,36 @@ body.spa-mode #main-nav {
   .top-nav .nav-link,
   #main-nav .nav-link {
     width: auto !important;
-    padding: 13px 0 !important;
-    font-size: 18px !important;
-    letter-spacing: 2px !important;
+    padding: 0 !important;
+    font-size: clamp(21px, 5.8vw, 28px) !important;
+    letter-spacing: 2.8px !important;
     text-align: center !important;
+    line-height: 1.2 !important;
   }
 
   .top-nav .nav-mobile-panel .nav-controls,
   #main-nav .nav-mobile-panel .nav-controls {
-    position: static !important;
+    position: absolute !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: calc(34px + env(safe-area-inset-bottom)) !important;
     display: flex !important;
     justify-content: center !important;
-    gap: 12px !important;
+    gap: 16px !important;
     margin: 0 !important;
     order: 18;
     z-index: auto !important;
   }
 
+  .top-nav .nav-mobile-panel #gc-fs,
+  #main-nav .nav-mobile-panel #gc-fs {
+    display: none !important;
+  }
+
   .top-nav .nav-controls .nav-ctrl-btn,
   #main-nav .nav-controls .nav-ctrl-btn {
-    width: 44px !important;
-    height: 44px !important;
+    width: 50px !important;
+    height: 50px !important;
   }
 }
 
@@ -575,14 +588,64 @@ body.spa-mode #main-nav {
     /* Mobile typography */
     --page-body-font-size: 16px;
     --page-body-line-height: 1.5;
-    --page-caption-font-size: 16px;
-    --page-caption-line-height: 1.5;
+    --page-caption-font-size: 15px;
+    --page-caption-line-height: 1.45;
     --page-caption-letter-spacing: 0.2px;
   }
 
   .page {
     min-height: auto !important;
     overflow: visible !important;
+  }
+
+  .layout-full {
+    min-height: calc(100svh - var(--nav-h)) !important;
+    height: calc(100svh - var(--nav-h)) !important;
+    overflow: hidden !important;
+  }
+
+  .layout-full .bg-video,
+  .layout-full .bg-image {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 100% !important;
+    object-fit: cover !important;
+    object-position: center !important;
+    display: block !important;
+    opacity: 1 !important;
+  }
+
+  .layout-full .section-title,
+  .layout-full .title-group {
+    left: 50% !important;
+    right: auto !important;
+    top: 50% !important;
+    bottom: auto !important;
+    width: min(100% - 36px, 720px) !important;
+    max-width: calc(100vw - 36px) !important;
+    text-align: center !important;
+    transform: translate(-50%, -50%) !important;
+    padding: 0 !important;
+  }
+
+  .layout-full .section-title {
+    font-size: clamp(28px, 10vw, 52px) !important;
+    line-height: 1.12 !important;
+    letter-spacing: 2px !important;
+  }
+
+  .layout-full .section-subtitle {
+    font-size: clamp(15px, 4.6vw, 24px) !important;
+    line-height: 1.35 !important;
+    letter-spacing: 1.3px !important;
+  }
+
+  .layout-reading .bib-grid,
+  .bib-grid {
+    columns: 1 !important;
+    column-gap: 0 !important;
   }
 
   .page + .page,
@@ -599,6 +662,22 @@ body.spa-mode #main-nav {
     min-height: auto !important;
     padding-top: 0 !important;
     padding-bottom: 0 !important;
+  }
+
+  .layout-full-caption .full-image {
+    flex: none !important;
+    min-height: 0 !important;
+    max-height: none !important;
+  }
+
+  .layout-full-caption .full-image img {
+    width: 100% !important;
+    height: auto !important;
+    object-fit: contain !important;
+  }
+
+  .layout-full-caption .caption-below-bar {
+    padding: 10px var(--pad-sm) 28px !important;
   }
 
   .layout-center-w .center-block,
@@ -670,5 +749,61 @@ body.spa-mode #main-nav {
   .image-col-inner {
     width: 100% !important;
     max-width: none !important;
+  }
+
+  .layout-text-overlay {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    min-height: auto !important;
+    overflow: visible !important;
+  }
+
+  .layout-text-overlay .bg-image {
+    position: relative !important;
+    inset: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    object-fit: contain !important;
+    display: block !important;
+  }
+
+  .layout-text-overlay .overlay,
+  .layout-text-overlay .blinds {
+    display: none !important;
+  }
+
+  .layout-text-overlay .overlay-text {
+    position: relative !important;
+    z-index: 1 !important;
+    max-width: none !important;
+    width: 100% !important;
+    padding: 22px var(--pad-sm) 40px !important;
+    background: #000 !important;
+  }
+
+  #page-9 .team-mobile-image {
+    display: block !important;
+    margin: 28px 0 36px !important;
+  }
+
+  #page-9 .team-mobile-image .img-wrap {
+    position: relative !important;
+    overflow: hidden !important;
+  }
+
+  #page-9 .team-mobile-image img {
+    width: 100% !important;
+    height: auto !important;
+    display: block !important;
+  }
+
+  #page-9 .team-mobile-image .caption-below {
+    padding-top: 10px !important;
+  }
+
+  #page-9 > .image-col {
+    display: none !important;
   }
 }
