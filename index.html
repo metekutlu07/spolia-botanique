@@ -529,7 +529,6 @@
         .entry-brand-logo img {
             height: 150px;
             object-fit: contain;
-            filter: brightness(0) saturate(100%) invert(75%) sepia(54%) saturate(547%) hue-rotate(103deg) brightness(92%) contrast(88%);
         }
         .entry-brand-subtitle {
             position: relative;
@@ -857,6 +856,12 @@
         }
 
         @media (max-width: 767px) {
+            :root {
+                --nav-link-font-size: 20px;
+                --nav-link-letter-spacing: 1.8px;
+                --nav-link-gap: 27px;
+            }
+
             html,
             body.landing-mode {
                 height: 100svh;
@@ -905,8 +910,9 @@
             #fs-btn {
                 display: none;
             }
-            .entry-brand-stage .entry-skip-btn {
-                transform: translateY(25px);
+            .entry-skip-btn {
+                top: 20px;
+                right: 20px;
             }
             .entry-brand-subtitle {
                 max-width: 340px;
@@ -914,83 +920,108 @@
                 line-height: 1.55;
             }
 
+            /* Hero: de-promote from GPU layer so backdrop-filter can sample video */
             .landing-hero {
                 width: 100%;
-                padding: 0 14px;
-                transform: translateY(-150px);
+                padding: 0 20px;
+                transform: translateY(-10px);
+                will-change: auto;
+                contain: none;
             }
             .spolia-title {
                 flex-direction: row;
-                align-items: center;
+                align-items: baseline;
                 justify-content: center;
                 gap: 10px;
-                margin-bottom: 18px;
+                margin-bottom: 20px;
                 white-space: nowrap;
             }
             .spolia-title-serif {
-                font-size: clamp(48px, 13vw, 56px);
+                font-size: clamp(52px, 14vw, 62px);
                 line-height: 0.95;
             }
             .spolia-title-sans {
-                font-size: clamp(28px, 7.6vw, 34px);
+                font-size: clamp(35px, 9.4vw, 43px);
                 line-height: 1.05;
                 letter-spacing: 1px;
             }
+            /* Backdrop-blur: direct on element now works because hero is no
+               longer a promoted compositing layer (will-change:auto above) */
             .enter-button {
-                margin-top: 20px;
-                font-size: 15px;
-                padding: 14px 18px;
+                margin-top: 28px;
+                font-size: 13px;
+                letter-spacing: 4px;
+                padding: 16px;
+                width: auto;
+                position: relative;
+                overflow: visible;
+                isolation: auto;
+                will-change: auto;
+                background: rgba(255, 255, 255, 0.1) !important;
+                backdrop-filter: blur(20px) saturate(160%) !important;
+                -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
+            }
+            .enter-button::before {
+                content: none !important;
             }
 
+            /* Ministry: centered at top, larger */
+            .logos-bar .logo-ministry {
+                position: fixed;
+                top: calc(14px + env(safe-area-inset-top));
+                left: 50%;
+                transform: translateX(-50%);
+                right: auto;
+                height: 85px;
+                max-height: 85px;
+                width: auto;
+            }
+
+            /* 2 logos side by side, nicely spread */
             .logos-bar {
                 left: 0;
                 right: 0;
-                bottom: calc(22px + env(safe-area-inset-bottom));
-                height: auto;
-                display: grid;
-                grid-template-columns: repeat(2, minmax(120px, 1fr));
-                grid-auto-rows: 78px;
+                bottom: calc(52px + env(safe-area-inset-bottom));
+                height: 90px;
+                display: flex;
+                flex-direction: row;
+                justify-content: space-around;
                 align-items: center;
-                justify-items: center;
-                gap: 12px 18px;
-                padding: 0 22px;
+                padding: 0 20px;
                 contain: none;
                 transform: none;
                 will-change: auto;
             }
             .logos-bar img {
-                max-width: 100%;
-                max-height: 78px;
+                max-width: 44%;
+                max-height: 90px;
                 height: auto;
+                width: auto;
+                object-fit: contain;
             }
-            .logos-bar .logo-ministry {
-                position: fixed;
+            .logos-bar .logo-domaine { margin-left: 0; }
+            /* Hide AUSser and Comet Lab on mobile */
+            .logos-bar img:nth-child(4),
+            .logos-bar .comet-lab { display: none; }
+
+            /* Copyright: centered at very bottom in Neue Machina */
+            .copyright {
+                top: auto;
+                right: auto;
+                bottom: calc(14px + env(safe-area-inset-bottom));
+                left: 50%;
+                transform: translateX(-50%);
+                font-family: 'Neue Machina', sans-serif;
+                font-size: 12px;
+                letter-spacing: 1px;
+                text-align: center;
+                white-space: nowrap;
+            }
+
+            /* Sound/lang controls: top-left corner (now free) */
+            .landing-controls {
                 top: calc(16px + env(safe-area-inset-top));
                 left: 16px;
-                right: auto;
-                height: 81px;
-                max-height: 81px;
-                width: auto;
-            }
-            .logos-bar .logo-domaine {
-                margin-left: 0;
-            }
-            .logos-bar .comet-lab {
-                height: auto;
-                top: 0;
-                align-self: center;
-                font-size: 30px;
-            }
-            .copyright {
-                top: calc(24px + env(safe-area-inset-top));
-                right: 16px;
-                bottom: auto;
-                font-size: 15px;
-                text-align: right;
-            }
-            .landing-controls {
-                top: calc(20px + env(safe-area-inset-top));
-                left: 18px;
                 right: auto;
                 bottom: auto;
             }
@@ -1054,7 +1085,7 @@
     <div class="entry-brand-stage" id="entry-brand-stage">
         <button class="entry-skip-btn" id="entry-skip-btn-brand">Skip</button>
         <div class="entry-brand-logo">
-            <img src="images/minister.png" alt="Ministry of Culture">
+            <img src="images/ministerg.png" alt="Ministry of Culture">
         </div>
         <div class="entry-brand-subtitle" data-i18n="landing.subtitle">
             Laureate of<br>

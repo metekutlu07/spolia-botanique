@@ -14,14 +14,14 @@
       "overlay.sound-label": "Sound",
       "overlay.fullscreen-label": "Full screen",
       "overlay.enter-button": "Enter",
-      "landing.subtitle": "Laureate of<br>\n        the Innovative Digital Services Program<br>\n        Supported by the French Ministry of Culture",
+      "landing.subtitle": "Laureate of<br>\n        the Innovative Digital Services<br>\n        Supported by<br>the French Ministry of Culture",
       "landing.details": "<div>Pollen as a medium of data transmission.</div>\n                <div>A world seen through the eye of the bee.</div>\n                <div>The body as pencil, space as paper.</div>",
       "landing.discover-button": "Enter the Garden",
       "landing.copyright": "© Mete Kutlu, 2026",
       "entry.line-1": "In the ultraviolet city,",
       "entry.line-2": "pollen carries data.",
-      "entry.line-3": "The world is seen through the eye of a bee.",
-      "entry.line-4": "The human body becomes the pencil.",
+      "entry.line-3": "The world is seen through<br>the eye of a bee.",
+      "entry.line-4": "The human body<br>becomes the pencil.",
       "entry.line-5": "And the city becomes garden."
     },
     "about": {

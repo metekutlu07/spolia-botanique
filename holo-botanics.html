@@ -626,6 +626,33 @@
             50% { transform: translateX(-50%) translateY(10px); }
         }
 
+        @media (max-width: 767px) {
+            .layout-videos {
+                padding: 60px 20px;
+            }
+            .videos-intro .section-title-lg,
+            .videos-intro .body-text {
+                padding-left: 0;
+                padding-right: 0;
+            }
+            .video-container {
+                width: 100vw;
+                margin-left: calc(-50vw + 50%);
+            }
+            .caption-below-bar .full-image,
+            .full-image {
+                width: 100vw;
+                margin-left: calc(-50vw + 50%);
+                padding-left: 0;
+                padding-right: 0;
+            }
+            .caption-below-bar .full-image img,
+            .full-image img {
+                width: 100%;
+                max-width: none;
+            }
+        }
+
     </style>
 </head>
 <body>

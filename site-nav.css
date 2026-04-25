@@ -463,8 +463,8 @@ body.spa-mode #main-nav {
     margin-left: auto;
     order: 20;
     z-index: 202 !important;
-    width: 40px !important;
-    height: 40px !important;
+    width: 36px !important;
+    height: 36px !important;
   }
 
   .top-nav .nav-mobile-panel,
@@ -479,8 +479,9 @@ body.spa-mode #main-nav {
     width: 100vw !important;
     height: 100vh !important;
     min-height: 100vh !important;
-    padding: calc(var(--nav-h) + 42px) var(--pad-sm) calc(118px + env(safe-area-inset-bottom)) var(--pad-sm) !important;
+    padding: calc(var(--nav-h) + 8px) var(--pad-sm) calc(var(--nav-h) + 8px + env(safe-area-inset-bottom)) var(--pad-sm) !important;
     background: #000 !important;
+    overflow-y: auto !important;
     opacity: 0 !important;
     visibility: hidden !important;
     pointer-events: none !important;
@@ -509,7 +510,8 @@ body.spa-mode #main-nav {
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 28px !important;
+    gap: 26px !important;
+    flex: 0 0 auto !important;
     margin: 0 !important;
     padding: 0 !important;
     background: transparent !important;
@@ -517,6 +519,12 @@ body.spa-mode #main-nav {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
     z-index: auto !important;
+  }
+
+  .top-nav .nav-mobile-panel .nav-links,
+  #main-nav .nav-mobile-panel .nav-links {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
   }
 
   .top-nav > .nav-links,
@@ -531,27 +539,28 @@ body.spa-mode #main-nav {
 
   .top-nav .nav-link,
   #main-nav .nav-link {
-    width: min(100%, 390px) !important;
+    width: fit-content !important;
     max-width: calc(100vw - 40px) !important;
     padding: 0 !important;
-    font-size: clamp(34px, 9.6vw, 46px) !important;
-    letter-spacing: 2px !important;
+    font-size: clamp(19px, 4.8vw, 22px) !important;
+    letter-spacing: 1.15px !important;
     text-align: center !important;
     line-height: 1.08 !important;
-    white-space: normal !important;
+    white-space: nowrap !important;
+    overflow-wrap: normal !important;
   }
 
   .top-nav .nav-mobile-panel .nav-controls,
   #main-nav .nav-mobile-panel .nav-controls {
-    position: absolute !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: calc(28px + env(safe-area-inset-bottom)) !important;
+    position: static !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 18px !important;
-    margin: 0 !important;
+    gap: 14px !important;
+    margin: 52px 0 0 !important;
     order: 18;
     opacity: 1 !important;
     visibility: visible !important;
@@ -573,8 +582,8 @@ body.spa-mode #main-nav {
   .top-nav .nav-mobile-panel .nav-controls .nav-ctrl-btn,
   #main-nav .nav-mobile-panel .nav-controls .nav-ctrl-btn {
     display: flex !important;
-    width: 52px !important;
-    height: 52px !important;
+    width: 46px !important;
+    height: 46px !important;
     border-color: var(--green) !important;
     color: var(--green) !important;
     background: transparent !important;
@@ -583,7 +592,7 @@ body.spa-mode #main-nav {
   .top-nav .nav-mobile-panel .nav-controls .nav-lang-btn,
   #main-nav .nav-mobile-panel .nav-controls .nav-lang-btn {
     font-size: 14px !important;
-    letter-spacing: 1.6px !important;
+    letter-spacing: 1.4px !important;
   }
 }
 
@@ -732,7 +741,8 @@ body.spa-mode #main-nav {
   .layout-center-h,
   .layout-full-caption,
   .layout-compare,
-  .layout-local-video {
+  .layout-local-video,
+  .layout-img-caption {
     min-height: auto !important;
     padding: 0 var(--mobile-page-pad) var(--mobile-image-bottom-gap) var(--mobile-page-pad) !important;
   }
@@ -758,6 +768,24 @@ body.spa-mode #main-nav {
   .layout-center-h .center-block,
   .layout-full-caption .full-image {
     min-height: 0 !important;
+  }
+
+  .layout-img-caption .img-cap-image {
+    flex: none !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    width: 100% !important;
+    overflow: visible !important;
+  }
+
+  .layout-img-caption .img-cap-image img {
+    width: 100% !important;
+    height: auto !important;
+    object-fit: contain !important;
+  }
+
+  .layout-img-caption .img-cap-text {
+    padding: 22px 0 32px !important;
   }
 
   .layout-right,
