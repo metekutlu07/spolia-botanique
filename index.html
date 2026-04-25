@@ -212,6 +212,7 @@
             text-transform: uppercase;
         }
         .settings-enter:hover { background: white; border-color: white; color: #0d0d0d; }
+        .settings-hint-mobile { display: none; }
 
         /* ── Nav — all rules prefixed with #main-nav to beat any injected page CSS ── */
         #main-nav {
@@ -855,6 +856,128 @@
             }
         }
 
+        @media (max-width: 767px) {
+            #loader {
+                padding: 20px;
+            }
+            .loader-bar {
+                min-width: 88px;
+                min-height: 0;
+                max-height: calc(100svh - 80px);
+                padding: 18px 14px;
+            }
+            #loader-emoji-track {
+                flex-direction: column-reverse;
+                max-height: calc(100svh - 118px);
+            }
+            .loader-emoji-slot {
+                width: 54px;
+                height: 44px;
+                font-size: 34px;
+                transform: translateY(8px) scale(0.92);
+            }
+
+            #settings-overlay {
+                gap: 42px;
+                padding: 34px 24px;
+            }
+            .settings-hint {
+                max-width: 280px;
+                font-size: 16px;
+                line-height: 1.55;
+            }
+            .settings-hint-desktop {
+                display: none;
+            }
+            .settings-hint-mobile {
+                display: inline;
+            }
+            .settings-icons {
+                gap: 0;
+            }
+            #fs-btn {
+                display: none;
+            }
+
+            .landing-hero {
+                width: min(100%, 420px);
+                padding: 0 22px;
+                transform: translateY(-150px);
+            }
+            .spolia-title {
+                flex-direction: column;
+                align-items: center;
+                gap: 0;
+                margin-bottom: 18px;
+            }
+            .spolia-title-serif {
+                font-size: clamp(64px, 19vw, 82px);
+                line-height: 0.95;
+            }
+            .spolia-title-sans {
+                font-size: clamp(34px, 9vw, 43px);
+                line-height: 1.05;
+                letter-spacing: 1px;
+            }
+            .enter-button {
+                margin-top: 20px;
+                font-size: 15px;
+                padding: 14px 18px;
+            }
+
+            .logos-bar {
+                left: 0;
+                right: 0;
+                bottom: calc(22px + env(safe-area-inset-bottom));
+                height: auto;
+                display: grid;
+                grid-template-columns: repeat(2, minmax(120px, 1fr));
+                grid-auto-rows: 44px;
+                align-items: center;
+                justify-items: center;
+                gap: 16px 18px;
+                padding: 0 28px;
+                contain: none;
+                transform: none;
+                will-change: auto;
+            }
+            .logos-bar img {
+                max-width: 100%;
+                max-height: 44px;
+                height: auto;
+            }
+            .logos-bar .logo-ministry {
+                position: fixed;
+                top: calc(16px + env(safe-area-inset-top));
+                right: 16px;
+                height: 54px;
+                max-height: 54px;
+                width: auto;
+            }
+            .logos-bar .logo-domaine {
+                margin-left: 0;
+            }
+            .logos-bar .comet-lab {
+                height: auto;
+                top: 0;
+                align-self: center;
+                font-size: 15px;
+            }
+            .copyright {
+                top: calc(78px + env(safe-area-inset-top));
+                right: 16px;
+                bottom: auto;
+                font-size: 10px;
+                text-align: right;
+            }
+            .landing-controls {
+                top: calc(20px + env(safe-area-inset-top));
+                left: 18px;
+                right: auto;
+                bottom: auto;
+            }
+        }
+
         /* ── SPA content area ── */
         #spa-content {
             display: none;
@@ -889,8 +1012,9 @@
                 <button class="lang-btn" data-lang="fr">FR</button>
             </div>
         </div>
-        <div class="settings-hint" id="settings-hint" data-i18n="overlay.settings-hint">
-            For a better experience,<br>please turn on sound and full screen.
+        <div class="settings-hint" id="settings-hint">
+            <span class="settings-hint-desktop">For a better experience,<br>please turn on sound and full screen.</span>
+            <span class="settings-hint-mobile">For a better experience,<br>please turn on sound.</span>
         </div>
         <div class="settings-icons">
             <div class="setting-item" id="snd-btn">
@@ -1091,6 +1215,7 @@
 	        const bgVideoSource = bgVideo ? bgVideo.querySelector('source') : null;
 	        const bgVideoSrc = bgVideoSource ? bgVideoSource.getAttribute('src') : '';
 	        const overlay     = document.getElementById('settings-overlay');
+        const settingsHint = document.getElementById('settings-hint');
         const entryBrandStage = document.getElementById('entry-brand-stage');
         const entryLinesStage = document.getElementById('entry-lines-stage');
         const entryGroups = [...document.querySelectorAll('#entry-lines-stage .entry-line-group')];
@@ -1106,10 +1231,11 @@
 	        const navBrand    = document.getElementById('nav-brand');
 	        const discoverBtn = document.getElementById('discover-btn');
 	        const veil        = document.getElementById('page-veil');
-        const backgroundLowVolume = 0.1;
-        const backgroundFullVolume = 0.7;
+        const mobileMedia = window.matchMedia('(max-width: 767px)');
+        const backgroundLowVolume = () => mobileMedia.matches ? 0.045 : 0.1;
+        const backgroundFullVolume = () => mobileMedia.matches ? 0.28 : 0.7;
         let backgroundFadeFrame = null;
-        audio.volume = backgroundLowVolume;
+        audio.volume = backgroundLowVolume();
         const pollenAudio = {
             en: new Audio('sounds/pollen2-en.mp3'),
             fr: new Audio('sounds/pollen2-fr.mp3')
@@ -1273,8 +1399,29 @@
             selectedLang = normalizeLang(lang);
             localStorage.setItem('language', selectedLang);
             document.documentElement.lang = selectedLang;
+            updateSettingsHint();
             return selectedLang;
         }
+
+        function updateSettingsHint() {
+            if (!settingsHint) return;
+            const copy = selectedLang === 'fr'
+                ? {
+                    desktop: 'Pour une meilleure expérience,<br>activez le son et le mode plein écran.',
+                    mobile: 'Pour une meilleure expérience,<br>activez le son.'
+                }
+                : {
+                    desktop: 'For a better experience,<br>please turn on sound and full screen.',
+                    mobile: 'For a better experience,<br>please turn on sound.'
+                };
+            settingsHint.innerHTML = `<span class="settings-hint-desktop">${copy.desktop}</span><span class="settings-hint-mobile">${copy.mobile}</span>`;
+        }
+
+        mobileMedia.addEventListener?.('change', () => {
+            audio.volume = document.body.classList.contains('home-ready')
+                ? backgroundFullVolume()
+                : backgroundLowVolume();
+        });
 
         async function applyPageTranslations(pageName) {
             if (!window.SpoliaI18n) return;
@@ -1327,7 +1474,8 @@
             stopBackgroundFade();
             if (!isSoundOn() || !soundUnlockedThisSession || audio.paused) return;
             const startVolume = audio.volume;
-            const volumeDelta = backgroundFullVolume - startVolume;
+            const targetVolume = backgroundFullVolume();
+            const volumeDelta = targetVolume - startVolume;
             const startTime = performance.now();
 
             const step = now => {
@@ -1337,7 +1485,7 @@
                     backgroundFadeFrame = requestAnimationFrame(step);
                 } else {
                     backgroundFadeFrame = null;
-                    audio.volume = backgroundFullVolume;
+                    audio.volume = targetVolume;
                 }
             };
 
@@ -1375,6 +1523,7 @@
             if (!track) return;
             track.muted = false;
             track.volume = 1;
+            if (!audio.paused) audio.volume = backgroundLowVolume();
             track.play().catch(() => {});
         }
 
@@ -1495,7 +1644,7 @@
             if (on) {
                 soundUnlockedThisSession = true;
                 stopBackgroundFade();
-                audio.volume = document.body.classList.contains('home-ready') ? backgroundFullVolume : backgroundLowVolume;
+                audio.volume = document.body.classList.contains('home-ready') ? backgroundFullVolume() : backgroundLowVolume();
                 // Retry once after a short delay if the first attempt fails.
                 audio.play().catch(() => {
                     setTimeout(() => {
@@ -1506,7 +1655,7 @@
                 soundUnlockedThisSession = false;
                 stopBackgroundFade();
                 audio.pause();
-                audio.volume = backgroundLowVolume;
+                audio.volume = backgroundLowVolume();
                 resetPollenAudio();
             }
         }
@@ -1579,8 +1728,6 @@
             overlay.classList.add('hidden');
             overlay.setAttribute('aria-hidden', 'true');
             document.body.classList.add('entered');
-            primePollenAudio();
-
             // Use display:none as the reliable final state after the fade,
             // rather than depending only on remove() timing.
             setTimeout(() => {
