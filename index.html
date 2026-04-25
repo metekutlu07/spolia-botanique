@@ -464,6 +464,15 @@
             opacity: 0.001;
             pointer-events: none;
         }
+        body:not(.home-ready):not(.home-prewarm) .enter-button-glass-fixed {
+            opacity: 0;
+        }
+        body.home-prewarm:not(.home-ready) .enter-button-glass-fixed {
+            opacity: 0.001;
+        }
+        body.home-ready .enter-button-glass-fixed {
+            opacity: 1;
+        }
         body:not(.home-ready) .landing-container {
             pointer-events: none;
         }
@@ -665,6 +674,9 @@
             background: white;
         }
         .enter-button:hover { color: #1a1a1a; box-shadow: 0 4px 20px rgba(255,255,255,0.3); }
+        .enter-button-glass-fixed {
+            display: none;
+        }
         .logos-bar {
             position: fixed;
             bottom: 20px; left: 0; right: 0;
@@ -986,9 +998,25 @@
                 background: transparent !important;
             }
             .enter-button-glass {
+                background: transparent;
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+            }
+            .enter-button-glass-fixed {
+                display: block;
+                position: fixed;
+                top: var(--enter-glass-top, -999px);
+                left: var(--enter-glass-left, -999px);
+                width: var(--enter-glass-width, 0px);
+                height: var(--enter-glass-height, 0px);
+                z-index: 0;
                 background: rgba(255, 255, 255, 0.1);
-                backdrop-filter: blur(20px) saturate(160%) !important;
-                -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
+                backdrop-filter: blur(20px) saturate(160%);
+                -webkit-backdrop-filter: blur(20px) saturate(160%);
+                transform: translateZ(0);
+                will-change: opacity, backdrop-filter;
+                pointer-events: none;
+                transition: opacity 1s ease;
             }
 
             /* Ministry: centered at top, larger */
@@ -1162,6 +1190,7 @@
         </video>
     </div>
     <div class="blinds-overlay landing-el"></div>
+    <div class="enter-button-glass-fixed landing-el landing-home-ui" id="discover-glass" aria-hidden="true"></div>
     <div class="landing-container landing-el landing-home-ui">
         <div class="landing-hero">
             <div class="spolia-title">
@@ -1310,6 +1339,7 @@
 	        const spaContent  = document.getElementById('spa-content');
 	        const navBrand    = document.getElementById('nav-brand');
 	        const discoverBtn = document.getElementById('discover-btn');
+        const discoverGlass = document.getElementById('discover-glass');
 	        const veil        = document.getElementById('page-veil');
         const mobileMedia = window.matchMedia('(max-width: 767px)');
         const backgroundLowVolume = () => mobileMedia.matches ? 0.05 : 0.1;
@@ -1642,7 +1672,11 @@
             setBackgroundVolume(document.body.classList.contains('home-ready')
                 ? backgroundFullVolume()
                 : backgroundLowVolume());
+            syncDiscoverGlass();
         });
+
+        window.addEventListener('resize', syncDiscoverGlass);
+        window.addEventListener('orientationchange', () => setTimeout(syncDiscoverGlass, 250));
 
         async function applyPageTranslations(pageName) {
             if (!window.SpoliaI18n) return;
@@ -1655,6 +1689,16 @@
 
         function nextFrame() {
             return new Promise(resolve => requestAnimationFrame(() => resolve()));
+        }
+
+        function syncDiscoverGlass() {
+            if (!discoverBtn || !discoverGlass) return;
+            const rect = discoverBtn.getBoundingClientRect();
+            if (!rect.width || !rect.height) return;
+            discoverGlass.style.setProperty('--enter-glass-top', `${rect.top}px`);
+            discoverGlass.style.setProperty('--enter-glass-left', `${rect.left}px`);
+            discoverGlass.style.setProperty('--enter-glass-width', `${rect.width}px`);
+            discoverGlass.style.setProperty('--enter-glass-height', `${rect.height}px`);
         }
 
         let homeRevealReadyPromise = null;
@@ -1672,8 +1716,11 @@
                 });
             })).then(async () => {
                 document.body.classList.add('home-prewarm');
+                syncDiscoverGlass();
                 await nextFrame();
+                syncDiscoverGlass();
                 await nextFrame();
+                syncDiscoverGlass();
             });
 
             return homeRevealReadyPromise;

@@ -171,6 +171,9 @@
         overflow: hidden;
         background: #000;
       }
+      .contact-bg-video {
+        display: none;
+      }
       .snake-canvas {
         position: absolute;
         inset: 0;
@@ -357,13 +360,25 @@
       @media (max-width: 767px) {
         html,
         body {
-          height: 100svh;
-          min-height: 100svh;
+          position: fixed;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          min-height: 100%;
           overflow: hidden;
+          overscroll-behavior: none;
+        }
+        body.spa-mode #spa-content {
+          height: 100svh !important;
+          padding-top: 0 !important;
+          overflow: hidden !important;
         }
         .page {
+          position: fixed;
+          inset: 0;
+          width: 100vw;
           height: 100svh;
-          min-height: 100svh;
+          min-height: 0;
           overflow: hidden;
         }
         .snake-canvas,
@@ -374,9 +389,10 @@
         }
         .contact-card {
           border: none;
-          background: rgba(0, 0, 0, 0.25);
+          background: transparent;
           box-shadow: none;
-          padding: 38px 24px 42px;
+          padding: 0;
+          max-width: calc(100vw - 40px);
         }
         .contact-bg-video {
           display: block !important;
@@ -388,10 +404,12 @@
           z-index: 0;
         }
         .contact-content {
-          min-height: 100svh;
+          position: fixed;
+          inset: 0;
+          min-height: 0;
           height: 100svh;
-          padding: calc(var(--nav-h) + 24px) 20px 24px;
-          background: rgba(0, 0, 0, 0.35);
+          padding: 0 20px;
+          background: transparent;
           transform: translateY(-90px);
           overflow: hidden;
         }
@@ -428,7 +446,7 @@
     </nav>
 
     <section class="page" id="page-contact">
-      <video autoplay muted loop playsinline class="contact-bg-video" style="display: none;">
+      <video autoplay muted loop playsinline preload="auto" webkit-playsinline class="contact-bg-video">
         <source src="videos/bee05.mp4" type="video/mp4" />
       </video>
       <canvas class="snake-canvas" aria-hidden="true"></canvas>

@@ -28,23 +28,59 @@
   function makeContactSnake(page) {
     if (window.matchMedia('(max-width: 767px)').matches) {
       const video = page.querySelector('.contact-bg-video');
-      if (video) {
+      let keepAlive = 0;
+      const cleanups = [];
+
+      const playVideo = () => {
+        if (!video || document.visibilityState === 'hidden') return;
+        video.style.display = 'block';
         video.muted = true;
         video.defaultMuted = true;
         video.playsInline = true;
         video.autoplay = true;
         video.loop = true;
+        video.controls = false;
         video.preload = 'auto';
+        video.disablePictureInPicture = true;
+        video.removeAttribute('controls');
         video.setAttribute('muted', '');
         video.setAttribute('autoplay', '');
         video.setAttribute('loop', '');
         video.setAttribute('playsinline', '');
         video.setAttribute('webkit-playsinline', '');
         video.setAttribute('preload', 'auto');
+        video.setAttribute('controlslist', 'nodownload nofullscreen noremoteplayback');
+        video.setAttribute('x-webkit-airplay', 'deny');
         if (video.networkState === HTMLMediaElement.NETWORK_EMPTY) video.load();
+        const prepared = window.SpoliaI18n?.prepareAutoplayVideo
+          ? window.SpoliaI18n.prepareAutoplayVideo(video)
+          : () => video.play().catch(() => {});
+        prepared();
         video.play().catch(() => {});
+      };
+
+      if (video) {
+        playVideo();
+        requestAnimationFrame(playVideo);
+        [120, 450, 1000, 1800].forEach(delay => setTimeout(playVideo, delay));
+        ['loadedmetadata', 'loadeddata', 'canplay', 'canplaythrough', 'stalled', 'suspend', 'pause'].forEach(eventName => {
+          video.addEventListener(eventName, playVideo);
+          cleanups.push(() => video.removeEventListener(eventName, playVideo));
+        });
+        document.addEventListener('visibilitychange', playVideo);
+        cleanups.push(() => document.removeEventListener('visibilitychange', playVideo));
+        ['pageshow', 'focus', 'pointerdown', 'touchstart'].forEach(eventName => {
+          window.addEventListener(eventName, playVideo, { passive: true });
+          cleanups.push(() => window.removeEventListener(eventName, playVideo));
+        });
+        keepAlive = setInterval(playVideo, 1400);
       }
-      return null;
+      return {
+        destroy() {
+          if (keepAlive) clearInterval(keepAlive);
+          cleanups.forEach(cleanup => cleanup());
+        }
+      };
     }
 
     page.querySelectorAll('video').forEach(video => {
