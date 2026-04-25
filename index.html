@@ -481,7 +481,7 @@
         }
         /* ── Skip button (laureate + pollen stages) ── */
         .entry-skip-btn {
-            position: absolute;
+            position: fixed;
             top: 28px;
             right: 32px;
             pointer-events: all;
@@ -501,11 +501,26 @@
             border-color: rgba(255,255,255,0.8);
             color: rgba(255,255,255,0.9);
         }
-        /* Hide Safari's native media controls on the bg video */
-        #bg-video { pointer-events: none; }
+        .entry-brand-stage .entry-skip-btn {
+            transform: translateY(25px);
+        }
+        /* Hide mobile browser media controls on the decorative bg video */
+        #bg-video {
+            pointer-events: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
         #bg-video::-webkit-media-controls,
         #bg-video::-webkit-media-controls-enclosure,
-        #bg-video::-webkit-media-controls-panel { display: none !important; }
+        #bg-video::-webkit-media-controls-panel,
+        #bg-video::-webkit-media-controls-start-playback-button,
+        #bg-video::-webkit-media-controls-overlay-play-button,
+        #bg-video::-webkit-media-controls-play-button {
+            display: none !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            -webkit-appearance: none;
+        }
 
         .entry-brand-stage {
             position: fixed;
@@ -616,28 +631,40 @@
         }
         .enter-button {
             position: relative;
-            isolation: isolate;
             overflow: hidden;
             font-family: 'JetBrains Mono', monospace;
             font-size: 21px;
             letter-spacing: 3px;
             padding: 22px;
             border: 1px solid white;
-            background: rgba(200,200,200,0.08);
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
+            background: transparent;
             color: white;
             cursor: pointer;
             transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
             text-transform: uppercase;
             margin-top: 40px;
             transform: translateZ(0);
-            will-change: opacity, background-color, color, box-shadow, backdrop-filter;
+            will-change: opacity, background-color, color, box-shadow;
         }
-        .enter-button::before {
-            content: none;
+        .enter-button-glass {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            background: rgba(200,200,200,0.08);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            transform: translateZ(0);
+            will-change: backdrop-filter, opacity;
+            pointer-events: none;
         }
-        .enter-button:hover { background: white; color: #1a1a1a; box-shadow: 0 4px 20px rgba(255,255,255,0.3); }
+        .enter-button-label {
+            position: relative;
+            z-index: 1;
+        }
+        .enter-button:hover .enter-button-glass {
+            background: white;
+        }
+        .enter-button:hover { color: #1a1a1a; box-shadow: 0 4px 20px rgba(255,255,255,0.3); }
         .logos-bar {
             position: fixed;
             bottom: 20px; left: 0; right: 0;
@@ -954,15 +981,14 @@
                 padding: 16px;
                 width: auto;
                 position: relative;
-                overflow: visible;
-                isolation: auto;
+                overflow: hidden;
                 will-change: auto;
-                background: rgba(255, 255, 255, 0.1) !important;
+                background: transparent !important;
+            }
+            .enter-button-glass {
+                background: rgba(255, 255, 255, 0.1);
                 backdrop-filter: blur(20px) saturate(160%) !important;
                 -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
-            }
-            .enter-button::before {
-                content: none !important;
             }
 
             /* Ministry: centered at top, larger */
@@ -1090,7 +1116,8 @@
         <div class="entry-brand-subtitle" data-i18n="landing.subtitle">
             Laureate of<br>
             the Innovative Digital Services Program<br>
-            Supported by the French Ministry of Culture
+            <br>
+            Sponsored by<br>the French Ministry of Culture
         </div>
     </div>
 
@@ -1141,7 +1168,10 @@
                 <div class="spolia-title-serif">Spolia</div>
                 <div class="spolia-title-sans">botanique</div>
             </div>
-            <button class="enter-button" id="discover-btn" data-i18n="landing.discover-button">Discover</button>
+            <button class="enter-button" id="discover-btn">
+                <span class="enter-button-glass" aria-hidden="true"></span>
+                <span class="enter-button-label" data-i18n="landing.discover-button">Discover</span>
+            </button>
         </div>
     </div>
     <div class="logos-bar landing-el landing-home-ui">
@@ -1284,7 +1314,7 @@
         const mobileMedia = window.matchMedia('(max-width: 767px)');
         const backgroundLowVolume = () => mobileMedia.matches ? 0.05 : 0.1;
         const backgroundNarrationVolume = () => mobileMedia.matches ? 0.025 : backgroundLowVolume();
-        const backgroundFullVolume = () => 0.7;
+        const backgroundFullVolume = () => mobileMedia.matches ? 0.5 : 0.7;
         let backgroundFadeFrame = null;
         const AudioContextClass = window.AudioContext || window.webkitAudioContext;
         let audioContext = null;
@@ -1319,6 +1349,7 @@
 	        let pageStyleEl = null;
         let fadeObserver = null;
 	        let landingVideoAllowed = true;
+        let landingVideoKeepAlive = null;
 	        const visitedPages = new Set();
         const preloadedMedia = new Set();
         let mediaPreloadStarted = false;
@@ -1376,6 +1407,45 @@
             }
         }
 
+        function prepareLandingVideoElement() {
+            if (!bgVideo) return () => {};
+            bgVideo.muted = true;
+            bgVideo.defaultMuted = true;
+            bgVideo.playsInline = true;
+            bgVideo.autoplay = true;
+            bgVideo.loop = true;
+            bgVideo.controls = false;
+            bgVideo.preload = 'auto';
+            bgVideo.disablePictureInPicture = true;
+            bgVideo.removeAttribute('controls');
+            bgVideo.setAttribute('muted', '');
+            bgVideo.setAttribute('autoplay', '');
+            bgVideo.setAttribute('loop', '');
+            bgVideo.setAttribute('playsinline', '');
+            bgVideo.setAttribute('webkit-playsinline', '');
+            bgVideo.setAttribute('preload', 'auto');
+            bgVideo.setAttribute('controlslist', 'nodownload nofullscreen noremoteplayback');
+            bgVideo.setAttribute('x-webkit-airplay', 'deny');
+            ensureLandingVideoSource();
+            if (bgVideo.networkState === HTMLMediaElement.NETWORK_EMPTY) bgVideo.load();
+            return () => bgVideo.play().catch(() => {});
+        }
+
+        function startLandingVideoKeepAlive() {
+            if (landingVideoKeepAlive || !bgVideo) return;
+            landingVideoKeepAlive = setInterval(() => {
+                if (!landingVideoAllowed || !document.body.classList.contains('landing-mode')) return;
+                if (document.visibilityState === 'hidden') return;
+                prepareLandingVideoElement()();
+            }, 1200);
+        }
+
+        function stopLandingVideoKeepAlive() {
+            if (!landingVideoKeepAlive) return;
+            clearInterval(landingVideoKeepAlive);
+            landingVideoKeepAlive = null;
+        }
+
         function landingVideoReady() {
             if (!bgVideo) return Promise.resolve();
             if (bgVideo.readyState >= 3) return Promise.resolve();
@@ -1394,34 +1464,31 @@
             });
         }
 
-	        function playLandingVideo() {
-	            if (!bgVideo) return Promise.resolve();
-            ensureLandingVideoSource();
-	            const preparedPlay = window.SpoliaI18n?.prepareAutoplayVideo
-	                ? window.SpoliaI18n.prepareAutoplayVideo(bgVideo)
-	                : (() => {
-	                    bgVideo.muted = true;
-                    bgVideo.defaultMuted = true;
-                    bgVideo.playsInline = true;
-                    bgVideo.autoplay = true;
-                    bgVideo.preload = 'auto';
-                    bgVideo.setAttribute('muted', '');
-                    bgVideo.setAttribute('autoplay', '');
-                    bgVideo.setAttribute('playsinline', '');
-                    bgVideo.setAttribute('webkit-playsinline', '');
-	                    bgVideo.setAttribute('preload', 'auto');
-	                    if (bgVideo.networkState === HTMLMediaElement.NETWORK_EMPTY) bgVideo.load();
-	                    return () => bgVideo.play().catch(() => {});
-	                })();
+        function playLandingVideo() {
+            if (!bgVideo) return Promise.resolve();
+            const fallbackPreparedPlay = prepareLandingVideoElement();
+            startLandingVideoKeepAlive();
+            const preparedPlay = window.SpoliaI18n?.prepareAutoplayVideo
+                ? window.SpoliaI18n.prepareAutoplayVideo(bgVideo)
+                : fallbackPreparedPlay;
             const tryPlay = () => {
                 if (!landingVideoAllowed || !document.body.classList.contains('landing-mode')) return Promise.resolve();
-                ensureLandingVideoSource();
+                prepareLandingVideoElement();
                 return preparedPlay();
             };
-	            tryPlay();
-	            requestAnimationFrame(tryPlay);
+            tryPlay();
+            requestAnimationFrame(tryPlay);
             setTimeout(tryPlay, 120);
+            setTimeout(tryPlay, 300);
             setTimeout(tryPlay, 650);
+            setTimeout(() => {
+                if (bgVideo && bgVideo.paused && landingVideoAllowed && document.body.classList.contains('landing-mode')) {
+                    tryPlay();
+                }
+            }, 1400);
+            if (mobileMedia.matches) {
+                [1000, 1800, 2800].forEach(delay => setTimeout(tryPlay, delay));
+            }
             // Guard prevents duplicate listeners accumulating across multiple playLandingVideo() calls
             if (!bgVideo.dataset.playListenersAdded) {
                 bgVideo.dataset.playListenersAdded = '1';
@@ -1435,18 +1502,19 @@
             return Promise.resolve();
         }
 
-	        function resetAndPlayLandingVideo() {
-	            if (!bgVideo) return Promise.resolve();
+        function resetAndPlayLandingVideo() {
+            if (!bgVideo) return Promise.resolve();
             landingVideoAllowed = true;
-            ensureLandingVideoSource();
-	            bgVideo.pause();
-	            try { bgVideo.currentTime = 0; } catch (_) {}
-	            return playLandingVideo();
-	        }
+            prepareLandingVideoElement();
+            if (!mobileMedia.matches) bgVideo.pause();
+            try { bgVideo.currentTime = 0; } catch (_) {}
+            return playLandingVideo();
+        }
 
 	        function pauseLandingVideo(release = false) {
-	            if (!bgVideo) return;
+            if (!bgVideo) return;
             landingVideoAllowed = false;
+            stopLandingVideoKeepAlive();
 	            bgVideo.pause();
             if (release && bgVideoSource) {
                 bgVideo.removeAttribute('src');
@@ -1894,6 +1962,9 @@
         });
 
         document.getElementById('settings-enter').addEventListener('click', () => {
+            landingVideoAllowed = true;
+            prepareLandingVideoElement();
+            playLandingVideo();
             overlay.classList.remove('ready');
             overlay.classList.add('hidden');
             overlay.setAttribute('aria-hidden', 'true');

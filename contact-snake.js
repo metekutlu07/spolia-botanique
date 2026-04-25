@@ -26,6 +26,27 @@
   }
 
   function makeContactSnake(page) {
+    if (window.matchMedia('(max-width: 767px)').matches) {
+      const video = page.querySelector('.contact-bg-video');
+      if (video) {
+        video.muted = true;
+        video.defaultMuted = true;
+        video.playsInline = true;
+        video.autoplay = true;
+        video.loop = true;
+        video.preload = 'auto';
+        video.setAttribute('muted', '');
+        video.setAttribute('autoplay', '');
+        video.setAttribute('loop', '');
+        video.setAttribute('playsinline', '');
+        video.setAttribute('webkit-playsinline', '');
+        video.setAttribute('preload', 'auto');
+        if (video.networkState === HTMLMediaElement.NETWORK_EMPTY) video.load();
+        video.play().catch(() => {});
+      }
+      return null;
+    }
+
     page.querySelectorAll('video').forEach(video => {
       video.pause();
       video.remove();

@@ -14,7 +14,7 @@
       "overlay.sound-label": "Sound",
       "overlay.fullscreen-label": "Full screen",
       "overlay.enter-button": "Enter",
-      "landing.subtitle": "Laureate of<br>\n        the Innovative Digital Services<br>\n        Supported by<br>the French Ministry of Culture",
+      "landing.subtitle": "Laureate of<br>\n        the Innovative Digital Services<br>\n        <br>\n        Sponsored by<br>the French Ministry of Culture",
       "landing.details": "<div>Pollen as a medium of data transmission.</div>\n                <div>A world seen through the eye of the bee.</div>\n                <div>The body as pencil, space as paper.</div>",
       "landing.discover-button": "Enter the Garden",
       "landing.copyright": "© Mete Kutlu, 2026",
