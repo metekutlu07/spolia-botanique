@@ -463,6 +463,8 @@ body.spa-mode #main-nav {
     margin-left: auto;
     order: 20;
     z-index: 202 !important;
+    width: 40px !important;
+    height: 40px !important;
   }
 
   .top-nav .nav-mobile-panel,
@@ -477,7 +479,7 @@ body.spa-mode #main-nav {
     width: 100vw !important;
     height: 100vh !important;
     min-height: 100vh !important;
-    padding: calc(var(--nav-h) + 48px) var(--pad-sm) calc(112px + env(safe-area-inset-bottom)) var(--pad-sm) !important;
+    padding: calc(var(--nav-h) + 42px) var(--pad-sm) calc(118px + env(safe-area-inset-bottom)) var(--pad-sm) !important;
     background: #000 !important;
     opacity: 0 !important;
     visibility: hidden !important;
@@ -507,7 +509,7 @@ body.spa-mode #main-nav {
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 22px !important;
+    gap: 28px !important;
     margin: 0 !important;
     padding: 0 !important;
     background: transparent !important;
@@ -529,12 +531,14 @@ body.spa-mode #main-nav {
 
   .top-nav .nav-link,
   #main-nav .nav-link {
-    width: auto !important;
+    width: min(100%, 390px) !important;
+    max-width: calc(100vw - 40px) !important;
     padding: 0 !important;
-    font-size: clamp(21px, 5.8vw, 28px) !important;
-    letter-spacing: 2.8px !important;
+    font-size: clamp(34px, 9.6vw, 46px) !important;
+    letter-spacing: 2px !important;
     text-align: center !important;
-    line-height: 1.2 !important;
+    line-height: 1.08 !important;
+    white-space: normal !important;
   }
 
   .top-nav .nav-mobile-panel .nav-controls,
@@ -542,13 +546,17 @@ body.spa-mode #main-nav {
     position: absolute !important;
     left: 0 !important;
     right: 0 !important;
-    bottom: calc(34px + env(safe-area-inset-bottom)) !important;
+    bottom: calc(28px + env(safe-area-inset-bottom)) !important;
     display: flex !important;
+    align-items: center !important;
     justify-content: center !important;
-    gap: 16px !important;
+    gap: 18px !important;
     margin: 0 !important;
     order: 18;
-    z-index: auto !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    z-index: 195 !important;
   }
 
   .top-nav .nav-mobile-panel #gc-fs,
@@ -560,6 +568,22 @@ body.spa-mode #main-nav {
   #main-nav .nav-controls .nav-ctrl-btn {
     width: 50px !important;
     height: 50px !important;
+  }
+
+  .top-nav .nav-mobile-panel .nav-controls .nav-ctrl-btn,
+  #main-nav .nav-mobile-panel .nav-controls .nav-ctrl-btn {
+    display: flex !important;
+    width: 52px !important;
+    height: 52px !important;
+    border-color: var(--green) !important;
+    color: var(--green) !important;
+    background: transparent !important;
+  }
+
+  .top-nav .nav-mobile-panel .nav-controls .nav-lang-btn,
+  #main-nav .nav-mobile-panel .nav-controls .nav-lang-btn {
+    font-size: 14px !important;
+    letter-spacing: 1.6px !important;
   }
 }
 
@@ -586,11 +610,18 @@ body.spa-mode #main-nav {
 @media (max-width: 1140px) {
   :root {
     /* Mobile typography */
+    --pad-sm: 20px;
+    --mobile-page-pad: 20px;
+    --mobile-page-gap: 12px;
+    --mobile-image-bottom-gap: 22px;
     --page-body-font-size: 16px;
     --page-body-line-height: 1.5;
     --page-caption-font-size: 15px;
     --page-caption-line-height: 1.45;
     --page-caption-letter-spacing: 0.2px;
+    --mobile-page-title-font-size: 20px;
+    --mobile-page-title-line-height: 1.28;
+    --mobile-page-title-margin-bottom: 18px;
   }
 
   .page {
@@ -621,7 +652,7 @@ body.spa-mode #main-nav {
   .layout-full .title-group {
     left: 50% !important;
     right: auto !important;
-    top: 50% !important;
+    top: 46% !important;
     bottom: auto !important;
     width: min(100% - 36px, 720px) !important;
     max-width: calc(100vw - 36px) !important;
@@ -634,12 +665,53 @@ body.spa-mode #main-nav {
     font-size: clamp(28px, 10vw, 52px) !important;
     line-height: 1.12 !important;
     letter-spacing: 2px !important;
+    text-align: center !important;
+  }
+
+  .layout-full .title-group .section-title {
+    position: static !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    text-align: center !important;
   }
 
   .layout-full .section-subtitle {
     font-size: clamp(15px, 4.6vw, 24px) !important;
     line-height: 1.35 !important;
     letter-spacing: 1.3px !important;
+    text-align: center !important;
+  }
+
+  .page-title,
+  .page-title-centered,
+  .below-copy .page-title {
+    font-size: var(--mobile-page-title-font-size) !important;
+    line-height: var(--mobile-page-title-line-height) !important;
+    letter-spacing: 0.2px !important;
+    margin-bottom: var(--mobile-page-title-margin-bottom) !important;
+  }
+
+  .caption,
+  .caption-below,
+  .caption-below p,
+  .caption-below-bar,
+  .caption-overlay,
+  .caption-img-below,
+  .below-copy .caption-below,
+  .image-col-inner .caption-below,
+  .compare-caption,
+  .img-caption,
+  .overlay-caption-body {
+    font-family: 'Neue Machina', sans-serif !important;
+    font-weight: 300 !important;
+    font-size: var(--page-caption-font-size) !important;
+    line-height: var(--page-caption-line-height) !important;
+    letter-spacing: var(--page-caption-letter-spacing) !important;
   }
 
   .layout-reading .bib-grid,
@@ -653,21 +725,23 @@ body.spa-mode #main-nav {
   #page-37 + .page,
   #page-38 + .page,
   #page-39 + .page {
-    margin-top: 24px !important;
+    margin-top: var(--mobile-page-gap) !important;
   }
 
   .layout-center-w,
   .layout-center-h,
-  .layout-full-caption {
+  .layout-full-caption,
+  .layout-compare,
+  .layout-local-video {
     min-height: auto !important;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
+    padding: 0 var(--mobile-page-pad) var(--mobile-image-bottom-gap) var(--mobile-page-pad) !important;
   }
 
   .layout-full-caption .full-image {
     flex: none !important;
     min-height: 0 !important;
     max-height: none !important;
+    width: 100% !important;
   }
 
   .layout-full-caption .full-image img {
@@ -677,7 +751,7 @@ body.spa-mode #main-nav {
   }
 
   .layout-full-caption .caption-below-bar {
-    padding: 10px var(--pad-sm) 28px !important;
+    padding: 10px var(--mobile-page-pad) 28px !important;
   }
 
   .layout-center-w .center-block,
@@ -703,7 +777,7 @@ body.spa-mode #main-nav {
 
   .text-side {
     min-height: auto !important;
-    padding: calc(var(--nav-h) + 42px) var(--pad-sm) 32px var(--pad-sm) !important;
+    padding: calc(var(--nav-h) + 42px) var(--mobile-page-pad) 32px var(--mobile-page-pad) !important;
     justify-content: flex-start !important;
   }
 
@@ -711,7 +785,7 @@ body.spa-mode #main-nav {
   .layout-left .image-col {
     min-height: auto !important;
     width: 100% !important;
-    padding: 0 var(--pad-sm) 44px var(--pad-sm) !important;
+    padding: 0 var(--mobile-page-pad) var(--mobile-image-bottom-gap) var(--mobile-page-pad) !important;
     overflow: visible !important;
   }
 
@@ -762,9 +836,11 @@ body.spa-mode #main-nav {
   .layout-text-overlay .bg-image {
     position: relative !important;
     inset: auto !important;
-    width: 100% !important;
+    width: calc(100% - (var(--mobile-page-pad) * 2)) !important;
     height: auto !important;
     min-height: 0 !important;
+    margin-left: var(--mobile-page-pad) !important;
+    margin-right: var(--mobile-page-pad) !important;
     object-fit: contain !important;
     display: block !important;
   }
@@ -779,8 +855,15 @@ body.spa-mode #main-nav {
     z-index: 1 !important;
     max-width: none !important;
     width: 100% !important;
-    padding: 22px var(--pad-sm) 40px !important;
+    padding: 22px var(--mobile-page-pad) 40px !important;
     background: #000 !important;
+  }
+
+  .below-copy,
+  .caption-below-bar,
+  .video-title-block {
+    padding-left: var(--mobile-page-pad) !important;
+    padding-right: var(--mobile-page-pad) !important;
   }
 
   #page-9 .team-mobile-image {

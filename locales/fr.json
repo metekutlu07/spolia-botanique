@@ -51,7 +51,7 @@
     },
     "ultraviolet-city": {
       "page-10.section-title-1": "La cité ultraviolette",
-      "page-10.section-subtitle-1": "Concevoir pour l'œil interspécifique",
+      "page-10.section-subtitle-1": "Concevoir pour<br>l'œil interspécifique",
       "page-11.page-title-1": "Philosophie de la vie végétale",
       "page-11.body-text-1": "<p>\n            L'objectif de cette recherche est d'examiner et d'esquisser les fondements\n            d'une alliance possible entre le botanique et le numérique, tout en\n            imaginant le potentiel qu'une telle alliance pourrait offrir pour la conception\n            des futurs habitats urbains.\n          </p>\n\n          <p>\n            Comme en témoigne le corpus croissant de littérature scientifique sur\n            la vie artificielle, la neurobiologie et l'intelligence végétale, nous\n            sommes actuellement en train de réexaminer et de redéfinir des concepts\n            fondamentaux tels que « l'intelligence » et « la vie ». Cette recherche cherche à\n            s'inscrire dans ces courants de pensée contemporains, y compris la critique\n            posthumaniste. Cette perspective intègre de multiples formes d'intelligence\n            au sein d'une écologie planétaire unique et inclusive englobant les formes\n            végétales, animales, humaines et artificielles.\n          </p>\n\n          <p>\n            Le projet vise également à approfondir la réflexion sur le développement de nouvelles\n            approches du design architectural et urbain. Ces approches dépassent les cadres\n            anthropocentrés pour s'appuyer sur la collaboration équilibrée des formes de vie\n            artificielles, végétales et animales.\n          </p>",
       "page-12.body-text-1": "<p>\n            Nos recherches dans le domaine de la botanique se concentrent sur les systèmes de\n            communication, d'intelligence et de collaboration interspécifique qui\n            restent souvent invisibles et insaisissables. À travers une cartographie\n            expérimentale des habitats végétaux tels qu'ils sont perçus dans le monde\n            entomologique, nous visons à rendre plus tangibles ces réseaux microscopiques,\n            souterrains et aériens. Notre but est de mettre en lumière la réciprocité entre\n            les espèces coexistant au sein d'une écologie partagée.\n          </p>",
@@ -89,7 +89,7 @@
     },
     "immersive-sketching": {
       "page-29.section-title-1": "Esquisse Immersive",
-      "page-29.section-subtitle-1": "De la photogrammétrie à la conception augmentée",
+      "page-29.section-subtitle-1": "De la photogrammétrie<br>à la conception augmentée",
       "page-30.page-title-1": "Deux campagnes de numérisation",
       "page-30.body-text-1": "<p>\n            Nous avons mené deux campagnes de numérisation 3D dans les jardins du\n            château, la première en juillet et la seconde en septembre 2022. En\n            plus de ces missions principales, nous avons effectué des scans spontanés\n            dans Paris et ses environs au fur et à mesure que des besoins spécifiques\n            émergeaient tout au long du projet.\n          </p>\n\n          <p>\n            Lors de la première campagne, nous avons pu capturer des jardins avec une\n            plus grande abondance de fleurs qu'en septembre. Cependant, le principal\n            défi rencontré a été la chaleur. La capture de dizaines de milliers\n            de photographies sous des températures élevées a provoqué des dysfonctionnements\n            répétés de notre matériel. Malgré ces conditions, nous avons réalisé\n            environ cinquante scans au total au Domaine de Chaumont-sur-Loire.\n          </p>\n\n          <p>\n            Nous avons utilisé PhotoCatch pour générer des modèles 3D à partir des\n            photographies collectées. Chaque image correspond à une fleur, générée par\n            des algorithmes de photogrammétrie qui traduisent les images 2D en modèles 3D.\n          </p>",
       "page-31.caption-below-1": "Génération d'un modèle géométrique 3D et d'une image 2D<br>pour les valeurs de couleur à partir d'un ensemble de photos.",
@@ -134,7 +134,7 @@
     },
     "holo-botanics": {
       "page-cover.section-title-1": "Holo-botanique",
-      "page-cover.section-subtitle-1": "Jardins virtuels en réalité augmentée",
+      "page-cover.section-subtitle-1": "Jardins virtuels<br>en réalité augmentée",
       "youtube-videos.section-title-lg-1": "Essais vidéo",
       "youtube-videos.body-text-1": "<p>Les quatre animations ci-dessous sont les vidéos finales produites lors de l'exploration de la notion de \"holo-botanique.\" Pour une expérience de visionnage optimale, veuillez sélectionner la qualité la plus élevée disponible dans le menu des paramètres en haut à droite du lecteur vidéo.</p>",
       "youtube-videos.video-heading-1": "Essai vidéo présenté lors de la conférence<br>à la Maison des Métallos",
@@ -189,7 +189,7 @@
     },
     "ar-apps": {
       "page-47.section-title-1": "Applications RA",
-      "page-47.section-subtitle-1": "Festum Virtual · Spolia Botanique<br />\n        Floral Tracer",
+      "page-47.section-subtitle-1": "Festum Virtual<br />\n        Spolia Botanique<br />\n        Floral Tracer",
       "youtube-video.section-title-lg-1": "Présentation des<br>3 applications RA",
       "youtube-video.body-text-1": "<p>\n                Pour une expérience de visionnage optimale, veuillez sélectionner la qualité\n                la plus élevée disponible dans le menu des paramètres en haut à droite du\n                lecteur vidéo.\n              </p>",
       "youtube-video.video-quality-note-1": "<p>\n          Cliquez sur l'icône dans le coin supérieur droit de la vidéo pour visionner en\n          haute qualité 4K\n        </p>",

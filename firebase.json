@@ -4,7 +4,16 @@
     "ignore": [
       "firebase.json",
       "**/.*",
-      "**/node_modules/**"
+      ".git/**",
+      ".firebase/**",
+      ".claude/**",
+      "**/node_modules/**",
+      "tests/**",
+      "test-results/**",
+      "scripts/**",
+      "playwright.config.js",
+      "package.json",
+      "package-lock.json"
     ]
   }
 }
