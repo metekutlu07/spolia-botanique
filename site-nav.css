@@ -10,6 +10,7 @@
   --page-caption-font-size: 17px;
   --page-caption-line-height: 1.6;
   --page-caption-letter-spacing: 0.5px;
+  --mobile-menu-link-lift: -18px;
 }
 
 .top-nav,
@@ -525,6 +526,7 @@ body.spa-mode #main-nav {
   #main-nav .nav-mobile-panel .nav-links {
     margin-left: 0 !important;
     margin-right: 0 !important;
+    transform: translateY(var(--mobile-menu-link-lift)) !important;
   }
 
   .top-nav > .nav-links,
@@ -739,6 +741,7 @@ body.spa-mode #main-nav {
 
   .layout-center-w,
   .layout-center-h,
+  .layout-center,
   .layout-full-caption,
   .layout-compare,
   .layout-local-video,
@@ -761,7 +764,7 @@ body.spa-mode #main-nav {
   }
 
   .layout-full-caption .caption-below-bar {
-    padding: 10px var(--mobile-page-pad) 28px !important;
+    padding: 10px 0 28px !important;
   }
 
   .layout-center-w .center-block,
@@ -786,6 +789,12 @@ body.spa-mode #main-nav {
 
   .layout-img-caption .img-cap-text {
     padding: 22px 0 32px !important;
+  }
+
+  .layout-center,
+  .layout-compare {
+    padding-left: var(--mobile-page-pad) !important;
+    padding-right: var(--mobile-page-pad) !important;
   }
 
   .layout-right,
@@ -892,6 +901,26 @@ body.spa-mode #main-nav {
   .video-title-block {
     padding-left: var(--mobile-page-pad) !important;
     padding-right: var(--mobile-page-pad) !important;
+  }
+
+  .layout-full-caption .caption-below-bar {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  #page-27 > div[style],
+  #page-27 .full-image[style] {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  #page-27 .full-image img[style] {
+    width: 100% !important;
+    max-height: none !important;
+  }
+
+  #page-28.layout-full .bg-image {
+    object-fit: contain !important;
   }
 
   #page-9 .team-mobile-image {

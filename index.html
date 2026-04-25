@@ -1282,8 +1282,8 @@
 	        const discoverBtn = document.getElementById('discover-btn');
 	        const veil        = document.getElementById('page-veil');
         const mobileMedia = window.matchMedia('(max-width: 767px)');
-        const backgroundLowVolume = () => mobileMedia.matches ? 0.025 : 0.1;
-        const backgroundFullVolume = () => mobileMedia.matches ? 0.18 : 0.7;
+        const backgroundLowVolume = () => mobileMedia.matches ? 0.012 : 0.1;
+        const backgroundFullVolume = () => mobileMedia.matches ? 0.12 : 0.7;
         let backgroundFadeFrame = null;
         audio.volume = backgroundLowVolume();
         const pollenAudio = {
@@ -1468,6 +1468,11 @@
         }
 
         mobileMedia.addEventListener?.('change', () => {
+            audio.volume = document.body.classList.contains('home-ready')
+                ? backgroundFullVolume()
+                : backgroundLowVolume();
+        });
+        audio.addEventListener('play', () => {
             audio.volume = document.body.classList.contains('home-ready')
                 ? backgroundFullVolume()
                 : backgroundLowVolume();
@@ -1959,6 +1964,78 @@
                     }
                     .image-col.with-caption-below .img-wrap img {
                         max-height: calc(100vh - var(--nav-h) - 140px) !important;
+                    }
+                }
+
+                @media (max-width: 1140px) {
+                    :root {
+                        --mobile-page-pad: 20px;
+                        --mobile-page-gap: 12px;
+                        --mobile-image-bottom-gap: 22px;
+                    }
+
+                    .layout-center,
+                    .layout-center-w,
+                    .layout-center-h,
+                    .layout-full-caption,
+                    .layout-compare,
+                    .layout-local-video,
+                    .layout-img-caption {
+                        min-height: auto !important;
+                        padding-left: var(--mobile-page-pad) !important;
+                        padding-right: var(--mobile-page-pad) !important;
+                    }
+
+                    .layout-right,
+                    .layout-left {
+                        display: flex !important;
+                        flex-direction: column !important;
+                        min-height: auto !important;
+                        overflow: visible !important;
+                    }
+
+                    .text-side {
+                        min-height: auto !important;
+                        padding: calc(var(--nav-h) + 42px) var(--mobile-page-pad) 32px var(--mobile-page-pad) !important;
+                        justify-content: flex-start !important;
+                    }
+
+                    .layout-right .image-col,
+                    .layout-left .image-col {
+                        min-height: auto !important;
+                        width: 100% !important;
+                        padding: 0 var(--mobile-page-pad) var(--mobile-image-bottom-gap) var(--mobile-page-pad) !important;
+                        overflow: visible !important;
+                    }
+
+                    .layout-right .image-col > img,
+                    .layout-left .image-col > img,
+                    .image-col.with-caption-below .img-wrap img,
+                    .image-col.h-70 img,
+                    .image-col.h-80 img,
+                    .image-col.h-90 img,
+                    .image-col.h-padded img {
+                        width: 100% !important;
+                        height: auto !important;
+                        max-width: 100% !important;
+                        max-height: none !important;
+                        object-fit: contain !important;
+                    }
+
+                    .layout-full-caption .caption-below-bar,
+                    #page-27 > div[style],
+                    #page-27 .full-image[style] {
+                        padding-left: 0 !important;
+                        padding-right: 0 !important;
+                    }
+
+                    #page-27 .full-image img[style] {
+                        width: 100% !important;
+                        max-height: none !important;
+                    }
+
+                    #page-28.layout-full .bg-image {
+                        object-fit: contain !important;
                     }
                 }
             `;

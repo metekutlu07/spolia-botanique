@@ -1,6 +1,8 @@
 (function () {
   const cache = new Map()
   let _autoplayObserver = null
+  let _autoplayVideos = []
+  let _autoplayKeepAlive = null
 
   function normalizeLang(lang) {
     return lang === 'fr' ? 'fr' : 'en'
@@ -118,6 +120,20 @@
       _autoplayObserver.disconnect()
       _autoplayObserver = null
     }
+    if (_autoplayKeepAlive) {
+      clearInterval(_autoplayKeepAlive)
+      _autoplayKeepAlive = null
+    }
+    _autoplayVideos = []
+  }
+
+  function replayVisibleVideos() {
+    _autoplayVideos.forEach((video) => {
+      if (video.dataset.inView === '1' && !video.ended) {
+        const tryPlay = video._spoliaTryPlay || (() => video.play().catch(() => {}))
+        tryPlay()
+      }
+    })
   }
 
   function initAutoplayVideos(root = document) {
@@ -125,6 +141,7 @@
     disconnectVideoObserver()
 
     const videos = [...root.querySelectorAll('video')].filter((video) => video.id !== 'bg-video')
+    _autoplayVideos = videos
 
     videos.forEach((video) => {
       if (video.dataset.autoplayReady === '1') return
@@ -134,6 +151,7 @@
       // preload="auto") and calls load() if the video hasn't started loading yet.
       // We do NOT call the returned tryPlay immediately — the IntersectionObserver does.
       const tryPlay = prepareAutoplayVideo(video)
+      video._spoliaTryPlay = tryPlay
 
       // Retry when the browser signals the video has data — only if still in viewport
       ;['loadedmetadata', 'loadeddata', 'canplay', 'canplaythrough', 'playing', 'stalled', 'suspend'].forEach((eventName) => {
@@ -152,12 +170,14 @@
 
     // Only play the video that is actually visible; pause everything else.
     // This prevents multiple simultaneous decode pipelines on heavy pages.
+    const observerRoot = root instanceof Element ? root : null
     _autoplayObserver = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         const video = entry.target
         if (entry.isIntersecting) {
           video.dataset.inView = '1'
-          video.play().catch(() => {})
+          const tryPlay = video._spoliaTryPlay || (() => video.play().catch(() => {}))
+          tryPlay()
         } else {
           video.dataset.inView = '0'
           // Only pause if actually playing to avoid disrupting preload on
@@ -165,24 +185,19 @@
           if (!video.paused) video.pause()
         }
       })
-    }, { rootMargin: '0px', threshold: 0.1 })
+    }, { root: observerRoot, rootMargin: '120px 0px', threshold: 0.01 })
 
     videos.forEach((video) => _autoplayObserver.observe(video))
-
-    const replayAll = () => {
-      videos.forEach((video) => {
-        if (video.dataset.inView === '1') video.play().catch(() => {})
-      })
-    }
+    _autoplayKeepAlive = setInterval(replayVisibleVideos, 1400)
 
     if (!document.documentElement.dataset.videoAutoplayListenersReady) {
       document.documentElement.dataset.videoAutoplayListenersReady = '1'
       document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') replayAll()
+        if (document.visibilityState === 'visible') replayVisibleVideos()
       })
-      window.addEventListener('pageshow', replayAll)
-      window.addEventListener('focus', replayAll)
-      window.addEventListener('pointerdown', replayAll, { passive: true })
+      window.addEventListener('pageshow', replayVisibleVideos)
+      window.addEventListener('focus', replayVisibleVideos)
+      window.addEventListener('pointerdown', replayVisibleVideos, { passive: true })
     }
   }
 

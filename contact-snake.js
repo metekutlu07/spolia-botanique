@@ -26,6 +26,11 @@
   }
 
   function makeContactSnake(page) {
+    page.querySelectorAll('video').forEach(video => {
+      video.pause();
+      video.remove();
+    });
+
     const canvas = page.querySelector('.snake-canvas');
     const obstacleEl = page.querySelector('[data-snake-obstacle]');
     const scoreEl = page.querySelector('[data-snake-score]');
