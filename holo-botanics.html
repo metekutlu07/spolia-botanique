@@ -627,6 +627,56 @@
         }
 
         @media (max-width: 767px) {
+            .layout-full#page-70 .bg-image,
+            .layout-full#page-71 .bg-image {
+                object-fit: contain !important;
+                object-position: center !important;
+            }
+
+            .layout-full-caption {
+                min-height: auto !important;
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+                overflow: visible !important;
+            }
+
+            .layout-full-caption .full-image {
+                flex: none !important;
+                min-height: 0 !important;
+                width: 100vw !important;
+                margin-left: calc(-50vw + 50%) !important;
+                overflow: visible !important;
+            }
+
+            .layout-full-caption .full-image img {
+                width: 100vw !important;
+                height: auto !important;
+                max-width: none !important;
+                object-fit: contain !important;
+                object-position: center !important;
+            }
+
+            #page-69.layout-center-h {
+                min-height: auto !important;
+                padding: calc(var(--nav-h) + 16px) 0 20px !important;
+            }
+
+            #page-69 .center-block {
+                width: 100vw !important;
+            }
+
+            #page-69.layout-center-h.tall .center-block img {
+                width: 100vw !important;
+                height: auto !important;
+                max-height: calc(100svh - var(--nav-h) - 84px) !important;
+                object-fit: contain !important;
+            }
+
+            #page-69.layout-center-h .caption-below {
+                margin-top: 6px !important;
+                padding: 0 20px !important;
+            }
+
             .layout-videos {
                 padding: 60px 20px;
             }
@@ -638,18 +688,6 @@
             .video-container {
                 width: 100vw;
                 margin-left: calc(-50vw + 50%);
-            }
-            .caption-below-bar .full-image,
-            .full-image {
-                width: 100vw;
-                margin-left: calc(-50vw + 50%);
-                padding-left: 0;
-                padding-right: 0;
-            }
-            .caption-below-bar .full-image img,
-            .full-image img {
-                width: 100%;
-                max-width: none;
             }
         }
 

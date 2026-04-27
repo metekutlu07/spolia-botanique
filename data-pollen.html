@@ -1,0 +1,1616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Pollen</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root { --pollen-green:#49dca4; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#000; overflow:hidden; font-family:'IBM Plex Mono',monospace; }
+#c { display:block; width:100vw; height:100vh; }
+
+/* ── LOADING ── */
+#loading {
+  position:fixed; inset:0; background:#000; z-index:200;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  transition:opacity 1.2s; pointer-events:none;
+}
+#loading-text { font-size:13px; letter-spacing:0.5em; color:var(--pollen-green); text-transform:uppercase; font-weight:600; }
+#loading-bar { width:280px; height:1px; background:#111; margin-top:28px; }
+#loading-fill { height:100%; background:var(--pollen-green); width:0%; transition:width 0.3s; }
+
+/* Location tag */
+#location-tag {
+  position:fixed; bottom:24px; right:24px;
+  font-size:10px; letter-spacing:0.3em; color:var(--pollen-green);
+  text-transform:uppercase; pointer-events:none; opacity:0;
+  transition:opacity 1.2s; font-family:'IBM Plex Mono',monospace;
+  text-align:right; line-height:1.8;
+}
+#location-tag.visible { opacity:1; }
+
+/* ── INTRO SCREENS (shared) ── */
+.intro-screen {
+  position:fixed; inset:0;
+  background:#000;  /* solid black — no 3D bleed through */
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  z-index:100; pointer-events:all;
+  transition:opacity 0.6s ease;
+  padding:0 40px;
+}
+.intro-screen.hidden { opacity:0; pointer-events:none; display:none; }
+
+/* ── SCREEN 1: TITLE ── */
+#screen-title { position:fixed; inset:0; overflow:hidden; cursor:pointer; }
+#title-video {
+  position:absolute; inset:0; width:100%; height:100%;
+  object-fit:cover; opacity:1; z-index:0; pointer-events:none;
+  transition:opacity 0.8s ease;
+}
+#title-video::-webkit-media-controls,
+#title-video::-webkit-media-controls-panel,
+#title-video::-webkit-media-controls-start-playback-button {
+  display:none !important;
+  -webkit-appearance:none;
+}
+#title-overlay {
+  position:absolute; inset:0;
+  background:rgba(0,0,0,0.1);
+  z-index:1; pointer-events:none;
+}
+#title-content {
+  position:relative; z-index:2;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  height:100%; gap:0;
+  transition:opacity 0.8s ease;
+}
+#title-copyright { transition:opacity 0.8s ease; }
+body:not(.title-ready) #title-content,
+body:not(.title-ready) #title-copyright { opacity:0; }
+/* #title-video is NOT hidden — keeping it opacity:1 lets Safari autoplay it.
+   The #loading screen (z-index:200) already covers it visually during load. */
+#screen-title .game-title {
+  font-family:'Space Mono',monospace;
+  font-size:clamp(48px,9vw,110px);
+  font-weight:700; letter-spacing:0.2em; color:#ffffff;
+  text-shadow:0 0 40px rgba(255,255,255,0.4), 0 0 80px rgba(255,255,255,0.15);
+  text-align:center; margin-bottom:0;
+  animation: breathe 4s ease-in-out infinite;
+}
+#title-copyright {
+  position:absolute; bottom:24px; right:32px;
+  font-size:13px; letter-spacing:0.2em; color:rgba(255,255,255,1);
+  font-family:'IBM Plex Mono',monospace;
+}
+@keyframes breathe {
+  0%,100% { text-shadow:0 0 40px rgba(255,255,255,0.4),0 0 80px rgba(255,255,255,0.15); }
+  50%      { text-shadow:0 0 70px rgba(255,255,255,0.7),0 0 140px rgba(255,255,255,0.3); }
+}
+.intro-hint {
+  font-size:clamp(15px,2vw,22px); letter-spacing:0.5em; color:rgba(255,255,255,0.7);
+  text-transform:uppercase; animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:0.3} 50%{opacity:1} }
+
+/* ── SOUND ── */
+.sound-btn {
+  width:42px; height:42px; border:1px solid rgba(73,220,164,0.65);
+  background:rgba(4,1,10,0.65); color:var(--pollen-green);
+  display:flex; align-items:center; justify-content:center;
+  font-size:18px; line-height:1; cursor:pointer; border-radius:0;
+  transition:background-color 0.16s ease,border-color 0.16s ease,color 0.16s ease;
+}
+.sound-btn:hover { border-color:#d8b0ff; color:#f0d0ff; background:rgba(25,10,45,0.9); }
+.sound-btn.off { color:rgba(73,220,164,0.35); border-color:rgba(73,220,164,0.25); }
+.speaker-icon { width:18px; height:18px; display:block; flex-shrink:0; }
+.speaker-mute { display:none; }
+.sound-btn.off .speaker-waves { display:none; }
+.sound-btn.off .speaker-mute { display:block; }
+#intro-sound-toggle { position:fixed; top:24px; right:24px; z-index:130; }
+body.game-active #intro-sound-toggle { display:none; }
+body:not(.game-active) #intro-sound-toggle { color:rgba(255,255,255,0.8); border-color:rgba(255,255,255,0.35); background:rgba(0,0,0,0.3); }
+body:not(.game-active) #intro-sound-toggle:hover { color:#fff; border-color:rgba(255,255,255,0.7); background:rgba(0,0,0,0.5); }
+body:not(.game-active) #intro-sound-toggle.off { color:rgba(255,255,255,0.25); border-color:rgba(255,255,255,0.15); }
+#title-back-link {
+  position:absolute; bottom:24px; left:32px; z-index:3;
+  font-size:12px; letter-spacing:0.2em; color:#fff;
+  font-family:'IBM Plex Mono',monospace; text-decoration:none;
+  text-transform:uppercase; font-weight:400;
+  border:1px solid rgba(255,255,255,0.65); padding:10px 22px;
+  background:rgba(0,0,0,0.25); transition:background 0.2s,border-color 0.2s;
+}
+#title-back-link:hover { background:rgba(0,0,0,0.55); border-color:#fff; }
+
+/* ── SCREENS 2-4: IMAGE SLIDES ── */
+#screen-slides { padding:0; }
+.slide {
+  position:absolute; inset:0; opacity:0; transition:opacity 0.8s ease; pointer-events:none;
+  background:#000; display:flex; align-items:center; justify-content:center;
+}
+.slide.active { opacity:1; pointer-events:none; }
+.slide > img { max-width:100%; max-height:90vh; width:auto; height:auto; object-fit:contain; display:block; }
+.slide-btn {
+  position:absolute; bottom:44px; right:60px; z-index:5;
+  background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.22); color:rgba(255,255,255,0.7);
+  padding:12px 36px; font-family:'IBM Plex Mono',monospace; font-size:11px;
+  letter-spacing:0.5em; text-transform:uppercase; cursor:pointer;
+  transition:border-color 0.2s,color 0.2s,background 0.2s; font-weight:600; border-radius:0;
+}
+.slide-btn:hover { border-color:rgba(255,255,255,0.6); color:#fff; background:rgba(0,0,0,0.55); }
+
+/* Flowers slide */
+.flowers-slide {
+  width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:28px; padding:36px 60px; box-sizing:border-box;
+}
+.flowers-slide-title {
+  font-family:'Space Mono',monospace; font-weight:700; font-size:clamp(13px,2vw,22px);
+  letter-spacing:0.4em; color:#d8b0ff; text-transform:uppercase; text-align:center; flex-shrink:0;
+}
+.flowers-items { display:flex; align-items:flex-start; justify-content:center; gap:clamp(16px,3vw,48px); width:100%; }
+.flower-item { flex:1; max-width:260px; display:flex; flex-direction:column; align-items:center; gap:12px; }
+.flower-item img { width:100%; max-height:46vh; object-fit:contain; display:block; }
+.fi-name { font-family:'Space Mono',monospace; font-weight:700; font-size:clamp(11px,1.4vw,17px); letter-spacing:0.1em; text-transform:uppercase; text-align:center; color:#fff; line-height:1.3; }
+.fi-pollen { font-family:'Space Mono',monospace; font-weight:700; font-size:clamp(10px,1.2vw,15px); letter-spacing:0.08em; text-align:center; color:rgba(255,255,255,0.7); }
+.fi-data { font-family:'IBM Plex Mono',monospace; font-size:clamp(9px,1vw,13px); letter-spacing:0.06em; text-align:center; color:rgba(255,255,255,0.45); }
+
+/* ── SCREEN 3: POLLEN PACKETS ── */
+.flower-grid {
+  display:grid; grid-template-columns:repeat(4,1fr);
+  gap:clamp(14px,2.5vw,32px); width:100%; max-width:1160px;
+  margin-bottom:36px; padding:0 20px;
+}
+.flower-card { display:flex; flex-direction:column; align-items:center; gap:14px; }
+.flower-img-frame {
+  width:100%; aspect-ratio:1; border:1px solid var(--fc);
+  box-shadow:0 0 22px var(--fc); overflow:hidden;
+}
+.flower-img-frame img { width:100%; height:100%; object-fit:cover; display:block; }
+.flower-card-name {
+  font-family:'Space Mono',monospace; font-size:clamp(12px,1.6vw,20px);
+  font-weight:700; color:var(--fc); letter-spacing:0.08em;
+  text-align:center; line-height:1.3; text-transform:uppercase;
+}
+.flower-card-pollens {
+  font-family:'Space Mono',monospace; font-size:clamp(14px,1.7vw,21px);
+  font-weight:700; color:#fff; letter-spacing:0.05em; text-align:center;
+}
+.flower-card-data {
+  font-family:'IBM Plex Mono',monospace; font-size:clamp(11px,1.3vw,16px);
+  color:rgba(255,255,255,0.6); letter-spacing:0.06em; text-align:center;
+}
+
+/* ── SCREEN 4: CONTROLS ── */
+#screen-controls .controls-block { max-width:780px; width:95%; margin-bottom:36px; }
+#screen-controls h2, #screen-pollens h2 {
+  font-family:'Space Mono',monospace; font-size:clamp(16px,2.5vw,24px);
+  letter-spacing:0.4em; color:#d8b0ff; text-transform:uppercase;
+  text-align:center; margin-bottom:28px; font-weight:700;
+}
+.ctrl-group {
+  background:rgba(8,3,18,0.7); padding:24px 40px;
+  border:0.5px solid rgba(73,220,164,0.25); border-radius:0;
+  max-width:500px; margin:0 auto;
+}
+.ctrl-row { font-size:clamp(14px,1.8vw,18px); color:var(--pollen-green); letter-spacing:0.06em; line-height:2.8; font-family:'IBM Plex Mono',monospace; white-space:nowrap; }
+.ctrl-key { color:var(--pollen-green); font-weight:700; font-family:'Space Mono',monospace; font-size:1.05em; }
+
+/* Pollen packet grid */
+.pollen-packet-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:8px; }
+.pollen-packet {
+  background:rgba(8,3,18,0.7); border:0.5px solid var(--fc);
+  border-radius:0; padding:20px 16px; text-align:center;
+  display:flex; flex-direction:column; align-items:center; gap:10px;
+  min-width:0;
+}
+.pp-spores { width:70px; height:70px; position:relative; flex-shrink:0; }
+.pp-dot {
+  position:absolute; border-radius:50%;
+  background:var(--fc); opacity:0.7;
+  box-shadow:0 0 6px var(--fc);
+}
+.pp-name {
+  font-size:13px; color:var(--pollen-green); letter-spacing:0.08em;
+  font-family:'IBM Plex Mono',monospace; font-weight:600;
+  white-space:nowrap; line-height:1.3;
+}
+.pp-count {
+  font-size:12px; color:var(--pollen-green); letter-spacing:0.1em;
+  font-family:'IBM Plex Mono',monospace; line-height:1.6;
+}
+
+/* ── NAV BUTTONS ── */
+.nav-btn {
+  background:rgba(15,6,28,0.8); border:1px solid #7a50b0; color:#c0a8e0;
+  padding:16px 56px; font-family:'IBM Plex Mono',monospace; font-size:13px;
+  letter-spacing:0.5em; text-transform:uppercase; cursor:pointer;
+  transition:background-color 0.16s ease,border-color 0.16s ease,color 0.16s ease;
+  font-weight:600; border-radius:0;
+  will-change:background-color,border-color,color;
+  touch-action:manipulation;
+}
+.nav-btn:hover { border-color:#d8b0ff; color:#f0d0ff; background:rgba(25,10,45,0.9); }
+
+/* Password chars inside panel */
+#pw-chars { font-size:clamp(14px,1.8vw,20px); letter-spacing:0.36em; font-weight:700; font-family:'Space Mono',monospace; text-align:center; line-height:1.8; word-break:keep-all; }
+#pw-chars .ch { display:inline-block; color:var(--pollen-green); transition:color 0.5s,text-shadow 0.5s; }
+#pw-chars .ch.lit { color:#ffddff; text-shadow:0 0 10px rgba(255,200,255,1),0 0 24px rgba(200,100,255,0.7); }
+#pw-chars .word-gap { display:inline-block; width:0.85em; }
+
+/* ── SIDEBAR — full height left column ── */
+#sidebar {
+  position:fixed; top:0; left:0; bottom:0;
+  width:320px;
+  background:rgba(4,1,10,0.93);
+  border-right:0.5px solid rgba(140,90,180,0.25);
+  display:flex; flex-direction:column;
+  pointer-events:none; opacity:0; transition:opacity 1.2s;
+  z-index:10;
+}
+#sidebar.visible { opacity:1; pointer-events:auto; }
+
+/* Logo at top */
+#sidebar-logo {
+  padding:22px 24px 16px;
+  border-bottom:0.5px solid rgba(73,220,164,0.12);
+  text-align:center;
+  flex-shrink:0;
+  cursor:pointer;
+}
+#sidebar-logo img { width:100%; max-width:240px; height:auto; }
+
+/* Scrollable middle content */
+#sidebar-content {
+  flex:1; overflow-y:auto; padding:0;
+  scrollbar-width:none;
+  display:flex; flex-direction:column; justify-content:space-between;
+}
+#sidebar-content::-webkit-scrollbar { display:none; }
+
+.panel-section {
+  padding:20px 24px;
+  border-bottom:0.5px solid rgba(73,220,164,0.08);
+}
+.panel-section:last-child { border-bottom:none; }
+.panel-title {
+  font-size:13px; letter-spacing:0.45em; color:var(--pollen-green);
+  text-transform:uppercase; font-weight:600;
+  margin-bottom:16px; font-family:'IBM Plex Mono',monospace;
+  text-align:center;
+}
+
+/* Password chars */
+#pw-chars {
+  font-size:18px; letter-spacing:0.22em; font-weight:700;
+  font-family:'Space Mono',monospace; text-align:center;
+  line-height:2.2; word-break:keep-all; color:var(--pollen-green);
+}
+#pw-chars .ch { display:inline-block; transition:color 0.5s,text-shadow 0.5s; }
+#pw-chars .ch.lit { color:#ffddff; text-shadow:0 0 10px rgba(255,200,255,1),0 0 24px rgba(200,100,255,0.7); }
+
+/* Pollen circles */
+#pollen-circles { display:flex; flex-direction:column; align-items:center; gap:14px; }
+.pollen-group { display:flex; flex-direction:column; align-items:center; gap:5px; }
+.pollen-group-label {
+  font-size:11px; color:var(--pollen-green); letter-spacing:0.15em;
+  font-family:'IBM Plex Mono',monospace; font-weight:400;
+  text-align:center; text-transform:uppercase;
+}
+.pollen-dots { display:flex; flex-direction:row; gap:8px; align-items:center; justify-content:center; }
+.pdot {
+  width:17px; height:17px; border-radius:50%;
+  border:1.5px solid; opacity:0.3; transition:opacity 0.4s, box-shadow 0.4s;
+  flex-shrink:0;
+}
+.pdot.filled { opacity:1; box-shadow:0 0 10px currentColor; }
+
+/* Data bar */
+#data-bar-wrap { text-align:center; }
+#data-bar-nums { font-size:15px; letter-spacing:0.15em; color:var(--pollen-green); font-weight:700; font-family:'Space Mono',monospace; margin-bottom:10px; }
+#data-bar-bg { width:100%; height:6px; background:rgba(255,255,255,0.06); overflow:hidden; }
+#data-bar-fill { height:100%; width:0%; background:var(--pollen-green); transition:width 0.6s ease; }
+
+/* WiFi */
+#wifi-wrap { text-align:center; }
+#signal-label-text { display:none; }
+
+/* Caption at bottom */
+#sidebar-caption {
+  padding:14px 24px;
+  border-top:0.5px solid rgba(73,220,164,0.12);
+  flex-shrink:0;
+}
+#sidebar-caption .caption-title {
+  font-size:11px; letter-spacing:0.3em; color:var(--pollen-green);
+  text-transform:uppercase; font-weight:600;
+  font-family:'IBM Plex Mono',monospace; margin-bottom:8px;
+  text-align:left;
+}
+#sidebar-caption .caption-text {
+  font-size:10px; letter-spacing:0.1em; color:var(--pollen-green);
+  font-family:'IBM Plex Mono',monospace; line-height:2.0;
+  text-align:left;
+}
+.sidebar-credit-row {
+  display:flex; align-items:center; gap:12px; margin-top:12px;
+}
+#sidebar-sound-toggle { flex:0 0 34px; width:34px; height:34px; font-size:15px; }
+.sidebar-credit {
+  color:rgba(73,220,164,0.78); font-size:9px; letter-spacing:0.08em;
+  line-height:1.5; font-family:'IBM Plex Mono',monospace;
+}
+.sidebar-song {
+  color:rgba(73,220,164,0.45); font-size:9px; letter-spacing:0.08em;
+  line-height:1.5; font-family:'IBM Plex Mono',monospace; margin-top:3px;
+}
+
+/* Canvas offset to the right of sidebar */
+#c { position:fixed; top:0; left:320px; width:calc(100vw - 320px); height:100vh; display:block; }
+
+/* ── Collect flash ── */
+#glyph-rain {
+  position:fixed; top:0; left:320px; width:calc(100vw - 320px); height:100vh;
+  pointer-events:none; z-index:22; opacity:0; transition:opacity 0.35s ease;
+}
+#glyph-rain.visible {
+  opacity:1;
+}
+#collect-flash {
+  position:fixed; top:50%; left:calc(320px + (100vw - 320px)/2);
+  transform:translate(-50%,-50%); text-align:center; pointer-events:none;
+  opacity:0; transition:opacity 0.25s; z-index:24;
+}
+#collect-flash.visible { opacity:1; }
+/* Gains phase */
+#flash-gains { text-align:center; }
+#flash-gains > div {
+  font-family:'Space Mono',monospace; font-weight:400;
+  font-size:clamp(16px,2.2vw,28px); letter-spacing:0.08em;
+  color:#fff; text-transform:uppercase; margin-bottom:14px;
+}
+#flash-flower {
+  display:inline-block;
+  border:1px solid rgba(255,255,255,0.65);
+  padding:10px 28px; margin-bottom:20px;
+}
+/* Decrypt phase */
+#flash-decrypt { text-align:center; display:none; }
+#flash-decrypt-label {
+  font-size:clamp(13px,1.8vw,20px); letter-spacing:0.5em; color:#fff;
+  text-transform:uppercase; font-family:'Space Mono',monospace;
+  font-weight:400; margin-bottom:28px;
+}
+#flash-letter { display:flex; flex-wrap:wrap; justify-content:center; gap:10px; }
+.letter-box {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:clamp(40px,5vw,62px); height:clamp(40px,5vw,62px);
+  border:1.5px solid rgba(255,255,255,0.65);
+  font-size:clamp(18px,2.5vw,30px); color:#fff; font-weight:400;
+  font-family:'Space Mono',monospace;
+}
+/* Downloading label */
+#downloading-label {
+  position:fixed; top:50%; left:calc(320px + (100vw - 320px)/2);
+  transform:translate(-50%,-50%);
+  font-size:clamp(16px,2.2vw,26px); letter-spacing:0.5em; color:var(--pollen-green);
+  text-transform:uppercase; font-family:'IBM Plex Mono',monospace;
+  font-weight:400; opacity:0; transition:opacity 0.4s;
+  z-index:25; pointer-events:none; white-space:nowrap;
+}
+
+/* ── Proximity hint ── */
+#proximity-hint { position:fixed; bottom:30px; left:calc(320px + (100vw - 320px)/2); transform:translateX(-50%); font-size:13px; letter-spacing:0.5em; color:#9a7aba; text-transform:uppercase; opacity:0; transition:opacity 0.4s; pointer-events:none; font-weight:600; background:rgba(8,3,18,0.85); padding:10px 20px; border:0.5px solid rgba(150,100,180,0.4); white-space:nowrap; }
+
+/* ── Crosshair ── */
+#crosshair { position:fixed; top:50%; left:calc(320px + (100vw - 320px)/2); transform:translate(-50%,-50%); width:16px; height:16px; opacity:0; transition:opacity 0.5s; pointer-events:none; }
+#crosshair.visible { opacity:1; }
+#crosshair::before,#crosshair::after { content:''; position:absolute; background:rgba(180,130,220,0.5); }
+#crosshair::before { width:1px; height:100%; left:50%; top:0; }
+#crosshair::after { width:100%; height:1px; top:50%; left:0; }
+
+/* ── Full poem ── */
+#full-poem { position:fixed; inset:0; background:linear-gradient(160deg,rgba(0,0,5,0.98) 0%,rgba(8,3,18,0.97) 100%); display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 1.2s; z-index:50; padding:32px; }
+#full-poem.visible { opacity:1; pointer-events:all; }
+#poem-stage-1 { display:flex; flex-direction:column; align-items:center; gap:24px; transition:opacity 1s ease; }
+#poem-stage-2 { display:none; flex-direction:column; align-items:center; opacity:0; transition:opacity 1.2s ease; }
+#full-poem .pw-success { font-size:11px; letter-spacing:0.7em; color:var(--pollen-green); text-transform:uppercase; font-family:'IBM Plex Mono',monospace; }
+#pw-shown { display:flex; flex-wrap:wrap; justify-content:center; gap:8px; }
+.pw-char {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:clamp(38px,5vw,62px); height:clamp(38px,5vw,62px);
+  border-bottom:2px solid rgba(216,176,255,0.8);
+  font-size:clamp(20px,3.5vw,44px); color:#d8b0ff; font-weight:700;
+  font-family:'Space Mono',monospace;
+}
+.pw-space { display:inline-block; width:clamp(16px,2vw,28px); }
+#full-poem .poem-lines { text-align:center; max-width:560px; }
+#full-poem .poem-line { font-size:clamp(13px,1.7vw,16px); color:#9070b0; letter-spacing:0.1em; font-weight:400; line-height:2.35; opacity:0; transition:opacity 1.4s ease; text-transform:lowercase; }
+#full-poem .poem-line.show { opacity:1; }
+#poem-home-hint { margin-top:30px; font-size:10px; color:var(--pollen-green); letter-spacing:0.45em; text-transform:uppercase; font-family:'IBM Plex Mono',monospace; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<audio id="ambient-audio" src="data-pollen/froth.mp3" loop preload="auto"></audio>
+<button class="sound-btn" id="intro-sound-toggle" type="button" aria-label="Turn sound off"><svg class="speaker-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor" stroke="none"/><g class="speaker-waves"><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></g><g class="speaker-mute"><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></g></svg></button>
+
+<div id="loading">
+  <div id="loading-text">initializing vegetal network</div>
+  <div id="loading-bar"><div id="loading-fill"></div></div>
+</div>
+
+<!-- SCREEN 1: TITLE -->
+<div class="intro-screen" id="screen-title">
+  <video id="title-video" autoplay muted loop playsinline webkit-playsinline preload="auto">
+    <source src="data-pollen/bee04.mp4" type="video/mp4">
+  </video>
+  <div id="title-overlay"></div>
+  <div id="title-content">
+    <img src="data-pollen/data-pollen-logo.png" alt="Data Pollen" style="max-width:clamp(420px,70vw,980px); width:90%; height:auto; margin-bottom:0; animation: breathe 4s ease-in-out infinite; filter:drop-shadow(0 0 40px rgba(255,255,255,0.3));">
+    <div class="intro-hint" style="margin-top:40px;">Press Enter or click to continue</div>
+  </div>
+  <div id="title-copyright">© Mete Kutlu, 2026.</div>
+  <a id="title-back-link" href="/">Back to Spolia Botanique</a>
+</div>
+
+<!-- SCREENS 2-5: IMAGE SLIDES -->
+<div class="intro-screen hidden" id="screen-slides">
+  <div class="slide" id="slide-0"><img src="data-pollen/story.jpg" alt="Story"></div>
+  <div class="slide" id="slide-1"><img src="data-pollen/mission.jpg" alt="Mission"></div>
+  <div class="slide" id="slide-2">
+    <div class="flowers-slide">
+      <div class="flowers-slide-title">Pollen Packages</div>
+      <div class="flowers-items">
+      <div class="flower-item">
+        <img src="data-pollen/fairy-fan.png" alt="Fairy Fan-Flower">
+        <div class="fi-name">Fairy Fan-Flower</div>
+        <div class="fi-pollen">1 pollen</div>
+        <div class="fi-data">10 petabytes of data</div>
+      </div>
+      <div class="flower-item">
+        <img src="data-pollen/sweet-william.png" alt="Sweet William">
+        <div class="fi-name">Sweet William</div>
+        <div class="fi-pollen">2 pollens</div>
+        <div class="fi-data">20 petabytes of data</div>
+      </div>
+      <div class="flower-item">
+        <img src="data-pollen/petunia.png" alt="Petunia">
+        <div class="fi-name">Petunia</div>
+        <div class="fi-pollen">2 pollens</div>
+        <div class="fi-data">20 petabytes of data</div>
+      </div>
+      <div class="flower-item">
+        <img src="data-pollen/summer-lila.png" alt="Summer Lilac">
+        <div class="fi-name">Summer Lilac</div>
+        <div class="fi-pollen">3 pollens</div>
+        <div class="fi-data">30 petabytes of data</div>
+      </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide" id="slide-3"><img src="data-pollen/controls.jpg" alt="Controls"></div>
+  <button class="slide-btn" id="slide-next" onclick="advanceSlide()">Next →</button>
+</div>
+
+<!-- GAME UI -->
+<div id="crosshair"></div>
+
+<!-- FULL HEIGHT SIDEBAR -->
+<div id="sidebar">
+  <div id="sidebar-logo">
+    <img src="data-pollen/data-pollen-green.png" alt="Data Pollen">
+  </div>
+
+  <div id="sidebar-content">
+    <div class="panel-section">
+      <div class="panel-title">Password Decryption</div>
+      <div id="pw-chars"></div>
+    </div>
+    <div class="panel-section">
+      <div class="panel-title">Pollens Collected</div>
+      <div id="pollen-circles"></div>
+    </div>
+    <div class="panel-section">
+      <div class="panel-title">Data Stored</div>
+      <div id="data-bar-wrap">
+        <div id="data-bar-nums">0 / 130 petabytes</div>
+        <div id="data-bar-bg"><div id="data-bar-fill"></div></div>
+      </div>
+    </div>
+    <div class="panel-section">
+      <div class="panel-title">Pollen Signal</div>
+      <div id="wifi-wrap">
+        <svg width="101" height="82" viewBox="0 0 54 44">
+          <circle cx="27" cy="40" r="3.2" fill="#49dca4" opacity="0.18" id="arc-dot"/>
+          <path id="arc1" d="M19,33 Q27,26 35,33" fill="none" stroke="#49dca4" opacity="0.18" stroke-width="3" stroke-linecap="round"/>
+          <path id="arc2" d="M10,24 Q27,12 44,24" fill="none" stroke="#49dca4" opacity="0.18" stroke-width="3" stroke-linecap="round"/>
+          <path id="arc3" d="M2,15 Q27,0 52,15" fill="none" stroke="#49dca4" opacity="0.18" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div id="sidebar-caption">
+    <div class="caption-title">A Spolia Garden</div>
+    <div class="caption-text">
+      Based on a 3D scan of the gardens of the Castle of Chaumont-sur-Loire.<br>
+      12 July 2022 · No.F21
+    </div>
+    <div class="sidebar-credit-row">
+      <button class="sound-btn" id="sidebar-sound-toggle" type="button" aria-label="Turn sound off"><svg class="speaker-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor" stroke="none"/><g class="speaker-waves"><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></g><g class="speaker-mute"><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></g></svg></button>
+      <div class="sidebar-credit">Designed and developed by Mete Kutlu, 2026.</div>
+    </div>
+    <div class="sidebar-song">Song: Sculpture, Froth Surfer</div>
+  </div>
+</div>
+
+<div id="collect-flash">
+  <div id="flash-gains">
+    <div id="flash-flower"></div>
+    <div id="flash-pollen"></div>
+    <div id="flash-data-line"></div>
+  </div>
+  <div id="flash-decrypt">
+    <div id="flash-decrypt-label">Password Decryption</div>
+    <div id="flash-letter"></div>
+  </div>
+</div>
+<div id="downloading-label">Downloading data...</div>
+<canvas id="glyph-rain"></canvas>
+
+<div id="proximity-hint">[ F ] collect pollen</div>
+
+<div id="full-poem">
+  <div id="poem-stage-1">
+    <div class="pw-success">Password fully decrypted</div>
+    <div id="pw-shown"></div>
+  </div>
+  <div id="poem-stage-2">
+    <div class="poem-lines" id="poem-lines"></div>
+    <div id="poem-home-hint">press enter to return to homepage</div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="data-pollen/GLTFLoader.js"></script>
+<script src="data-pollen/DRACOLoader.js"></script>
+<script>
+if(typeof THREE.GLTFLoader === 'undefined'){
+  document.getElementById('loading-text').style.color='#c04040';
+  document.getElementById('loading-text').innerHTML='GLTFLoader.js missing';
+}
+</script>
+<script>
+
+// ── POEM + PASSWORD ─────────────────────────────────────────────────────────
+const PASSWORD = "HACKTHESYSTEM";
+const POEM = [
+  "Before there were circuits,",
+  "there were constellations.",
+  "Before there were servers,",
+  "there were seeds.",
+  "",
+  "Entire galaxies within each human.",
+  "Infinite constellations within each pollen.",
+  "A hundred blazing suns in every seed.",
+  "Chlorophyll, the first architect of the planet.",
+  "The code of life written out of stellar light.",
+  "",
+  "What you call data",
+  "once moved through stone,",
+  "then through sap,",
+  "then through silicon.",
+  "",
+  "Now it returns",
+  "to the vegetal archive,",
+  "to roots, to pollen, to breath,",
+  "to a system older than human memory.",
+  "",
+  "You are not in the garden.",
+  "You are the garden itself."
+];
+
+// ── FLOWER TYPES ─────────────────────────────────────────────────────────────
+// color, name, latin, petabytes per node, letters per node, pollen size
+const FLOWERS = {
+  fairy:    { color:0x60c0ff, colorHex:'#60c0ff', name:'Fairy Fan-Flower', latin:'Scaevola aemula',  pb:10, letters:1, size:0.009 },
+  williams: { color:0xff70a0, colorHex:'#ff70a0', name:'Sweet William',    latin:'Dianthus barbatus', pb:20, letters:2, size:0.011 },
+  petunia:  { color:0xff9030, colorHex:'#ff9030', name:'Petunia',          latin:'Petunia atkinsiana',pb:20, letters:2, size:0.011 },
+  lilac:    { color:0xc060ff, colorHex:'#c060ff', name:'Summer Lilac',     latin:'Buddleja davidii',  pb:30, letters:3, size:0.013 },
+};
+
+// ── POLLEN NODES ─────────────────────────────────────────────────────────────
+// 13 letters total: H A C K T H E S Y S T E M
+// Assigned per flower type, one password-letter index per pollen unit
+// Model bounds: X[-5.61,0.04] Y[-0.19,1.87] Z[-1.34,1.38]
+
+// Node = { pos, type, letterIndices[] }
+// 1 fairy (1 pollen = letters 0)
+// 1 williams (2 pollens = letters 1,2)
+// 2 petunias (2+2 pollens = letters 3,4 / 5,6)
+// 2 lilacs (3+3 pollens = letters 7,8,9 / 10,11,12)
+
+const NODES = [
+  // Positions read from null objects in child.glb
+  { pos:[-0.522, 0.033, 0.042],  type:'fairy',    letters:[0] },
+  { pos:[-1.958, 0.300, 0.104],  type:'williams', letters:[1,2] },
+  { pos:[-1.535, 0.171,-0.499],  type:'petunia',  letters:[3,4] },
+  { pos:[-3.909, 1.368, 0.539],  type:'petunia',  letters:[5,6] },
+  { pos:[-1.094, 1.277,-0.182],  type:'lilac',    letters:[7,8,9] },
+  { pos:[-4.053, 0.697,-0.176],  type:'lilac',    letters:[10,11,12] },
+];
+
+// ── GLOBALS ──────────────────────────────────────────────────────────────────
+let scene, camera, renderer;
+let pollenNodes = [], collectedCount = 0, totalPb = 0;
+let keys = {}, yaw = 0.3, pitch = -0.08;
+let isPlaying = false, nearestNode = null, nearestDist = Infinity;
+let flashTimeout, transferActive = false;
+const vel = new THREE.Vector3();
+const BEE_SPEED=0.15, BEE_DRAG=0.80, BEE_ACCEL=0.48;
+let roll=0, wingT=0, hoverT=0, hoverOffset=0, frameCount=0;
+let spaceHeld=false, pendingMouseX=0, pendingMouseY=0;
+
+// ── RENDERER ─────────────────────────────────────────────────────────────────
+const canvas = document.getElementById('c');
+const SIDEBAR_W = 320;
+function gameW(){ return innerWidth - SIDEBAR_W; }
+function gameH(){ return innerHeight; }
+
+renderer = new THREE.WebGLRenderer({
+  canvas,
+  antialias:false,
+  alpha:false,
+  powerPreference:'high-performance'
+});
+function renderPixelRatio(){ return Math.min(window.devicePixelRatio || 1, 1.35); }
+renderer.setPixelRatio(renderPixelRatio());
+renderer.setSize(gameW(), gameH());
+renderer.setClearColor(0x000000);
+renderer.setViewport(0, 0, gameW(), gameH());
+scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x000005, 0.09);
+camera = new THREE.PerspectiveCamera(80, gameW()/gameH(), 0.01, 30);
+camera.position.set(-1.5, 0.35, 1.5);
+scene.add(new THREE.AmbientLight(0x080812, 3.5));
+const dl = new THREE.DirectionalLight(0x6030a0, 1.5); dl.position.set(1,3,1); scene.add(dl);
+const dl2 = new THREE.DirectionalLight(0x49dca4,0.25); dl2.position.set(-2,1,-2); scene.add(dl2);
+
+// ── MATERIALS ────────────────────────────────────────────────────────────────
+function makeSurface(map){
+  return new THREE.MeshBasicMaterial({map, transparent:true, opacity:0.28, side:THREE.DoubleSide, depthWrite:false});
+}
+const wireMeshes = [];
+let wireMaterial = null;
+function getWireMaterial(){
+  if(wireMaterial) return wireMaterial;
+  wireMaterial = new THREE.ShaderMaterial({
+    uniforms:{time:{value:0}},
+    vertexShader:`varying vec3 vP;void main(){vP=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
+    fragmentShader:`
+      uniform float time;
+      varying vec3 vP;
+      float hash(vec3 p){
+        p=fract(p*.3183099+vec3(.11,.17,.13));
+        p*=17.;
+        return fract(p.x*p.y*p.z*(p.x+p.y+p.z));
+      }
+      float noise(vec3 p){
+        vec3 i=floor(p);
+        vec3 f=fract(p);
+        f=f*f*(3.-2.*f);
+        float n000=hash(i+vec3(0.,0.,0.));
+        float n100=hash(i+vec3(1.,0.,0.));
+        float n010=hash(i+vec3(0.,1.,0.));
+        float n110=hash(i+vec3(1.,1.,0.));
+        float n001=hash(i+vec3(0.,0.,1.));
+        float n101=hash(i+vec3(1.,0.,1.));
+        float n011=hash(i+vec3(0.,1.,1.));
+        float n111=hash(i+vec3(1.,1.,1.));
+        float nx00=mix(n000,n100,f.x);
+        float nx10=mix(n010,n110,f.x);
+        float nx01=mix(n001,n101,f.x);
+        float nx11=mix(n011,n111,f.x);
+        float nxy0=mix(nx00,nx10,f.y);
+        float nxy1=mix(nx01,nx11,f.y);
+        return mix(nxy0,nxy1,f.z);
+      }
+      float fbm(vec3 p){
+        float v=0.;
+        float a=.55;
+        for(int i=0;i<4;i++){
+          v+=noise(p)*a;
+          p=p*2.13+vec3(11.7,4.8,8.3);
+          a*=.48;
+        }
+        return v;
+      }
+      void main(){
+        float n=fbm(vP*3.2+vec3(time*.035,time*.018,0.));
+        float patches=smoothstep(.38,.86,n);
+        float shimmer=.5+.5*sin(time*.8+n*6.283);
+        float glow=mix(patches,patches*shimmer,.22);
+        vec3 c=mix(vec3(.18,.0,.42),vec3(.286,.862,.643),glow);
+        gl_FragColor=vec4(c,.09+glow*.23);
+      }`,
+    transparent:true,
+    wireframe:true,
+    depthWrite:false,
+    blending:THREE.AdditiveBlending
+  });
+  return wireMaterial;
+}
+function makeWire(geo){
+  const m = new THREE.Mesh(geo, getWireMaterial());
+  wireMeshes.push(m);
+  return m;
+}
+
+// ── CIRCLE TEXTURE ───────────────────────────────────────────────────────────
+function makeCircleTex(hex){
+  const cv = document.createElement('canvas');
+  cv.width = cv.height = 64;
+  const cx = cv.getContext('2d');
+  const r = 32;
+  const grad = cx.createRadialGradient(r,r,0,r,r,r);
+  // Parse hex color
+  const c = parseInt(hex.replace('#',''),16);
+  const R=(c>>16)&255, G=(c>>8)&255, B=c&255;
+  grad.addColorStop(0,   `rgba(${R},${G},${B},1)`);
+  grad.addColorStop(0.35,`rgba(${R},${G},${B},0.8)`);
+  grad.addColorStop(1,   `rgba(${R},${G},${B},0)`);
+  cx.fillStyle = grad;
+  cx.beginPath(); cx.arc(r,r,r,0,Math.PI*2); cx.fill();
+  return new THREE.CanvasTexture(cv);
+}
+// Pre-generate one texture per flower type
+const CIRCLE_TEXTURES = {};
+Object.entries(FLOWERS).forEach(([k,v]) => { CIRCLE_TEXTURES[k] = makeCircleTex(v.colorHex); });
+
+// ── POLLEN NODE ──────────────────────────────────────────────────────────────
+function makePollenNode(nodeData){
+  const f = FLOWERS[nodeData.type];
+  const g = new THREE.Group();
+  g.position.set(...nodeData.pos);
+
+  // Spore cloud — colored circles
+  const N = 55 + nodeData.letters.length * 12;
+  const sGeo = new THREE.BufferGeometry();
+  const sp = new Float32Array(N*3);
+  const baseR = 0.03 + nodeData.letters.length * 0.015;
+  for(let i=0;i<N;i++){
+    const r = baseR * (0.2 + Math.random()*.8);
+    const th = Math.random()*Math.PI*2, ph = Math.random()*Math.PI;
+    sp[i*3]   = r*Math.sin(ph)*Math.cos(th);
+    sp[i*3+1] = r*Math.cos(ph);
+    sp[i*3+2] = r*Math.sin(ph)*Math.sin(th);
+  }
+  sGeo.setAttribute('position', new THREE.BufferAttribute(sp, 3));
+  const spore = new THREE.Points(sGeo, new THREE.PointsMaterial({
+    map: CIRCLE_TEXTURES[nodeData.type],
+    color: f.color, size: f.size,
+    transparent:true, opacity:0.92,
+    blending:THREE.AdditiveBlending, depthWrite:false,
+    sizeAttenuation:true, alphaTest:0.01
+  }));
+  g.add(spore);
+
+  g.userData = { nodeData, spore, collected:false, baseY:nodeData.pos[1] };
+  scene.add(g);
+  return g;
+}
+
+// ── COLLECT BURST ─────────────────────────────────────────────────────────────
+// Active bursts updated in main loop — no nested rAF
+const activeBursts = [];
+
+function collectBurst(pos, flowerType){
+  const f = FLOWERS[flowerType];
+  const N = 80;
+  const p = new Float32Array(N*3);
+  const vArr = [];
+  for(let i=0;i<N;i++){
+    p[i*3]=pos.x; p[i*3+1]=pos.y; p[i*3+2]=pos.z;
+    vArr.push(new THREE.Vector3((Math.random()-.5)*.1, Math.random()*.08, (Math.random()-.5)*.1));
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(p, 3));
+  const mat = new THREE.MeshBasicMaterial({color:f.color, transparent:true, opacity:1, blending:THREE.AdditiveBlending, depthWrite:false});
+  const sphereGeo = new THREE.SphereGeometry(0.006,4,4);
+  const im = new THREE.InstancedMesh(sphereGeo, mat, N);
+  scene.add(im);
+  activeBursts.push({ im, geo, mat, sphereGeo, p, vArr, life:1, dummy:new THREE.Object3D() });
+}
+
+function updateBursts(){
+  for(let i = activeBursts.length-1; i >= 0; i--){
+    const b = activeBursts[i];
+    b.life -= 0.022;
+    if(b.life <= 0){
+      scene.remove(b.im);
+      b.im.dispose();
+      b.mat.dispose();
+      b.geo.dispose();
+      b.sphereGeo.dispose();
+      activeBursts.splice(i, 1);
+      continue;
+    }
+    for(let j=0;j<80;j++){
+      b.p[j*3]  += b.vArr[j].x;
+      b.p[j*3+1]+= b.vArr[j].y;
+      b.p[j*3+2]+= b.vArr[j].z;
+      b.vArr[j].y -= .001;
+      b.dummy.position.set(b.p[j*3],b.p[j*3+1],b.p[j*3+2]);
+      b.dummy.updateMatrix();
+      b.im.setMatrixAt(j, b.dummy.matrix);
+    }
+    b.im.instanceMatrix.needsUpdate = true;
+    b.mat.opacity = b.life;
+  }
+}
+
+const GLYPHS = ['❧','⌬','✣','⟡','⋔','☷','⌁','⧫','⋮','⁂'];
+const glyphCanvas = document.getElementById('glyph-rain');
+const glyphCtx = glyphCanvas.getContext('2d');
+let glyphRainRaf = 0;
+let glyphColumns = [];
+let glyphRainActive = false;
+
+function hexToRgb(hex){
+  const n = parseInt(hex.replace('#',''), 16);
+  return { r:(n >> 16) & 255, g:(n >> 8) & 255, b:n & 255 };
+}
+
+const GLYPH_STEP = 46;
+
+function setupGlyphRain(colorHex){
+  const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+  const w = Math.max(1, window.innerWidth - SIDEBAR_W);
+  const h = window.innerHeight;
+  glyphCanvas.width = Math.floor(w * dpr);
+  glyphCanvas.height = Math.floor(h * dpr);
+  glyphCanvas.style.width = w + 'px';
+  glyphCanvas.style.height = h + 'px';
+  glyphCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  glyphCtx.font = '700 40px "Space Mono", monospace';
+  glyphCtx.textAlign = 'center';
+  glyphCtx.textBaseline = 'middle';
+
+  const rows = Math.ceil(h / GLYPH_STEP) + 4;
+  const rgb = hexToRgb(colorHex);
+  glyphColumns = [];
+  for(let x = GLYPH_STEP / 2; x < w; x += GLYPH_STEP){
+    glyphColumns.push({
+      x,
+      y: Math.random() * (h + rows * GLYPH_STEP) - rows * GLYPH_STEP * 0.5,
+      speed: 55 + Math.random() * 70,
+      phase: Math.random() * Math.PI * 2,
+      drift: (Math.random() - 0.5) * 6,
+      glyphs: Array.from({length: rows}, () => GLYPHS[Math.floor(Math.random() * GLYPHS.length)]),
+      mutateIn: Math.floor(Math.random() * 15),
+      rows,
+      rgb
+    });
+  }
+}
+
+function showDataTransfer(f, done){
+  if(glyphRainRaf) cancelAnimationFrame(glyphRainRaf);
+  setupGlyphRain(f.colorHex);
+  glyphRainActive = true;
+  glyphCanvas.classList.add('visible');
+  const duration = 5000;
+  const started = performance.now();
+
+  function draw(now){
+    const elapsed = now - started;
+    const progress = Math.min(elapsed / duration, 1);
+    const fade = progress < 0.1 ? progress / 0.1 : progress > 0.9 ? (1 - progress) / 0.1 : 1;
+    const w = window.innerWidth - SIDEBAR_W;
+    const h = window.innerHeight;
+
+    glyphCtx.clearRect(0, 0, w, h);
+    glyphCtx.globalCompositeOperation = 'lighter';
+    glyphColumns.forEach((col)=>{
+      col.y -= col.speed * 0.016;
+      if(col.y < -(col.rows * GLYPH_STEP)) col.y = h + GLYPH_STEP * 2;
+
+      col.mutateIn--;
+      if(col.mutateIn <= 0){
+        const n = 1 + Math.floor(Math.random() * 4);
+        for(let m = 0; m < n; m++){
+          col.glyphs[Math.floor(Math.random() * col.glyphs.length)] =
+            GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
+        }
+        col.mutateIn = 6 + Math.floor(Math.random() * 20);
+      }
+
+      const jitter = Math.sin(now * 0.0018 + col.phase) * col.drift;
+      for(let r = 0; r < col.rows; r++){
+        const y = col.y + r * GLYPH_STEP;
+        if(y < -GLYPH_STEP || y > h + GLYPH_STEP) continue;
+        const alpha = Math.max(0, 1 - r / col.rows) * fade;
+        if(alpha < 0.01) continue;
+        glyphCtx.fillStyle = `rgba(${col.rgb.r},${col.rgb.g},${col.rgb.b},${alpha})`;
+        glyphCtx.fillText(col.glyphs[r], col.x + jitter, y);
+      }
+    });
+    glyphCtx.globalCompositeOperation = 'source-over';
+
+    if(progress < 1){
+      glyphRainRaf = requestAnimationFrame(draw);
+    } else {
+      glyphCanvas.classList.remove('visible');
+      glyphCtx.clearRect(0, 0, w, h);
+      glyphRainRaf = 0;
+      glyphRainActive = false;
+      if(done) done();
+    }
+  }
+
+  glyphRainRaf = requestAnimationFrame(draw);
+}
+
+// ── PASSWORD UI ──────────────────────────────────────────────────────────────
+function buildPasswordUI(){
+  const c = document.getElementById('pw-chars');
+  c.innerHTML = '';
+  for(let i=0;i<PASSWORD.length;i++){
+    const s = document.createElement('span');
+    s.className = 'ch'; s.textContent = '_'; s.id = 'ch'+i;
+    c.appendChild(s);
+    if(i === 3 || i === 6){
+      const gap = document.createElement('span');
+      gap.className = 'word-gap';
+      c.appendChild(gap);
+    }
+  }
+}
+function revealLetters(indices){
+  indices.forEach(idx => {
+    const ch = document.getElementById('ch'+idx);
+    if(ch){ ch.textContent = PASSWORD[idx]; ch.classList.add('lit'); }
+  });
+}
+
+// ── COLLECT ──────────────────────────────────────────────────────────────────
+function tryCollect(){
+  if(transferActive) return;
+  if(!nearestNode || nearestDist > 0.55) return;
+  const node = nearestNode;
+  if(node.userData.collected) return;
+  node.userData.collected = true;
+  transferActive = true;
+
+  const nd = node.userData.nodeData;
+  const f = FLOWERS[nd.type];
+
+  collectBurst(node.position, nd.type);
+  node.visible = false;
+
+  const nodeIndex = NODES.indexOf(nd);
+  collectedCount += nd.letters.length;
+  totalPb += f.pb;
+  revealLetters(nd.letters);
+  fillPollenCircles(nodeIndex);
+  updateDataBar(totalPb);
+
+  const pollens = nd.letters.length;
+  const pollenLabel = pollens === 1 ? 'pollen' : 'pollens';
+  const dlLabel = document.getElementById('downloading-label');
+  dlLabel.style.opacity = '1';
+
+  showDataTransfer(f, ()=>{
+    dlLabel.style.opacity = '0';
+
+    document.getElementById('flash-flower').textContent = f.name;
+    document.getElementById('flash-pollen').textContent = `+${pollens} ${pollenLabel}`;
+    document.getElementById('flash-data-line').textContent = `+${f.pb} petabytes of data`;
+    document.getElementById('flash-gains').style.display = 'block';
+    document.getElementById('flash-decrypt').style.display = 'none';
+
+    const fl = document.getElementById('collect-flash');
+    fl.style.setProperty('--fc', f.colorHex);
+    fl.classList.add('visible');
+    clearTimeout(flashTimeout);
+    flashTimeout = setTimeout(()=>{
+      fl.classList.remove('visible');
+      flashTimeout = setTimeout(()=>{
+        document.getElementById('flash-gains').style.display = 'none';
+        document.getElementById('flash-decrypt').style.display = 'block';
+        document.getElementById('flash-letter').innerHTML = nd.letters.map(i=>`<span class="letter-box">${PASSWORD[i]}</span>`).join('');
+        fl.classList.add('visible');
+        flashTimeout = setTimeout(()=>{
+          fl.classList.remove('visible');
+          transferActive = false;
+          if(collectedCount >= PASSWORD.length) setTimeout(showPoem, 500);
+        }, 1800);
+      }, 350);
+    }, 1800);
+  });
+}
+
+function showPoem(){
+  if(document.pointerLockElement) document.exitPointerLock();
+  isPlaying = false;
+  const pwShown = document.getElementById('pw-shown');
+  pwShown.innerHTML = '';
+  for(let i=0; i<PASSWORD.length; i++){
+    if(i===4||i===7){ const sp=document.createElement('span'); sp.className='pw-space'; pwShown.appendChild(sp); }
+    const ch=document.createElement('span'); ch.className='pw-char'; ch.textContent=PASSWORD[i]; pwShown.appendChild(ch);
+  }
+  const stage1=document.getElementById('poem-stage-1');
+  const stage2=document.getElementById('poem-stage-2');
+  stage1.style.opacity='1'; stage1.style.display='flex';
+  stage2.style.display='none'; stage2.style.opacity='0';
+  document.getElementById('full-poem').classList.add('visible');
+  setTimeout(()=>{
+    stage1.style.opacity='0';
+    setTimeout(()=>{
+      stage1.style.display='none';
+      const c=document.getElementById('poem-lines');
+      c.innerHTML='';
+      POEM.forEach((line,i)=>{
+        const d=document.createElement('div');
+        d.className='poem-line'; d.textContent=line; c.appendChild(d);
+        setTimeout(()=>d.classList.add('show'), i*600+600);
+      });
+      stage2.style.display='flex';
+      void stage2.offsetHeight;
+      stage2.style.opacity='1';
+    }, 1000);
+  }, 3500);
+}
+function hidePoem(){
+  document.getElementById('full-poem').classList.remove('visible');
+  const stage1=document.getElementById('poem-stage-1');
+  const stage2=document.getElementById('poem-stage-2');
+  if(stage1){ stage1.style.opacity=''; stage1.style.display=''; }
+  if(stage2){ stage2.style.display='none'; stage2.style.opacity='0'; }
+}
+function resetRun(){
+  collectedCount = 0;
+  totalPb = 0;
+  nearestNode = null;
+  nearestDist = Infinity;
+  transferActive = false;
+  if(glyphRainRaf) cancelAnimationFrame(glyphRainRaf);
+  glyphRainRaf = 0;
+  glyphCtx.clearRect(0, 0, glyphCanvas.width, glyphCanvas.height);
+  glyphCanvas.classList.remove('visible');
+  document.getElementById('collect-flash').classList.remove('visible');
+  document.getElementById('downloading-label').style.opacity = '0';
+  clearTimeout(flashTimeout);
+  updateDataBar(0);
+  buildPasswordUI();
+  pollenNodes.forEach(node=>{
+    node.visible = true;
+    node.userData.collected = false;
+  });
+  document.getElementById('pollen-circles').innerHTML = '';
+  setCollectHint(false);
+}
+function returnToGarden(){
+  hidePoem();
+  isPlaying = true;
+  document.body.classList.add('game-active');
+  canvas.requestPointerLock();
+}
+function goHome(){
+  hidePoem();
+  if(document.pointerLockElement) document.exitPointerLock();
+  isPlaying = false;
+  spaceHeld = false;
+  vel.set(0,0,0);
+  resetRun();
+  const slidesEl = document.getElementById('screen-slides');
+  if(slidesEl) slidesEl.classList.add('hidden');
+  document.getElementById('screen-title').classList.remove('hidden');
+  ['sidebar','crosshair','location-tag'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.classList.remove('visible');
+  });
+  document.body.classList.remove('game-active');
+  document.body.classList.add('title-ready');
+  currentScreen = 'title';
+  playTitleVideo();
+}
+
+// ── WIFI SIGNAL ───────────────────────────────────────────────────────────────
+const _wifiDot = document.getElementById('arc-dot');
+const _wifiArcs = [
+  document.getElementById('arc1'),
+  document.getElementById('arc2'),
+  document.getElementById('arc3')
+];
+let _lastWifiLevel = -1;
+function updateWifi(d){
+  const level = d < 0.3 ? 4 : d < 0.6 ? 3 : d < 1.2 ? 2 : d < 2.5 ? 1 : 0;
+  if(level === _lastWifiLevel) return;
+  _lastWifiLevel = level;
+  _wifiDot.style.opacity = level > 0 ? '1' : '0.18';
+  _wifiArcs[0].style.opacity = level > 1 ? '1' : '0.18';
+  _wifiArcs[1].style.opacity = level > 2 ? '1' : '0.18';
+  _wifiArcs[2].style.opacity = level > 3 ? '1' : '0.18';
+}
+
+// ── SOUND ────────────────────────────────────────────────────────────────────
+let currentScreen = 'title';
+const ambientAudio = document.getElementById('ambient-audio');
+const soundButtons = [
+  document.getElementById('intro-sound-toggle'),
+  document.getElementById('sidebar-sound-toggle')
+].filter(Boolean);
+let soundEnabled = true;
+if(ambientAudio){
+  ambientAudio.volume = 0.4;
+}
+function syncSoundButtons(){
+  soundButtons.forEach(btn=>{
+    btn.classList.toggle('off', !soundEnabled);
+    btn.setAttribute('aria-label', soundEnabled ? 'Turn sound off' : 'Turn sound on');
+  });
+}
+function playAmbient(){
+  if(!ambientAudio || !soundEnabled) return;
+  ambientAudio.play().catch(()=>{});
+}
+function setSoundEnabled(enabled){
+  soundEnabled = enabled;
+  if(!ambientAudio) return;
+  ambientAudio.muted = !enabled;
+  if(enabled) playAmbient();
+  else ambientAudio.pause();
+  syncSoundButtons();
+}
+soundButtons.forEach(btn=>{
+  btn.addEventListener('click', e=>{
+    e.stopPropagation();
+    setSoundEnabled(!soundEnabled);
+  });
+});
+['click','keydown','touchstart'].forEach(ev=>{
+  document.addEventListener(ev, playAmbient, {once:true, passive:true});
+});
+syncSoundButtons();
+
+// ── VIDEO AUTOPLAY ────────────────────────────────────────────────────────────
+const titleVideo = document.getElementById('title-video');
+function playTitleVideo(){
+  if(!titleVideo || currentScreen !== 'title') return;
+  titleVideo.muted = true;
+  titleVideo.setAttribute('muted', '');
+  titleVideo.play().catch(()=>{});
+}
+if(titleVideo){
+  titleVideo.muted = true;
+  titleVideo.setAttribute('muted', '');
+  if(titleVideo.readyState >= 3){
+    playTitleVideo();
+  } else {
+    titleVideo.addEventListener('canplay', playTitleVideo, {once:true});
+  }
+  document.addEventListener('visibilitychange', ()=>{
+    if(!document.hidden && currentScreen==='title') playTitleVideo();
+  });
+  setInterval(()=>{
+    if(currentScreen==='title' && titleVideo.paused) playTitleVideo();
+  }, 1800);
+}
+// Fallback: play on first user gesture
+['pointerdown','keydown','touchstart'].forEach(ev=>{
+  document.addEventListener(ev, ()=>{
+    if(titleVideo && titleVideo.paused && currentScreen==='title') playTitleVideo();
+  }, {passive:true});
+});
+
+// ── SPORE CLOUD FOR CONTROLS SCREEN ─────────────────────────────────────────
+function buildSporeCloud(containerId, count, color){
+  const el = document.getElementById(containerId);
+  if(!el) return;
+  el.style.setProperty('--fc', color);
+  for(let i=0;i<count*8+6;i++){
+    const d = document.createElement('div');
+    d.className='pp-dot';
+    d.style.setProperty('--fc', color);
+    const size = 4+Math.random()*8;
+    d.style.width  = size+'px';
+    d.style.height = size+'px';
+    d.style.left   = (Math.random()*52)+'px';
+    d.style.top    = (Math.random()*52)+'px';
+    d.style.opacity= (0.4+Math.random()*0.6).toFixed(2);
+    el.appendChild(d);
+  }
+}
+// Build spore clouds once DOM is ready
+buildSporeCloud('pp-spores-fairy',    1, '#60c0ff');
+buildSporeCloud('pp-spores-williams', 2, '#ff70a0');
+buildSporeCloud('pp-spores-petunia',  2, '#ff9030');
+buildSporeCloud('pp-spores-lilac',    3, '#c060ff');
+// ── SLIDE SYSTEM ─────────────────────────────────────────────────────────────
+let slideIndex = 0;
+let slideLocked = false;
+const SLIDE_COUNT = 4;
+function initSlides(){
+  slideIndex = 0;
+  slideLocked = false;
+  document.querySelectorAll('.slide').forEach((s,i) => s.classList.toggle('active', i===0));
+  const btn = document.getElementById('slide-next');
+  if(btn) btn.textContent = 'Next →';
+}
+function advanceSlide(){
+  if(slideLocked) return;
+  slideLocked = true;
+  const slides = document.querySelectorAll('.slide');
+  slides[slideIndex].classList.remove('active');
+  slideIndex++;
+  if(slideIndex >= SLIDE_COUNT){
+    setTimeout(startGame, 850);
+  } else {
+    setTimeout(()=>{
+      slides[slideIndex].classList.add('active');
+      const btn = document.getElementById('slide-next');
+      if(btn) btn.textContent = slideIndex === SLIDE_COUNT - 1 ? 'Enter the Garden' : 'Next →';
+      slideLocked = false;
+    }, 850);
+  }
+}
+
+function showScreen(name){
+  if(name === currentScreen) return;
+  const fromEl = document.getElementById('screen-' + currentScreen);
+  const toEl   = document.getElementById('screen-' + name);
+  if(currentScreen === 'title' && titleVideo) titleVideo.pause();
+  currentScreen = name;
+  fromEl.style.opacity = '0';
+  fromEl.style.pointerEvents = 'none';
+  toEl.style.opacity = '0';
+  toEl.classList.remove('hidden');
+  void toEl.offsetHeight;
+  setTimeout(()=>{
+    fromEl.classList.add('hidden');
+    fromEl.style.opacity = '';
+    fromEl.style.pointerEvents = '';
+    toEl.style.opacity = '1';
+    setTimeout(()=>{
+      toEl.style.opacity = '';
+      if(name === 'slides'){ initSlides(); playAmbient(); }
+      else if(name === 'title') playTitleVideo();
+      else playAmbient();
+    }, 650);
+  }, 600);
+}
+
+document.addEventListener('keydown', e=>{
+  if(document.getElementById('full-poem').classList.contains('visible')){
+    if(e.code==='Enter'){ e.preventDefault(); goHome(); }
+    return;
+  }
+  if(e.code==='Enter'){
+    if(currentScreen==='title') showScreen('slides');
+    else if(currentScreen==='slides') advanceSlide();
+  }
+  keys[e.code]=true; keys[e.key.toLowerCase()]=true;
+  if(e.code==='Space'&&isPlaying){ e.preventDefault(); spaceHeld=true; }
+  if(e.code==='KeyF'&&isPlaying) tryCollect();
+  if(e.code==='KeyQ'&&isPlaying){ goHome(); }
+});
+document.addEventListener('keyup',e=>{
+  keys[e.code]=false; keys[e.key.toLowerCase()]=false;
+  if(e.code==='Space'){
+    spaceHeld=false;
+    // Kill velocity immediately on space release
+    vel.set(0,0,0);
+  }
+});
+
+// Click title screen to advance
+document.getElementById('screen-title').addEventListener('click', ()=> showScreen('slides'));
+document.getElementById('sidebar-logo').addEventListener('click', e=>{
+  e.stopPropagation();
+  goHome();
+});
+
+// ── POLLEN CIRCLES UI ────────────────────────────────────────────────────────
+// Node definitions with flower type for building circles
+const POLLEN_UI = [
+  { type:'fairy',    label:'Fairy Fan-Flower', count:1  },
+  { type:'williams', label:'Sweet William',    count:2  },
+  { type:'petunia',  label:'Petunia',          count:2, node:2 },
+  { type:'petunia',  label:'Petunia',          count:2, node:3 },
+  { type:'lilac',    label:'Summer Lilac',     count:3, node:4 },
+  { type:'lilac',    label:'Summer Lilac',     count:3, node:5 },
+];
+
+function buildPollenCircles(){
+  const container = document.getElementById('pollen-circles');
+  container.innerHTML='';
+  const shortNames = {fairy:'Fan-Flower', williams:'William', petunia:'Petunia', lilac:'Lilac'};
+  let lastType = null;
+
+  NODES.forEach((nd, ni)=>{
+    const f = FLOWERS[nd.type];
+
+    // If same type as previous, add dots to existing group
+    if(nd.type === lastType){
+      const lastGroup = container.lastElementChild;
+      const dots = lastGroup.querySelector('.pollen-dots');
+      for(let i=0;i<nd.letters.length;i++){
+        const d=document.createElement('div');
+        d.className='pdot'; d.id=`pdot-${ni}-${i}`;
+        d.style.borderColor=f.colorHex; d.style.color=f.colorHex;
+        dots.appendChild(d);
+      }
+      return;
+    }
+
+    // New flower type — create new group
+    lastType = nd.type;
+    const group = document.createElement('div');
+    group.className='pollen-group';
+
+    const dots = document.createElement('div');
+    dots.className='pollen-dots';
+    for(let i=0;i<nd.letters.length;i++){
+      const d=document.createElement('div');
+      d.className='pdot'; d.id=`pdot-${ni}-${i}`;
+      d.style.borderColor=f.colorHex; d.style.color=f.colorHex;
+      dots.appendChild(d);
+    }
+    group.appendChild(dots);
+
+    const lbl = document.createElement('div');
+    lbl.className='pollen-group-label';
+    lbl.style.color=f.colorHex+'cc';
+    lbl.textContent = shortNames[nd.type]||f.name;
+    group.appendChild(lbl);
+
+    container.appendChild(group);
+  });
+}
+
+function fillPollenCircles(nodeIndex){
+  const nd = NODES[nodeIndex];
+  for(let i=0;i<nd.letters.length;i++){
+    const d=document.getElementById(`pdot-${nodeIndex}-${i}`);
+    if(d){
+      d.classList.add('filled');
+      d.style.background=FLOWERS[nd.type].colorHex;
+    }
+  }
+}
+
+function updateDataBar(pb){
+  document.getElementById('data-bar-nums').textContent=`${pb} / 130 petabytes`;
+  document.getElementById('data-bar-fill').style.width=`${(pb/130)*100}%`;
+}
+document.addEventListener('pointerlockchange',()=>{
+  if(document.pointerLockElement===canvas){
+    document.addEventListener('mousemove',onLocked);
+  } else {
+    document.removeEventListener('mousemove',onLocked);
+  }
+});
+function onLocked(e){
+  if(!isPlaying)return;
+  pendingMouseX += e.movementX;
+  pendingMouseY += e.movementY;
+}
+
+// Click canvas to acquire pointer lock during game
+canvas.addEventListener('click',()=>{
+  if(isPlaying && document.pointerLockElement !== canvas){
+    canvas.requestPointerLock();
+  }
+});
+
+window.addEventListener('resize',()=>{
+  camera.aspect = gameW()/gameH();
+  camera.updateProjectionMatrix();
+  renderer.setPixelRatio(renderPixelRatio());
+  renderer.setSize(gameW(), gameH());
+});
+
+// Key helpers — QWERTY + AZERTY
+function isFwd(k) { return k['KeyW']||k['w']||k['KeyZ']||k['z']||k['ArrowUp']; }
+function isBack(k){ return k['KeyS']||k['s']||k['ArrowDown']; }
+function isSL(k)  { return k['ArrowLeft']; }
+function isSR(k)  { return k['ArrowRight']; }
+
+function startGame(){
+  // Pause the title video during gameplay, but keep its source intact so autoplay survives returning home.
+  if(titleVideo){
+    titleVideo.pause();
+  }
+  ['screen-title','screen-slides'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.classList.add('hidden');
+  });
+  buildPollenCircles();
+  vel.set(0,0,0);
+  spaceHeld = false;
+  pendingMouseX = 0;
+  pendingMouseY = 0;
+  hoverOffset = 0;
+  frameCount = 0;
+  clock.getDelta();
+  ['sidebar','crosshair','location-tag'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.classList.add('visible');
+  });
+  document.body.classList.add('game-active');
+  playAmbient();
+  isPlaying = true;
+  startLoop();
+  // Auto request pointer lock immediately on the button click gesture
+  canvas.requestPointerLock();
+}
+
+// ── LOAD MODEL ────────────────────────────────────────────────────────────────
+const dracoLoader = new THREE.DRACOLoader();
+dracoLoader.setDecoderPath('data-pollen/');
+const loader = new THREE.GLTFLoader();
+loader.setDRACOLoader(dracoLoader);
+const fill = document.getElementById('loading-fill');
+let gardenLoadStarted = false;
+
+function startGardenLoad(){
+  if(gardenLoadStarted) return;
+  gardenLoadStarted = true;
+  loader.load('data-pollen/garden01-s.glb', gltf=>{
+  console.log('GLB loaded OK');
+  fill.style.width='100%';
+  gltf.scene.traverse(child=>{
+    if(child.isMesh){
+      const tex = child.material.map;
+      if(tex){
+        scene.add(new THREE.Mesh(child.geometry, makeSurface(tex)));
+        scene.add(makeWire(child.geometry));
+      }
+    }
+  });
+  NODES.forEach(nd => pollenNodes.push(makePollenNode(nd)));
+  buildPasswordUI();
+  document.getElementById('loading').style.opacity='0';
+  setTimeout(()=>{
+    document.getElementById('loading').style.display='none';
+    document.body.classList.add('title-ready');
+    // Play video now — loading is done, browser allows it
+    playTitleVideo();
+  }, 1000);
+}, xhr=>{
+  const pct = xhr.total ? (xhr.loaded/xhr.total*90) : 0;
+  fill.style.width = pct+'%';
+  document.getElementById('loading-text').textContent = `loading... ${Math.round(pct)}%`;
+  console.log('Progress:', xhr.loaded, '/', xhr.total);
+}, err=>{
+  console.error('Load error:', err);
+  const lt=document.getElementById('loading-text');
+  lt.style.color='#c04040';
+  lt.innerHTML='error loading garden01-s.glb<br><span style="font-size:10px;color:#555">check console · is the file in the same folder?</span>';
+  });
+}
+if(titleVideo){
+  titleVideo.addEventListener('playing', startGardenLoad, {once:true});
+}
+setTimeout(startGardenLoad, 900);
+
+// ── PRE-ALLOCATED OBJECTS — never allocate inside loop ───────────────────────
+const _fwdH  = new THREE.Vector3();
+const _fwd3D = new THREE.Vector3();
+const _right = new THREE.Vector3();
+const _accel = new THREE.Vector3();
+const _qY    = new THREE.Quaternion();
+const _qP    = new THREE.Quaternion();
+const _qR    = new THREE.Quaternion();
+const _axisY = new THREE.Vector3(0,1,0);
+const _axisX = new THREE.Vector3(1,0,0);
+const _axisZ = new THREE.Vector3(0,0,1);
+
+// Cache DOM refs used every frame
+const _hintEl    = document.getElementById('proximity-hint');
+let _hintVisible = false;
+let _hintColor = '';
+function setCollectHint(visible, color=''){
+  if(visible === _hintVisible && color === _hintColor) return;
+  _hintVisible = visible;
+  _hintColor = color;
+  _hintEl.style.opacity = visible ? 1 : 0;
+  if(visible){
+    _hintEl.style.borderColor = color + '88';
+    _hintEl.style.color = color;
+  }
+}
+
+const clock = new THREE.Clock();
+let t = 0;
+
+let loopRafId = 0;
+function startLoop(){
+  if(loopRafId) return;
+  loopRafId = requestAnimationFrame(loopFrame);
+}
+function loopFrame(){
+  loopRafId = 0;
+  if(!isPlaying) return;
+  loopRafId = requestAnimationFrame(loopFrame);
+
+  const dt = Math.min(clock.getDelta(), .05);
+  t+=dt; wingT+=dt*28; hoverT+=dt; frameCount++;
+
+  if(pendingMouseX || pendingMouseY){
+    yaw -= pendingMouseX*.0022;
+    pitch -= pendingMouseY*.0022;
+    pitch = Math.max(-.75, Math.min(.75, pitch));
+    pendingMouseX = 0;
+    pendingMouseY = 0;
+  }
+
+  // Reuse pre-allocated vectors
+  _fwdH.set(-Math.sin(yaw), 0, -Math.cos(yaw));
+  _fwd3D.set(
+    -Math.sin(yaw)*Math.cos(pitch),
+    Math.sin(pitch),
+    -Math.cos(yaw)*Math.cos(pitch)
+  ).normalize();
+  _right.set(Math.cos(yaw), 0, -Math.sin(yaw));
+  _accel.set(0,0,0);
+  let tL=false, tR=false;
+
+  if(spaceHeld) _accel.addScaledVector(_fwd3D, BEE_ACCEL*1.2);
+  if(isFwd(keys))  _accel.addScaledVector(_fwdH,  BEE_ACCEL);
+  if(isBack(keys)) _accel.addScaledVector(_fwdH, -BEE_ACCEL*.6);
+  if(isSL(keys))   { _accel.addScaledVector(_right,-BEE_ACCEL*.7); tL=true; }
+  if(isSR(keys))   { _accel.addScaledVector(_right, BEE_ACCEL*.7); tR=true; }
+
+  const frameScale = dt * 60;
+  vel.addScaledVector(_accel, dt);
+  vel.multiplyScalar(Math.pow(BEE_DRAG, frameScale));
+  vel.clampLength(0, BEE_SPEED);
+  camera.position.addScaledVector(vel, frameScale);
+  const nextHoverOffset = Math.sin(hoverT*3.1)*.0016 + Math.sin(hoverT*5.3)*.0008;
+  camera.position.y += nextHoverOffset - hoverOffset;
+  hoverOffset = nextHoverOffset;
+  camera.position.x = Math.max(-5.5, Math.min(1.0, camera.position.x));
+  camera.position.z = Math.max(-2.0, Math.min(2.0, camera.position.z));
+  camera.position.y = Math.max(0.02, Math.min(2.0, camera.position.y));
+
+  roll += ((tL?.15:tR?-.15:0)-roll)*.09;
+  const buzz = Math.sin(wingT)*.0011;
+  _qY.setFromAxisAngle(_axisY, yaw);
+  _qP.setFromAxisAngle(_axisX, pitch+buzz);
+  _qR.setFromAxisAngle(_axisZ, roll);
+  camera.quaternion.copy(_qY).multiply(_qP).multiply(_qR);
+
+  if(wireMaterial && frameCount%6===0){
+    wireMaterial.uniforms.time.value = t;
+  }
+
+  updateBursts();
+
+  nearestDist = Infinity; nearestNode = null;
+  pollenNodes.forEach(node=>{
+    if(node.userData.collected) return;
+    node.position.y = node.userData.baseY + Math.sin(t*1.8+node.userData.nodeData.pos[0])*.012;
+    node.userData.spore.rotation.y = t*.35;
+    const d = camera.position.distanceTo(node.position);
+    if(d < nearestDist){ nearestDist=d; nearestNode=node; }
+  });
+
+  if(nearestDist<0.55 && nearestNode && !nearestNode.userData.collected){
+    const f = FLOWERS[nearestNode.userData.nodeData.type];
+    setCollectHint(true, f.colorHex);
+  } else {
+    setCollectHint(false);
+  }
+  updateWifi(nearestDist);
+
+  if(!glyphRainActive || frameCount % 4 === 0){
+    renderer.render(scene, camera);
+  }
+}
+</script>
+</body>
+</html>

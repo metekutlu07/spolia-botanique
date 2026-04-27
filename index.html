@@ -674,6 +674,23 @@
             background: white;
         }
         .enter-button:hover { color: #1a1a1a; box-shadow: 0 4px 20px rgba(255,255,255,0.3); }
+        .data-pollen-link {
+            display: block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            letter-spacing: 3px;
+            padding: 12px 22px;
+            border: 1px solid rgba(255,255,255,0.35);
+            background: transparent;
+            color: rgba(255,255,255,0.6);
+            cursor: pointer;
+            transition: border-color 0.3s ease, color 0.3s ease;
+            text-transform: uppercase;
+            text-decoration: none;
+            margin-top: 14px;
+            text-align: center;
+        }
+        .data-pollen-link:hover { border-color: rgba(255,255,255,0.8); color: white; }
         .enter-button-glass-fixed {
             display: none;
         }
@@ -1201,6 +1218,7 @@
                 <span class="enter-button-glass" aria-hidden="true"></span>
                 <span class="enter-button-label" data-i18n="landing.discover-button">Discover</span>
             </button>
+            <a class="data-pollen-link" href="data-pollen.html" data-i18n="landing.data-pollen-button">Play Data Pollen</a>
         </div>
     </div>
     <div class="logos-bar landing-el landing-home-ui">
