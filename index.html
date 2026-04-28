@@ -688,30 +688,12 @@
             background: white;
         }
         .enter-button:hover { color: #1a1a1a; box-shadow: 0 4px 20px rgba(255,255,255,0.3); }
+        /* <a> element needs inline-block + no underline; everything else inherits from .enter-button */
         .data-pollen-link {
-            position: relative;
-            overflow: hidden;
             display: inline-block;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 21px;
-            letter-spacing: 3px;
-            padding: 22px;
-            border: 1px solid white;
-            background: transparent;
-            color: white;
-            cursor: pointer;
-            transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
-            text-transform: uppercase;
             text-decoration: none;
-            margin-top: 0;
             text-align: center;
-            transform: translateZ(0);
-            will-change: opacity, background-color, color, box-shadow;
         }
-        .data-pollen-link:hover .enter-button-glass { background: white !important; }
-        .data-pollen-link:hover,
-        .data-pollen-link:hover .enter-button-label { color: #1a1a1a !important; }
-        .data-pollen-link:hover { box-shadow: 0 4px 20px rgba(255,255,255,0.3) !important; }
         .enter-button-glass-fixed {
             display: none;
         }
@@ -1257,7 +1239,7 @@
                     <span class="enter-button-glass" aria-hidden="true"></span>
                     <span class="enter-button-label" data-i18n="landing.discover-button">Discover</span>
                 </button>
-                <a class="data-pollen-link" href="data-pollen.html">
+                <a class="enter-button data-pollen-link" href="data-pollen.html">
                     <span class="enter-button-glass" aria-hidden="true"></span>
                     <span class="enter-button-label" data-i18n="landing.data-pollen-button">Play Data Pollen</span>
                 </a>
@@ -2135,10 +2117,16 @@
                 fadeBackgroundTo(0, 1200);
             });
         });
-        // Q key forwarded to iframe — covers the case where pointer lock didn't
-        // capture keyboard focus (Safari) so the iframe never sees the keydown.
+        // Forward Q to the iframe — covers Safari where pointer lock or focus
+        // issues mean the iframe never sees the keydown directly.
         document.addEventListener('keydown', function(e) {
-            if (e.code === 'KeyQ' && dpFrame.style.display !== 'none') {
+            // Enter during entry-sequence (ministry page / pollen poem) → skip to home
+            if (e.code === 'Enter' && document.body.classList.contains('entry-sequence')) {
+                skipToHome();
+                return;
+            }
+            // Q → ask the game to show its exit popup
+            if (dpFrame.style.display !== 'none' && e.code === 'KeyQ') {
                 try { dpFrame.contentWindow.postMessage('triggerExit', '*'); } catch(_) {}
             }
         });
@@ -2157,14 +2145,12 @@
 
         window.addEventListener('message', function(e) {
             if (e.data === 'dataPollen:goHome') {
-                // Resume spolia video before the fade so it's already playing when revealed.
-                // resetAndPlayLandingVideo sets landingVideoAllowed=true first, bypassing
-                // the guard that blocks playLandingVideo when the flag was cleared.
-                // Direct bgVideo.play() is the belt-and-suspenders for Safari.
+                // Resume spolia video — just set the flag and play, no pause/reset
+                // (resetAndPlayLandingVideo calls bgVideo.pause() which would kill it)
                 landingVideoAllowed = true;
                 document.body.classList.add('video-ready');
                 if (bgVideo) bgVideo.play().catch(() => {});
-                resetAndPlayLandingVideo();
+                startLandingVideoKeepAlive();
 
                 // Fade the iframe out — spolia shows through underneath
                 dpFrame.style.transition = 'opacity 0.65s ease';
@@ -2551,8 +2537,12 @@
             bgVideo.muted = true;
             bgVideo.load();
             bgVideo.addEventListener('ended', () => {
+                if (!landingVideoAllowed) return;
+                // Safari ignores the `loop` attribute on <source>-based videos and fires
+                // `ended` instead. Play() called synchronously inside the trusted media
+                // event is always allowed by Safari's autoplay policy.
                 bgVideo.currentTime = 0;
-                playLandingVideo();
+                bgVideo.play().catch(() => {});
             });
             if (skipIntro) {
                 resetAndPlayLandingVideo();

@@ -1926,6 +1926,16 @@ function triggerExitFlow(){
 }
 window.addEventListener('message', function(e){
   if(e.data === 'triggerExit') triggerExitFlow();
+  if(e.data === 'triggerEnter'){
+    // Mirror the keydown Enter handler
+    if(document.getElementById('full-poem').classList.contains('visible')){
+      goHome();
+    } else if(currentScreen === 'title'){
+      showScreen('slides');
+    } else if(currentScreen === 'slides'){
+      advanceSlide();
+    }
+  }
 });
 
 // ── POINTER LOCK ───────────────────────────────────────────────────────────────
