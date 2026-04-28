@@ -9,11 +9,11 @@
 :root { --pollen-green:#49dca4; }
 * { margin:0; padding:0; box-sizing:border-box; }
 body { background:#000; overflow:hidden; font-family:'IBM Plex Mono',monospace; }
-#c { display:block; width:100vw; height:100vh; }
+#c { display:none; width:100vw; height:100vh; }
 
 /* ── LOADING ── */
 #loading {
-  position:fixed; inset:0; background:#000; z-index:200;
+  position:fixed; inset:0; background:rgba(0,0,0,0.999); z-index:200;
   display:flex; flex-direction:column; align-items:center; justify-content:center;
   transition:opacity 1.2s; pointer-events:none;
 }
@@ -55,11 +55,7 @@ body { background:#000; overflow:hidden; font-family:'IBM Plex Mono',monospace; 
   display:none !important;
   -webkit-appearance:none;
 }
-#title-overlay {
-  position:absolute; inset:0;
-  background:rgba(0,0,0,0.1);
-  z-index:1; pointer-events:none;
-}
+#title-overlay { display:none; }
 #title-content {
   position:relative; z-index:2;
   display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -108,11 +104,25 @@ body:not(.title-ready) #title-copyright { opacity:0; }
 .speaker-mute { display:none; }
 .sound-btn.off .speaker-waves { display:none; }
 .sound-btn.off .speaker-mute { display:block; }
-#intro-sound-toggle { position:fixed; top:24px; right:24px; z-index:130; }
-body.game-active #intro-sound-toggle { display:none; }
-body:not(.game-active) #intro-sound-toggle { color:rgba(255,255,255,0.8); border-color:rgba(255,255,255,0.35); background:rgba(0,0,0,0.3); }
-body:not(.game-active) #intro-sound-toggle:hover { color:#fff; border-color:rgba(255,255,255,0.7); background:rgba(0,0,0,0.5); }
+#intro-controls {
+  position:fixed; top:24px; right:24px; z-index:130;
+  display:flex; flex-direction:row; gap:10px; align-items:center;
+}
+body.game-active #intro-controls { display:none; }
+body:not(.game-active) #intro-sound-toggle,
+body:not(.game-active) #intro-fs-toggle {
+  color:rgba(255,255,255,0.8); border-color:rgba(255,255,255,0.35); background:rgba(0,0,0,0.3);
+}
+body:not(.game-active) #intro-sound-toggle:hover,
+body:not(.game-active) #intro-fs-toggle:hover { color:#fff; border-color:rgba(255,255,255,0.7); background:rgba(0,0,0,0.5); }
 body:not(.game-active) #intro-sound-toggle.off { color:rgba(255,255,255,0.25); border-color:rgba(255,255,255,0.15); }
+/* Fullscreen icon swap */
+.fs-icon { width:18px; height:18px; display:block; flex-shrink:0; }
+.fs-exit { display:none; }
+body.is-fullscreen #intro-fs-toggle .fs-enter,
+body.is-fullscreen #sidebar-fs-toggle .fs-enter { display:none; }
+body.is-fullscreen #intro-fs-toggle .fs-exit,
+body.is-fullscreen #sidebar-fs-toggle .fs-exit  { display:block; }
 #title-back-link {
   position:absolute; bottom:24px; left:32px; z-index:3;
   font-size:12px; letter-spacing:0.2em; color:#fff;
@@ -131,6 +141,49 @@ body:not(.game-active) #intro-sound-toggle.off { color:rgba(255,255,255,0.25); b
 }
 .slide.active { opacity:1; pointer-events:none; }
 .slide > img { max-width:100%; max-height:90vh; width:auto; height:auto; object-fit:contain; display:block; }
+
+/* ── Story slide: stop-motion frames + text overlay ── */
+#story-frames {
+  position:absolute; inset:0;
+}
+.story-frame {
+  position:absolute; inset:0; width:100%; height:100%;
+  object-fit:cover; opacity:0; transition:opacity 0.12s ease;
+  display:block;
+}
+.story-frame.active { opacity:1; }
+#story-text,
+#mission-text {
+  position:absolute; inset:0; z-index:2;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  gap:14px;
+  pointer-events:none;
+  padding:0 60px;
+}
+#mission-frames {
+  position:absolute; inset:0;
+}
+.story-line,
+.mission-line {
+  /* Static flow — pre-allocated space, just fades in. Lines never move. */
+  font-family:'Space Mono',monospace; font-weight:400;
+  font-size:clamp(9px,1.2vw,16px); letter-spacing:0.06em;
+  color:#60c0ff;
+  text-align:center; line-height:1.5;
+  text-shadow:0 2px 20px rgba(0,0,30,0.95), 0 0 40px rgba(0,0,30,0.7);
+  opacity:0; transition:opacity 0.6s ease;
+}
+.story-line.visible,
+.mission-line.visible { opacity:1; }
+
+/* Mission slide frames reuse the same frame pattern */
+.mission-frame {
+  position:absolute; inset:0; width:100%; height:100%;
+  object-fit:cover; opacity:0; transition:opacity 0.12s ease;
+  display:block;
+}
+.mission-frame.active { opacity:1; }
 .slide-btn {
   position:absolute; bottom:44px; right:60px; z-index:5;
   background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.22); color:rgba(255,255,255,0.7);
@@ -336,7 +389,7 @@ body:not(.game-active) #intro-sound-toggle.off { color:rgba(255,255,255,0.25); b
 .sidebar-credit-row {
   display:flex; align-items:center; gap:12px; margin-top:12px;
 }
-#sidebar-sound-toggle { flex:0 0 34px; width:34px; height:34px; font-size:15px; }
+#sidebar-sound-toggle, #sidebar-fs-toggle { flex:0 0 34px; width:34px; height:34px; font-size:15px; }
 .sidebar-credit {
   color:rgba(73,220,164,0.78); font-size:9px; letter-spacing:0.08em;
   line-height:1.5; font-family:'IBM Plex Mono',monospace;
@@ -347,7 +400,7 @@ body:not(.game-active) #intro-sound-toggle.off { color:rgba(255,255,255,0.25); b
 }
 
 /* Canvas offset to the right of sidebar */
-#c { position:fixed; top:0; left:320px; width:calc(100vw - 320px); height:100vh; display:block; }
+#c { position:fixed; top:0; left:320px; width:calc(100vw - 320px); height:100vh; display:none; }
 
 /* ── Collect flash ── */
 #glyph-rain {
@@ -398,6 +451,28 @@ body:not(.game-active) #intro-sound-toggle.off { color:rgba(255,255,255,0.25); b
   text-transform:uppercase; font-family:'IBM Plex Mono',monospace;
   font-weight:400; opacity:0; transition:opacity 0.4s;
   z-index:25; pointer-events:none; white-space:nowrap;
+  color:#fff;
+}
+
+/* ── Small-screen sidebar (13" laptops, ~820px viewport height) ── */
+@media (max-height: 820px) {
+  /* Compact logo gap */
+  #sidebar-logo { padding:10px 24px 8px; }
+  /* Make the whole sidebar one scrollable column — caption slides below naturally */
+  #sidebar { overflow-y:auto; scrollbar-width:none; }
+  #sidebar::-webkit-scrollbar { display:none; }
+  #sidebar-content {
+    flex:none;
+    overflow:visible;
+    justify-content:flex-start;
+  }
+  #sidebar-caption { flex-shrink:0; }
+  /* Tighten panel sections */
+  .panel-section { padding:12px 24px; }
+  .panel-title { margin-bottom:10px; }
+  /* Tighter pollen circle groups */
+  #pollen-circles { gap:9px; }
+  .pollen-group { gap:3px; }
 }
 
 /* ── Proximity hint ── */
@@ -406,6 +481,63 @@ body:not(.game-active) #intro-sound-toggle.off { color:rgba(255,255,255,0.25); b
 /* ── Crosshair ── */
 #crosshair { position:fixed; top:50%; left:calc(320px + (100vw - 320px)/2); transform:translate(-50%,-50%); width:16px; height:16px; opacity:0; transition:opacity 0.5s; pointer-events:none; }
 #crosshair.visible { opacity:1; }
+/* ── Game intro modal ── */
+#game-intro-modal {
+  position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+  background:rgba(0,0,0,0.72); z-index:80;
+  opacity:0; pointer-events:none; transition:opacity 0.35s;
+}
+#game-intro-modal.visible { opacity:1; pointer-events:auto; }
+#game-intro-box {
+  font-family:'Space Mono',monospace;
+  background:#0d0d0d; border:1px solid rgba(73,220,164,0.3);
+  padding:40px 48px; text-align:center; max-width:420px;
+}
+#game-intro-box p {
+  font-size:12px; letter-spacing:0.14em; color:rgba(255,255,255,0.75);
+  line-height:1.9; text-transform:uppercase; margin-bottom:30px;
+}
+#game-intro-box p strong {
+  color:#fff; letter-spacing:0.18em;
+}
+#game-intro-start {
+  font-family:'Space Mono',monospace; font-size:12px; letter-spacing:0.25em;
+  text-transform:uppercase; padding:12px 40px; cursor:pointer;
+  background:var(--pollen-green); color:#000;
+  border:1px solid var(--pollen-green); transition:background 0.2s;
+}
+#game-intro-start:hover { background:#fff; border-color:#fff; }
+
+/* ── Exit popup ── */
+#exit-popup {
+  position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+  background:rgba(0,0,0,0.7); z-index:100;
+  opacity:0; pointer-events:none; transition:opacity 0.25s;
+}
+#exit-popup.visible { opacity:1; pointer-events:auto; }
+#exit-popup-box {
+  font-family:'Space Mono',monospace;
+  background:#0d0d0d; border:1px solid rgba(73,220,164,0.3);
+  padding:36px 44px; text-align:center; min-width:320px;
+}
+#exit-popup-box p {
+  font-size:13px; letter-spacing:0.15em; color:rgba(255,255,255,0.85);
+  text-transform:uppercase; margin-bottom:28px;
+}
+.exit-popup-btns { display:flex; gap:16px; justify-content:center; }
+.exit-popup-btn {
+  font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.2em;
+  text-transform:uppercase; padding:10px 28px; cursor:pointer;
+  border-radius:0; transition:background 0.2s, color 0.2s;
+}
+#exit-yes {
+  background:var(--pollen-green); color:#000; border:1px solid var(--pollen-green);
+}
+#exit-yes:hover { background:#fff; border-color:#fff; }
+#exit-no {
+  background:transparent; color:rgba(255,255,255,0.5); border:1px solid rgba(255,255,255,0.2);
+}
+#exit-no:hover { color:#fff; border-color:rgba(255,255,255,0.6); }
 #crosshair::before,#crosshair::after { content:''; position:absolute; background:rgba(180,130,220,0.5); }
 #crosshair::before { width:1px; height:100%; left:50%; top:0; }
 #crosshair::after { width:100%; height:1px; top:50%; left:0; }
@@ -434,7 +566,13 @@ body:not(.game-active) #intro-sound-toggle.off { color:rgba(255,255,255,0.25); b
 <body>
 <canvas id="c"></canvas>
 <audio id="ambient-audio" src="data-pollen/froth.mp3" loop preload="auto"></audio>
-<button class="sound-btn" id="intro-sound-toggle" type="button" aria-label="Turn sound off"><svg class="speaker-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor" stroke="none"/><g class="speaker-waves"><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></g><g class="speaker-mute"><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></g></svg></button>
+<div id="intro-controls">
+  <button class="sound-btn" id="intro-fs-toggle" type="button" aria-label="Enter fullscreen">
+    <svg class="fs-icon fs-enter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+    <svg class="fs-icon fs-exit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 3 3 3 3 8"/><polyline points="21 8 21 3 16 3"/><polyline points="3 16 3 21 8 21"/><polyline points="16 21 21 21 21 16"/></svg>
+  </button>
+  <button class="sound-btn" id="intro-sound-toggle" type="button" aria-label="Turn sound off"><svg class="speaker-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor" stroke="none"/><g class="speaker-waves"><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></g><g class="speaker-mute"><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></g></svg></button>
+</div>
 
 <div id="loading">
   <div id="loading-text">initializing vegetal network</div>
@@ -443,22 +581,62 @@ body:not(.game-active) #intro-sound-toggle.off { color:rgba(255,255,255,0.25); b
 
 <!-- SCREEN 1: TITLE -->
 <div class="intro-screen" id="screen-title">
-  <video id="title-video" autoplay muted loop playsinline webkit-playsinline preload="auto">
-    <source src="data-pollen/bee04.mp4" type="video/mp4">
-  </video>
+  <video id="title-video" src="data-pollen/bee04.mp4" autoplay muted loop playsinline webkit-playsinline preload="auto"></video>
+  <script>
+    (function(){
+      var v=document.getElementById('title-video');
+      if(!v) return;
+      v.muted=true; v.defaultMuted=true;
+      v.setAttribute('muted',''); v.setAttribute('playsinline',''); v.setAttribute('webkit-playsinline','');
+      v.play().catch(function(){});
+    })();
+  </script>
   <div id="title-overlay"></div>
   <div id="title-content">
     <img src="data-pollen/data-pollen-logo.png" alt="Data Pollen" style="max-width:clamp(420px,70vw,980px); width:90%; height:auto; margin-bottom:0; animation: breathe 4s ease-in-out infinite; filter:drop-shadow(0 0 40px rgba(255,255,255,0.3));">
     <div class="intro-hint" style="margin-top:40px;">Press Enter or click to continue</div>
   </div>
   <div id="title-copyright">© Mete Kutlu, 2026.</div>
-  <a id="title-back-link" href="/">Back to Spolia Botanique</a>
+  <a id="title-back-link" href="/?skipIntro=1">Back to Spolia Botanique</a>
 </div>
 
 <!-- SCREENS 2-5: IMAGE SLIDES -->
 <div class="intro-screen hidden" id="screen-slides">
-  <div class="slide" id="slide-0"><img src="data-pollen/story.jpg" alt="Story"></div>
-  <div class="slide" id="slide-1"><img src="data-pollen/mission.jpg" alt="Mission"></div>
+  <div class="slide" id="slide-0">
+    <div id="story-frames">
+      <img class="story-frame active" src="data-pollen/blue/blue00.jpg" alt="">
+      <img class="story-frame" src="data-pollen/blue/blue01.jpg" alt="">
+      <img class="story-frame" src="data-pollen/blue/blue02.jpg" alt="">
+      <img class="story-frame" src="data-pollen/blue/blue03.jpg" alt="">
+      <img class="story-frame" src="data-pollen/blue/blue04.jpg" alt="">
+      <img class="story-frame" src="data-pollen/blue/blue05.jpg" alt="">
+    </div>
+    <div id="story-text">
+      <p class="story-line" id="sline-0">Digital infrastructure has collapsed.</p>
+      <p class="story-line" id="sline-1">Yet the cloud did not disappear.</p>
+      <p class="story-line" id="sline-2">Data migrated to the vegetal network.</p>
+      <p class="story-line" id="sline-3">Flowers store it.</p>
+      <p class="story-line" id="sline-4">Pollen carries it.</p>
+      <p class="story-line" id="sline-5">Bees transmit it.</p>
+    </div>
+  </div>
+  <div class="slide" id="slide-1">
+    <div id="mission-frames">
+      <img class="mission-frame active" src="data-pollen/pink/pembe00.jpg" alt="">
+      <img class="mission-frame" src="data-pollen/pink/pembe01.jpg" alt="">
+      <img class="mission-frame" src="data-pollen/pink/pembe02.jpg" alt="">
+      <img class="mission-frame" src="data-pollen/pink/pembe03.jpg" alt="">
+      <img class="mission-frame" src="data-pollen/pink/pembe04.jpg" alt="">
+      <img class="mission-frame" src="data-pollen/pink/pembe05.jpg" alt="">
+    </div>
+    <div id="mission-text">
+      <p class="mission-line">You are a bee within this network.</p>
+      <p class="mission-line">Travel between flowers,</p>
+      <p class="mission-line">and collect data-pollens.</p>
+      <p class="mission-line">130 petabytes will give you a password,</p>
+      <p class="mission-line">and unlock a secret message.</p>
+    </div>
+  </div>
   <div class="slide" id="slide-2">
     <div class="flowers-slide">
       <div class="flowers-slide-title">Pollen Packages</div>
@@ -496,6 +674,21 @@ body:not(.game-active) #intro-sound-toggle.off { color:rgba(255,255,255,0.25); b
 
 <!-- GAME UI -->
 <div id="crosshair"></div>
+<div id="game-intro-modal">
+  <div id="game-intro-box">
+    <p>To exit the game,<br>press <strong>Escape twice.</strong></p>
+    <button id="game-intro-start">Start</button>
+  </div>
+</div>
+<div id="exit-popup">
+  <div id="exit-popup-box">
+    <p>Exit to Spolia Botanique?</p>
+    <div class="exit-popup-btns">
+      <button class="exit-popup-btn" id="exit-yes">Yes, exit</button>
+      <button class="exit-popup-btn" id="exit-no">Keep playing</button>
+    </div>
+  </div>
+</div>
 
 <!-- FULL HEIGHT SIDEBAR -->
 <div id="sidebar">
@@ -539,6 +732,10 @@ body:not(.game-active) #intro-sound-toggle.off { color:rgba(255,255,255,0.25); b
       12 July 2022 · No.F21
     </div>
     <div class="sidebar-credit-row">
+      <button class="sound-btn" id="sidebar-fs-toggle" type="button" aria-label="Enter fullscreen">
+        <svg class="fs-icon fs-enter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+        <svg class="fs-icon fs-exit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 3 3 3 3 8"/><polyline points="21 8 21 3 16 3"/><polyline points="3 16 3 21 8 21"/><polyline points="16 21 21 21 21 16"/></svg>
+      </button>
       <button class="sound-btn" id="sidebar-sound-toggle" type="button" aria-label="Turn sound off"><svg class="speaker-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor" stroke="none"/><g class="speaker-waves"><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></g><g class="speaker-mute"><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></g></svg></button>
       <div class="sidebar-credit">Designed and developed by Mete Kutlu, 2026.</div>
     </div>
@@ -901,7 +1098,7 @@ function showDataTransfer(f, done){
   setupGlyphRain(f.colorHex);
   glyphRainActive = true;
   glyphCanvas.classList.add('visible');
-  const duration = 5000;
+  const duration = 2500;
   const started = performance.now();
 
   function draw(now){
@@ -1033,8 +1230,17 @@ function tryCollect(){
 }
 
 function showPoem(){
-  if(document.pointerLockElement) document.exitPointerLock();
-  isPlaying = false;
+  hideExitPopup();
+  hideIntroModal();
+  isPlaying = false; // must be false before exitPointerLock
+  if(document.pointerLockElement || document.webkitPointerLockElement){
+    (document.exitPointerLock || document.webkitExitPointerLock || (()=>{})).call(document);
+  }
+  // Fade ambient fully out so only the narration is heard
+  stopNarration(600);
+  fadeAmbientTo(0, 2500);
+  // Play secret-message narration once poem text is appearing (after stage1 → stage2 transition)
+  playNarration('secret', 5000);
   const pwShown = document.getElementById('pw-shown');
   pwShown.innerHTML = '';
   for(let i=0; i<PASSWORD.length; i++){
@@ -1100,22 +1306,67 @@ function returnToGarden(){
 }
 function goHome(){
   hidePoem();
-  if(document.pointerLockElement) document.exitPointerLock();
+  hideExitPopup();
+  hideIntroModal();
+  stopNarration(500);
+  fadeAmbientTo(IN_IFRAME ? 0 : VOL_NARRATION, IN_IFRAME ? 800 : 1500);
+  // isPlaying must be false BEFORE exitPointerLock so pointerlockchange
+  // doesn't see an active game and re-show the exit popup.
   isPlaying = false;
   spaceHeld = false;
+  if(document.pointerLockElement || document.webkitPointerLockElement){
+    (document.exitPointerLock || document.webkitExitPointerLock || (()=>{})).call(document);
+  }
   vel.set(0,0,0);
   resetRun();
-  const slidesEl = document.getElementById('screen-slides');
-  if(slidesEl) slidesEl.classList.add('hidden');
-  document.getElementById('screen-title').classList.remove('hidden');
+
   ['sidebar','crosshair','location-tag'].forEach(id=>{
     const el = document.getElementById(id);
     if(el) el.classList.remove('visible');
   });
   document.body.classList.remove('game-active');
-  document.body.classList.add('title-ready');
-  currentScreen = 'title';
-  playTitleVideo();
+
+  if(IN_IFRAME){
+    // Fade the canvas and sidebar together — spolia will crossfade in underneath
+    [canvas, document.getElementById('sidebar')].forEach(el => {
+      if(el){ el.style.transition = 'opacity 1s ease'; el.style.opacity = '0'; }
+    });
+    setTimeout(()=>{
+      if(canvas){ canvas.style.display = 'none'; canvas.style.opacity = ''; canvas.style.transition = ''; }
+      window.parent.postMessage('dataPollen:goHome', '*');
+    }, 1050);
+    return;
+  }
+
+  // Standalone: fade out the current screen
+  const fromEl = document.getElementById('screen-' + currentScreen);
+  if(fromEl) {
+    fromEl.style.transition = 'opacity 0.7s ease';
+    fromEl.style.opacity = '0';
+    fromEl.style.pointerEvents = 'none';
+  }
+
+  // Standalone: show data-pollen title screen
+  const titleEl = document.getElementById('screen-title');
+  setTimeout(()=>{
+    if(canvas) canvas.style.display = 'none';
+    if(fromEl){ fromEl.classList.add('hidden'); fromEl.style.opacity = ''; fromEl.style.pointerEvents = ''; fromEl.style.transition = ''; }
+
+    titleEl.style.opacity = '0';
+    titleEl.classList.remove('hidden');
+    void titleEl.offsetHeight;
+    titleEl.style.transition = 'opacity 0.7s ease';
+    titleEl.style.opacity = '1';
+
+    currentScreen = 'title';
+    document.body.classList.add('title-ready');
+    playTitleVideo();
+
+    setTimeout(()=>{
+      titleEl.style.opacity = '';
+      titleEl.style.transition = '';
+    }, 750);
+  }, 750);
 }
 
 // ── WIFI SIGNAL ───────────────────────────────────────────────────────────────
@@ -1136,33 +1387,115 @@ function updateWifi(d){
   _wifiArcs[2].style.opacity = level > 3 ? '1' : '0.18';
 }
 
-// ── SOUND ────────────────────────────────────────────────────────────────────
+// ── CONTEXT DETECTION ────────────────────────────────────────────────────────
+// When loaded inside the index.html iframe, the parent page owns fullscreen.
+// We suppress our own fullscreen requests and send postMessage to close instead.
+const IN_IFRAME = (function(){ try{ return window.self !== window.top; }catch(e){ return true; } })();
+
+// ── SOUND + FULLSCREEN (synced with Spolia Botanique via localStorage) ────────
 let currentScreen = 'title';
 const ambientAudio = document.getElementById('ambient-audio');
 const soundButtons = [
   document.getElementById('intro-sound-toggle'),
   document.getElementById('sidebar-sound-toggle')
 ].filter(Boolean);
-let soundEnabled = true;
-if(ambientAudio){
-  ambientAudio.volume = 0.4;
+
+// ── Volume levels ─────────────────────────────────────────────────────────────
+const VOL_NARRATION = 0.08;   // background during story / mission / secret-message
+const VOL_SLIDES    = 0.15;   // background for non-narrated slides (flowers, controls)
+const VOL_GAME      = 0.35;   // in-game background level
+
+// ── Background ambient ────────────────────────────────────────────────────────
+let soundEnabled = localStorage.getItem('soundEnabled') !== '0';
+let ambientTarget = VOL_NARRATION;
+let ambientFadeTimer = null;
+if(ambientAudio) ambientAudio.volume = 0;
+
+function fadeAmbientTo(targetVol, durationMs = 1500){
+  if(!ambientAudio) return;
+  ambientTarget = targetVol;
+  if(ambientFadeTimer) clearInterval(ambientFadeTimer);
+  const startVol = ambientAudio.volume;
+  const diff = targetVol - startVol;
+  if(Math.abs(diff) < 0.002){ ambientAudio.volume = targetVol; return; }
+  const steps = Math.max(20, Math.round(durationMs / 40));
+  const interval = durationMs / steps;
+  let s = 0;
+  ambientFadeTimer = setInterval(()=>{
+    s++;
+    ambientAudio.volume = Math.max(0, Math.min(1, startVol + diff * (s / steps)));
+    if(s >= steps){ clearInterval(ambientFadeTimer); ambientFadeTimer = null; }
+  }, interval);
 }
+
+function playAmbient(){
+  if(!ambientAudio || !soundEnabled) return;
+  ambientAudio.play().catch(()=>{});
+}
+
+// ── Narration layer ───────────────────────────────────────────────────────────
+const narrFiles = {
+  story:   'data-pollen/story.mp3',
+  mission: 'data-pollen/mission.mp3',
+  secret:  'data-pollen/secret-message.mp3',
+};
+const narrAudio = {};
+Object.entries(narrFiles).forEach(([key, src])=>{
+  const a = new Audio(src);
+  a.preload = 'auto';
+  narrAudio[key] = a;
+});
+let activeNarr = null;
+
+function stopNarration(fadeMs = 400){
+  if(!activeNarr) return;
+  const a = activeNarr;
+  activeNarr = null;
+  if(fadeMs <= 0){ a.pause(); a.currentTime = 0; return; }
+  const start = a.volume;
+  const steps = Math.max(10, Math.round(fadeMs / 30));
+  let s = 0;
+  const t = setInterval(()=>{
+    s++;
+    a.volume = Math.max(0, start * (1 - s / steps));
+    if(s >= steps){ clearInterval(t); a.pause(); a.currentTime = 0; a.volume = 1; }
+  }, fadeMs / steps);
+}
+
+function playNarration(key, delayMs = 0){
+  if(!soundEnabled) return;
+  stopNarration(200);
+  const a = narrAudio[key];
+  if(!a) return;
+  const start = ()=>{
+    a.volume = 1;
+    a.currentTime = 0;
+    a.play().catch(()=>{});
+    activeNarr = a;
+  };
+  if(delayMs > 0) setTimeout(start, delayMs);
+  else start();
+}
+
+// ── Sound toggle ──────────────────────────────────────────────────────────────
 function syncSoundButtons(){
   soundButtons.forEach(btn=>{
     btn.classList.toggle('off', !soundEnabled);
     btn.setAttribute('aria-label', soundEnabled ? 'Turn sound off' : 'Turn sound on');
   });
 }
-function playAmbient(){
-  if(!ambientAudio || !soundEnabled) return;
-  ambientAudio.play().catch(()=>{});
-}
 function setSoundEnabled(enabled){
   soundEnabled = enabled;
+  localStorage.setItem('soundEnabled', enabled ? '1' : '0');
   if(!ambientAudio) return;
-  ambientAudio.muted = !enabled;
-  if(enabled) playAmbient();
-  else ambientAudio.pause();
+  if(enabled){
+    ambientAudio.volume = 0;
+    playAmbient();
+    fadeAmbientTo(ambientTarget, 1200);
+  } else {
+    stopNarration(300);
+    ambientAudio.pause();
+  }
   syncSoundButtons();
 }
 soundButtons.forEach(btn=>{
@@ -1171,10 +1504,62 @@ soundButtons.forEach(btn=>{
     setSoundEnabled(!soundEnabled);
   });
 });
+
+// ── First gesture — start ambient and fade in (cross-fade from Spolia) ────────
+let audioStarted = false;
+function handleFirstGesture(){
+  if(audioStarted || !soundEnabled) return;
+  audioStarted = true;
+  ambientAudio.volume = 0;
+  ambientAudio.play().then(()=>{ fadeAmbientTo(ambientTarget, 2000); }).catch(()=>{});
+}
 ['click','keydown','touchstart'].forEach(ev=>{
-  document.addEventListener(ev, playAmbient, {once:true, passive:true});
+  document.addEventListener(ev, handleFirstGesture, {once:true, passive:true});
 });
 syncSoundButtons();
+
+// ── FULLSCREEN (synced with Spolia Botanique via localStorage) ────────────────
+const introFsBtn   = document.getElementById('intro-fs-toggle');
+const sidebarFsBtn = document.getElementById('sidebar-fs-toggle');
+const allFsBtns    = [introFsBtn, sidebarFsBtn].filter(Boolean);
+function isFsPreferred(){ return localStorage.getItem('fullscreenPreferred') === '1'; }
+function setFsState(on){
+  if(IN_IFRAME) return; // parent owns fullscreen
+  localStorage.setItem('fullscreenPreferred', on ? '1' : '0');
+  if(on){
+    (document.documentElement.requestFullscreen
+      || document.documentElement.webkitRequestFullscreen
+      || (()=>{})).call(document.documentElement).catch(()=>{});
+  } else {
+    (document.exitFullscreen || document.webkitExitFullscreen || (()=>{})).call(document).catch(()=>{});
+  }
+}
+function syncFsButton(){
+  const inFs = IN_IFRAME || !!(document.fullscreenElement || document.webkitFullscreenElement);
+  document.body.classList.toggle('is-fullscreen', inFs);
+  allFsBtns.forEach(btn=>btn.setAttribute('aria-label', inFs ? 'Exit fullscreen' : 'Enter fullscreen'));
+}
+if(!IN_IFRAME){
+  document.addEventListener('fullscreenchange', syncFsButton);
+  document.addEventListener('webkitfullscreenchange', syncFsButton);
+  // Re-enter fullscreen on any gesture if it was preferred (browsers drop FS on navigation)
+  function restoreFullscreen(){
+    if(!isFsPreferred()) return;
+    if(document.fullscreenElement || document.webkitFullscreenElement) return;
+    setFsState(true);
+  }
+  ['pointerdown','keydown','touchstart'].forEach(ev=>{
+    document.addEventListener(ev, restoreFullscreen, {passive:true});
+  });
+}
+allFsBtns.forEach(btn=>btn.addEventListener('click', e=>{
+  e.stopPropagation();
+  if(IN_IFRAME) return; // fullscreen controlled by parent
+  setFsState(!(document.fullscreenElement || document.webkitFullscreenElement));
+}));
+syncFsButton();
+// Hide fullscreen buttons when running inside the spolia iframe
+if(IN_IFRAME) allFsBtns.forEach(btn => btn.style.display = 'none');
 
 // ── VIDEO AUTOPLAY ────────────────────────────────────────────────────────────
 const titleVideo = document.getElementById('title-video');
@@ -1185,21 +1570,30 @@ function playTitleVideo(){
   titleVideo.play().catch(()=>{});
 }
 if(titleVideo){
+  // Force muted + attributes at the earliest possible moment
   titleVideo.muted = true;
+  titleVideo.defaultMuted = true;
   titleVideo.setAttribute('muted', '');
+  titleVideo.setAttribute('playsinline', '');
+  titleVideo.setAttribute('webkit-playsinline', '');
+  // Try immediately — best chance Safari will allow this within the page-load window
+  titleVideo.play().catch(()=>{});
+  // Also try once data is ready
   if(titleVideo.readyState >= 3){
     playTitleVideo();
   } else {
     titleVideo.addEventListener('canplay', playTitleVideo, {once:true});
   }
+  // Periodic recovery — if tab regains focus or Safari deferred the play
   document.addEventListener('visibilitychange', ()=>{
     if(!document.hidden && currentScreen==='title') playTitleVideo();
   });
+  // Keep-alive: re-attempt every 1.8s while on title screen
   setInterval(()=>{
     if(currentScreen==='title' && titleVideo.paused) playTitleVideo();
   }, 1800);
 }
-// Fallback: play on first user gesture
+// Fallback: play on any user gesture (covers Safari's strict policy)
 ['pointerdown','keydown','touchstart'].forEach(ev=>{
   document.addEventListener(ev, ()=>{
     if(titleVideo && titleVideo.paused && currentScreen==='title') playTitleVideo();
@@ -1229,6 +1623,94 @@ buildSporeCloud('pp-spores-fairy',    1, '#60c0ff');
 buildSporeCloud('pp-spores-williams', 2, '#ff70a0');
 buildSporeCloud('pp-spores-petunia',  2, '#ff9030');
 buildSporeCloud('pp-spores-lilac',    3, '#c060ff');
+// ── STORY SLIDE ANIMATION ─────────────────────────────────────────────────────
+// Stop-motion frames cycling at 0.5s + text lines revealed with timed delays
+const STORY_LINES = [
+  { text:'Digital infrastructure has collapsed.',  delay:1000  },
+  { text:'Yet the cloud did not disappear.',        delay:3500  },
+  { text:'Data migrated to the vegetal network.',   delay:6000  },
+  { text:'Flowers store it.',                       delay:9500  },
+  { text:'Pollen carries it.',                      delay:11000 },
+  { text:'Bees transmit it.',                       delay:13000 },
+];
+let storyFrameTimer  = null;
+let storyTextTimers  = [];
+let storyFrameIdx    = 0;
+
+function startStoryAnimation(){
+  storyFrameIdx = 0;
+  const frames = document.querySelectorAll('.story-frame');
+  const lines  = document.querySelectorAll('.story-line');
+
+  // Reset all frames and lines
+  frames.forEach((f,i) => f.classList.toggle('active', i === 0));
+  lines.forEach(l => l.classList.remove('visible'));
+
+  // Cycle frames every 500ms — loops indefinitely until stopped
+  storyFrameTimer = setInterval(()=>{
+    frames[storyFrameIdx].classList.remove('active');
+    storyFrameIdx = (storyFrameIdx + 1) % frames.length;
+    frames[storyFrameIdx].classList.add('active');
+  }, 500);
+
+  // Reveal lines one at a time — each fades in at its fixed position, none ever move
+  STORY_LINES.forEach((item, i) => {
+    const t = setTimeout(()=>{
+      lines[i].classList.add('visible');
+      if(i === 0) playNarration('story'); // audio synced to first line
+    }, item.delay);
+    storyTextTimers.push(t);
+  });
+}
+
+function stopStoryAnimation(){
+  if(storyFrameTimer){ clearInterval(storyFrameTimer); storyFrameTimer = null; }
+  storyTextTimers.forEach(t => clearTimeout(t));
+  storyTextTimers = [];
+  document.querySelectorAll('.story-frame').forEach(f => f.classList.remove('active'));
+  document.querySelectorAll('.story-line').forEach(l => l.classList.remove('visible'));
+}
+
+// ── MISSION ANIMATION ────────────────────────────────────────────────────────
+const MISSION_LINES = [
+  { delay: 1000  },  // "You are a bee within this network."
+  { delay: 3500  },  // "Travel between flowers,"
+  { delay: 6000  },  // "and collect data-pollens."
+  { delay: 8000  },  // "130 petabytes will give you a password,"
+  { delay: 11500 },  // "and unlock a secret message."
+];
+let missionFrameTimer = null, missionTextTimers = [], missionFrameIdx = 0;
+
+function startMissionAnimation(){
+  const frames = document.querySelectorAll('.mission-frame');
+  const lines  = document.querySelectorAll('.mission-line');
+  missionFrameIdx = 0;
+  frames.forEach((f,i) => f.classList.toggle('active', i === 0));
+  lines.forEach(l => l.classList.remove('visible'));
+  // Stop-motion frame cycle
+  missionFrameTimer = setInterval(()=>{
+    frames[missionFrameIdx].classList.remove('active');
+    missionFrameIdx = (missionFrameIdx + 1) % frames.length;
+    frames[missionFrameIdx].classList.add('active');
+  }, 500);
+  // Reveal lines at fixed positions
+  MISSION_LINES.forEach((item, i) => {
+    const t = setTimeout(()=>{
+      lines[i].classList.add('visible');
+      if(i === 0) playNarration('mission'); // audio synced to first line
+    }, item.delay);
+    missionTextTimers.push(t);
+  });
+}
+
+function stopMissionAnimation(){
+  if(missionFrameTimer){ clearInterval(missionFrameTimer); missionFrameTimer = null; }
+  missionTextTimers.forEach(t => clearTimeout(t));
+  missionTextTimers = [];
+  document.querySelectorAll('.mission-frame').forEach(f => f.classList.remove('active'));
+  document.querySelectorAll('.mission-line').forEach(l => l.classList.remove('visible'));
+}
+
 // ── SLIDE SYSTEM ─────────────────────────────────────────────────────────────
 let slideIndex = 0;
 let slideLocked = false;
@@ -1239,14 +1721,23 @@ function initSlides(){
   document.querySelectorAll('.slide').forEach((s,i) => s.classList.toggle('active', i===0));
   const btn = document.getElementById('slide-next');
   if(btn) btn.textContent = 'Next →';
+  // Slide 0 = story — bring ambient low, story animation handles narration timing
+  fadeAmbientTo(VOL_NARRATION, 1200);
+  startStoryAnimation();
 }
 function advanceSlide(){
   if(slideLocked) return;
   slideLocked = true;
+  // Stop animations when leaving a slide
+  if(slideIndex === 0) stopStoryAnimation();
+  if(slideIndex === 1) stopMissionAnimation();
   const slides = document.querySelectorAll('.slide');
   slides[slideIndex].classList.remove('active');
   slideIndex++;
   if(slideIndex >= SLIDE_COUNT){
+    // Entering game — stop narration, raise ambient to game level
+    stopNarration(600);
+    fadeAmbientTo(VOL_GAME, 2500);
     setTimeout(startGame, 850);
   } else {
     setTimeout(()=>{
@@ -1254,6 +1745,17 @@ function advanceSlide(){
       const btn = document.getElementById('slide-next');
       if(btn) btn.textContent = slideIndex === SLIDE_COUNT - 1 ? 'Enter the Garden' : 'Next →';
       slideLocked = false;
+      // Per-slide audio cues
+      if(slideIndex === 1){
+        // Mission slide — stop-motion + narration
+        stopNarration(300);
+        fadeAmbientTo(VOL_NARRATION, 600);
+        startMissionAnimation();
+      } else {
+        // Flowers / Controls — no narration, slightly higher ambient
+        stopNarration(600);
+        fadeAmbientTo(VOL_SLIDES, 1000);
+      }
     }, 850);
   }
 }
@@ -1295,7 +1797,9 @@ document.addEventListener('keydown', e=>{
   keys[e.code]=true; keys[e.key.toLowerCase()]=true;
   if(e.code==='Space'&&isPlaying){ e.preventDefault(); spaceHeld=true; }
   if(e.code==='KeyF'&&isPlaying) tryCollect();
-  if(e.code==='KeyQ'&&isPlaying){ goHome(); }
+  // Q releases pointer lock without touching fullscreen.
+  // If lock isn't active (e.g. Safari iframe), show popup directly.
+  if(e.code==='KeyQ'&&isPlaying) triggerExitFlow();
 });
 document.addEventListener('keyup',e=>{
   keys[e.code]=false; keys[e.key.toLowerCase()]=false;
@@ -1327,7 +1831,7 @@ const POLLEN_UI = [
 function buildPollenCircles(){
   const container = document.getElementById('pollen-circles');
   container.innerHTML='';
-  const shortNames = {fairy:'Fan-Flower', williams:'William', petunia:'Petunia', lilac:'Lilac'};
+  const shortNames = {fairy:'Fan-Flower', williams:'Sweet William', petunia:'Petunia', lilac:'Summer Lilac'};
   let lastType = null;
 
   NODES.forEach((nd, ni)=>{
@@ -1386,12 +1890,63 @@ function updateDataBar(pb){
   document.getElementById('data-bar-nums').textContent=`${pb} / 130 petabytes`;
   document.getElementById('data-bar-fill').style.width=`${(pb/130)*100}%`;
 }
+// ── GAME INTRO MODAL ──────────────────────────────────────────────────────────
+const gameIntroModal = document.getElementById('game-intro-modal');
+function showIntroModal(){ gameIntroModal.classList.add('visible'); }
+function hideIntroModal(){ gameIntroModal.classList.remove('visible'); }
+document.getElementById('game-intro-start').addEventListener('click', ()=>{
+  hideIntroModal();
+  // Start button click IS a user gesture — request pointer lock now
+  canvas.requestPointerLock();
+});
+
+// ── EXIT POPUP ────────────────────────────────────────────────────────────────
+const exitPopup = document.getElementById('exit-popup');
+function showExitPopup(){ exitPopup.classList.add('visible'); }
+function hideExitPopup(){ exitPopup.classList.remove('visible'); }
+document.getElementById('exit-yes').addEventListener('click', ()=>{ hideExitPopup(); goHome(); });
+document.getElementById('exit-no').addEventListener('click', ()=>{
+  hideExitPopup();
+  if(isPlaying) canvas.requestPointerLock();
+});
+
+// Shared exit trigger — called from Q keydown inside the iframe,
+// AND from the parent-forwarded 'triggerExit' postMessage (covers Safari
+// where keyboard focus may stay on the parent when pointer lock fails).
+function triggerExitFlow(){
+  if(!isPlaying) return;
+  const locked = document.pointerLockElement || document.webkitPointerLockElement;
+  if(locked){
+    // Release lock — pointerlockchange will show the popup
+    (document.exitPointerLock || document.webkitExitPointerLock || (()=>{})).call(document);
+  } else {
+    // No lock active (Safari / failed lock) — show popup directly
+    showExitPopup();
+  }
+}
+window.addEventListener('message', function(e){
+  if(e.data === 'triggerExit') triggerExitFlow();
+});
+
+// ── POINTER LOCK ───────────────────────────────────────────────────────────────
 document.addEventListener('pointerlockchange',()=>{
-  if(document.pointerLockElement===canvas){
+  const locked = document.pointerLockElement === canvas;
+  document.body.classList.toggle('pointer-locked', locked);
+  if(locked){
     document.addEventListener('mousemove',onLocked);
+    hideIntroModal();   // lock acquired — dismiss the hint
+    hideExitPopup();
   } else {
     document.removeEventListener('mousemove',onLocked);
+    // Lock released while game is running (Q key or Escape) — show exit popup
+    if(isPlaying) showExitPopup();
   }
+});
+document.addEventListener('webkitpointerlockchange',()=>{
+  const locked = document.webkitPointerLockElement === canvas;
+  document.body.classList.toggle('pointer-locked', locked);
+  if(locked){ document.addEventListener('mousemove',onLocked); hideIntroModal(); hideExitPopup(); }
+  else { document.removeEventListener('mousemove',onLocked); if(isPlaying) showExitPopup(); }
 });
 function onLocked(e){
   if(!isPlaying)return;
@@ -1399,9 +1954,9 @@ function onLocked(e){
   pendingMouseY += e.movementY;
 }
 
-// Click canvas to acquire pointer lock during game
+// Click canvas to re-acquire pointer lock (e.g. after dismissing popup with "Keep playing")
 canvas.addEventListener('click',()=>{
-  if(isPlaying && document.pointerLockElement !== canvas){
+  if(isPlaying && document.pointerLockElement !== canvas && !exitPopup.classList.contains('visible')){
     canvas.requestPointerLock();
   }
 });
@@ -1424,6 +1979,8 @@ function startGame(){
   if(titleVideo){
     titleVideo.pause();
   }
+  // Show the 3D canvas
+  if(canvas) canvas.style.display = 'block';
   ['screen-title','screen-slides'].forEach(id=>{
     const el = document.getElementById(id);
     if(el) el.classList.add('hidden');
@@ -1444,8 +2001,9 @@ function startGame(){
   playAmbient();
   isPlaying = true;
   startLoop();
-  // Auto request pointer lock immediately on the button click gesture
-  canvas.requestPointerLock();
+  // Show intro modal — pointer lock is requested when user clicks Start,
+  // which is the user-gesture context browsers require for pointer lock.
+  showIntroModal();
 }
 
 // ── LOAD MODEL ────────────────────────────────────────────────────────────────
@@ -1473,13 +2031,13 @@ function startGardenLoad(){
   });
   NODES.forEach(nd => pollenNodes.push(makePollenNode(nd)));
   buildPasswordUI();
+  // Fade out loading screen (transition: 1.2s), then reveal title content
   document.getElementById('loading').style.opacity='0';
+  playTitleVideo(); // try early — loading screen still visible, but video is in DOM
   setTimeout(()=>{
     document.getElementById('loading').style.display='none';
-    document.body.classList.add('title-ready');
-    // Play video now — loading is done, browser allows it
-    playTitleVideo();
-  }, 1000);
+    document.body.classList.add('title-ready'); // title-content/copyright fade in AFTER loading gone
+  }, 1400); // 1400ms > 1.2s transition — no overlap
 }, xhr=>{
   const pct = xhr.total ? (xhr.loaded/xhr.total*90) : 0;
   fill.style.width = pct+'%';

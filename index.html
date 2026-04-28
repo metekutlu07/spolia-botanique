@@ -447,7 +447,7 @@
             will-change: opacity;
         }
         body:not(.video-ready) .video-background {
-            opacity: 0;
+            opacity: 0.001; /* Must be > 0 — Safari refuses autoplay on opacity:0 elements */
         }
         body:not(.video-ready) .blinds-overlay,
         body:not(.home-ready):not(.home-prewarm) .landing-hero,
@@ -618,6 +618,12 @@
             transform: translateY(-50px);
             contain: layout style;
         }
+        /* Once entry animation is done, release compositing layer so backdrop-filter
+           on .enter-button-glass children can see through to the video behind */
+        body.home-ready .landing-hero {
+            will-change: auto;
+            transform: translateY(-50px); /* preserve visual position */
+        }
         .spolia-title {
             display: flex;
             gap: 36px;
@@ -638,6 +644,14 @@
             font-weight: normal;
             letter-spacing: 2px;
         }
+        .hero-buttons {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 60px;
+            margin-top: 40px;
+        }
         .enter-button {
             position: relative;
             overflow: hidden;
@@ -651,7 +665,7 @@
             cursor: pointer;
             transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
             text-transform: uppercase;
-            margin-top: 40px;
+            margin-top: 0;
             transform: translateZ(0);
             will-change: opacity, background-color, color, box-shadow;
         }
@@ -675,22 +689,29 @@
         }
         .enter-button:hover { color: #1a1a1a; box-shadow: 0 4px 20px rgba(255,255,255,0.3); }
         .data-pollen-link {
-            display: block;
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 13px;
+            font-size: 21px;
             letter-spacing: 3px;
-            padding: 12px 22px;
-            border: 1px solid rgba(255,255,255,0.35);
+            padding: 22px;
+            border: 1px solid white;
             background: transparent;
-            color: rgba(255,255,255,0.6);
+            color: white;
             cursor: pointer;
-            transition: border-color 0.3s ease, color 0.3s ease;
+            transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
             text-transform: uppercase;
             text-decoration: none;
-            margin-top: 14px;
+            margin-top: 0;
             text-align: center;
+            transform: translateZ(0);
+            will-change: opacity, background-color, color, box-shadow;
         }
-        .data-pollen-link:hover { border-color: rgba(255,255,255,0.8); color: white; }
+        .data-pollen-link:hover .enter-button-glass { background: white !important; }
+        .data-pollen-link:hover,
+        .data-pollen-link:hover .enter-button-label { color: #1a1a1a !important; }
+        .data-pollen-link:hover { box-shadow: 0 4px 20px rgba(255,255,255,0.3) !important; }
         .enter-button-glass-fixed {
             display: none;
         }
@@ -806,10 +827,15 @@
             .spolia-title-sans {
                 font-size: 82px;
             }
-            .enter-button {
+            .hero-buttons {
+                margin-top: 32px;
+                gap: 40px;
+            }
+            .enter-button,
+            .data-pollen-link {
                 font-size: 18px;
                 padding: 18px 20px;
-                margin-top: 32px;
+                margin-top: 0;
             }
             .logos-bar {
                 height: 110px;
@@ -891,10 +917,15 @@
             .spolia-title-sans {
                 font-size: 72px;
             }
-            .enter-button {
+            .hero-buttons {
+                margin-top: 26px;
+                gap: 36px;
+            }
+            .enter-button,
+            .data-pollen-link {
                 font-size: 16px;
                 padding: 16px 18px;
-                margin-top: 26px;
+                margin-top: 0;
             }
             .logos-bar {
                 height: 92px;
@@ -1003,8 +1034,15 @@
             }
             /* Backdrop-blur: direct on element now works because hero is no
                longer a promoted compositing layer (will-change:auto above) */
-            .enter-button {
+            .hero-buttons {
                 margin-top: 28px;
+                gap: 0;
+            }
+            .data-pollen-link {
+                display: none !important;
+            }
+            .enter-button {
+                margin-top: 0;
                 font-size: 13px;
                 letter-spacing: 4px;
                 padding: 16px;
@@ -1214,11 +1252,16 @@
                 <div class="spolia-title-serif">Spolia</div>
                 <div class="spolia-title-sans">botanique</div>
             </div>
-            <button class="enter-button" id="discover-btn">
-                <span class="enter-button-glass" aria-hidden="true"></span>
-                <span class="enter-button-label" data-i18n="landing.discover-button">Discover</span>
-            </button>
-            <a class="data-pollen-link" href="data-pollen.html" data-i18n="landing.data-pollen-button">Play Data Pollen</a>
+            <div class="hero-buttons">
+                <button class="enter-button" id="discover-btn">
+                    <span class="enter-button-glass" aria-hidden="true"></span>
+                    <span class="enter-button-label" data-i18n="landing.discover-button">Discover</span>
+                </button>
+                <a class="data-pollen-link" href="data-pollen.html">
+                    <span class="enter-button-glass" aria-hidden="true"></span>
+                    <span class="enter-button-label" data-i18n="landing.data-pollen-button">Play Data Pollen</span>
+                </a>
+            </div>
         </div>
     </div>
     <div class="logos-bar landing-el landing-home-ui">
@@ -1255,6 +1298,9 @@
 
     <!-- ── SPA content area ── -->
     <div id="spa-content"></div>
+
+    <!-- ── Data Pollen iframe (no page navigation = no fullscreen loss) ── -->
+    <iframe id="data-pollen-frame" src="" title="Data Pollen" allow="autoplay *; pointer-lock *" allowfullscreen style="position:fixed;inset:0;width:100%;height:100%;border:none;z-index:9000;display:none;"></iframe>
 
     <!-- ── Global audio (never removed from DOM) ── -->
     <audio id="background-audio" loop>
@@ -1756,6 +1802,21 @@
             backgroundFadeFrame = null;
         }
 
+        function fadeBackgroundTo(target, durationMs) {
+            stopBackgroundFade();
+            const startVol = getBackgroundVolume();
+            const delta = target - startVol;
+            if (Math.abs(delta) < 0.001) { setBackgroundVolume(target); return; }
+            const startTime = performance.now();
+            const step = now => {
+                const t = Math.min((now - startTime) / durationMs, 1);
+                setBackgroundVolume(startVol + delta * t);
+                if (t < 1) backgroundFadeFrame = requestAnimationFrame(step);
+                else { backgroundFadeFrame = null; setBackgroundVolume(target); }
+            };
+            backgroundFadeFrame = requestAnimationFrame(step);
+        }
+
         function fadeBackgroundToFull(duration = 4200) {
             stopBackgroundFade();
             if (!isSoundOn() || !soundUnlockedThisSession || audio.paused) return;
@@ -2051,6 +2112,85 @@
         // ── Landing bottom-left controls ──
         if (lcSnd) lcSnd.addEventListener('click', () => setSoundState(!isSoundOn()));
         if (lcFs) lcFs.addEventListener('click',  () => setFsState(!document.fullscreenElement));
+
+        // ── Data Pollen iframe loader ──
+        // Open data-pollen in an iframe so this page never navigates → fullscreen is never dropped.
+        const dpFrame = document.getElementById('data-pollen-frame');
+
+        // After the iframe page loads, focus its window so keyboard events
+        // (Enter to advance, Q to exit) go straight to data-pollen without
+        // requiring the user to click inside first.
+        dpFrame.addEventListener('load', function() {
+            try { dpFrame.contentWindow.focus(); } catch(e) {}
+        });
+
+        document.querySelectorAll('.data-pollen-link').forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (!dpFrame.src || dpFrame.src === window.location.href) {
+                    dpFrame.src = 'data-pollen.html';
+                }
+                dpFrame.style.display = 'block';
+                // Fade spolia music out so data-pollen's audio takes over
+                fadeBackgroundTo(0, 1200);
+            });
+        });
+        // Q key forwarded to iframe — covers the case where pointer lock didn't
+        // capture keyboard focus (Safari) so the iframe never sees the keydown.
+        document.addEventListener('keydown', function(e) {
+            if (e.code === 'KeyQ' && dpFrame.style.display !== 'none') {
+                try { dpFrame.contentWindow.postMessage('triggerExit', '*'); } catch(_) {}
+            }
+        });
+
+        // Re-enter fullscreen on next gesture if the direct attempt below fails
+        // (ESC releases fullscreen automatically; we try to restore it)
+        let pendingFsRestore = false;
+        ['pointerdown', 'keydown'].forEach(ev => {
+            document.addEventListener(ev, function() {
+                if (pendingFsRestore && isFsPreferred() && !document.fullscreenElement && !document.webkitFullscreenElement) {
+                    pendingFsRestore = false;
+                    setFsState(true);
+                }
+            }, { passive: true });
+        });
+
+        window.addEventListener('message', function(e) {
+            if (e.data === 'dataPollen:goHome') {
+                // Resume spolia video before the fade so it's already playing when revealed.
+                // resetAndPlayLandingVideo sets landingVideoAllowed=true first, bypassing
+                // the guard that blocks playLandingVideo when the flag was cleared.
+                // Direct bgVideo.play() is the belt-and-suspenders for Safari.
+                landingVideoAllowed = true;
+                document.body.classList.add('video-ready');
+                if (bgVideo) bgVideo.play().catch(() => {});
+                resetAndPlayLandingVideo();
+
+                // Fade the iframe out — spolia shows through underneath
+                dpFrame.style.transition = 'opacity 0.65s ease';
+                void dpFrame.offsetHeight;
+                dpFrame.style.opacity = '0';
+
+                setTimeout(function() {
+                    dpFrame.style.display = 'none';
+                    dpFrame.style.opacity = '';
+                    dpFrame.style.transition = '';
+                    // Fade spolia music back in
+                    fadeBackgroundToFull(1800);
+                    // Re-enter fullscreen — ESC released it automatically.
+                    // Same-origin iframe button click propagates activation to parent.
+                    if (isFsPreferred()) {
+                        var fsPromise = (document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen || null);
+                        if (fsPromise) {
+                            fsPromise.call(document.documentElement).catch(function() {
+                                // Activation didn't transfer — restore on next gesture instead
+                                pendingFsRestore = true;
+                            });
+                        }
+                    }
+                }, 700);
+            }
+        });
 
         // Never auto-play on load — user must explicitly click sound icon
 
