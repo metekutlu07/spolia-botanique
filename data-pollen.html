@@ -50,9 +50,14 @@ body { background:#000; overflow:hidden; font-family:'IBM Plex Mono',monospace; 
   transition:opacity 0.8s ease;
 }
 #title-video::-webkit-media-controls,
+#title-video::-webkit-media-controls-enclosure,
 #title-video::-webkit-media-controls-panel,
-#title-video::-webkit-media-controls-start-playback-button {
+#title-video::-webkit-media-controls-start-playback-button,
+#title-video::-webkit-media-controls-overlay-play-button,
+#title-video::-webkit-media-controls-play-button {
   display:none !important;
+  opacity:0 !important;
+  pointer-events:none !important;
   -webkit-appearance:none;
 }
 #title-overlay { display:none; }
@@ -1791,7 +1796,12 @@ document.addEventListener('keydown', e=>{
     return;
   }
   if(e.code==='Enter'){
-    if(currentScreen==='title') showScreen('slides');
+    if(gameIntroModal.classList.contains('visible')){
+      // Enter = click Start in the intro modal (same as clicking the Start button)
+      e.preventDefault();
+      hideIntroModal();
+      canvas.requestPointerLock();
+    } else if(currentScreen==='title') showScreen('slides');
     else if(currentScreen==='slides') advanceSlide();
   }
   keys[e.code]=true; keys[e.key.toLowerCase()]=true;
@@ -1930,6 +1940,9 @@ window.addEventListener('message', function(e){
     // Mirror the keydown Enter handler
     if(document.getElementById('full-poem').classList.contains('visible')){
       goHome();
+    } else if(gameIntroModal.classList.contains('visible')){
+      hideIntroModal();
+      canvas.requestPointerLock();
     } else if(currentScreen === 'title'){
       showScreen('slides');
     } else if(currentScreen === 'slides'){

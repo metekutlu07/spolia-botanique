@@ -1507,8 +1507,73 @@
             return () => bgVideo.play().catch(() => {});
         }
 
+        // Safari sometimes stalls at the very start of a looped video (second play).
+        // We attach a one-time set of recovery listeners directly on the element so
+        // they survive across multiple keepAlive / play cycles.
+        function attachSafariLoopGuard() {
+            if (!bgVideo || bgVideo.dataset.safariLoopGuard) return;
+            bgVideo.dataset.safariLoopGuard = '1';
+
+            // Helper: play after a seek completes (mirrors resetAndPlayLandingVideo).
+            // Calling play() synchronously after setting currentTime races the async
+            // seek on Safari and leaves the video frozen at frame 0.
+            function playAfterSeekTo0() {
+                if (bgVideo.currentTime < 0.15) {
+                    bgVideo.play().catch(() => {});
+                    return;
+                }
+                const onSeeked = () => {
+                    bgVideo.removeEventListener('seeked', onSeeked);
+                    clearTimeout(fb);
+                    bgVideo.play().catch(() => {});
+                };
+                const fb = setTimeout(() => {
+                    bgVideo.removeEventListener('seeked', onSeeked);
+                    bgVideo.play().catch(() => {});
+                }, 700);
+                bgVideo.addEventListener('seeked', onSeeked);
+                try { bgVideo.currentTime = 0; } catch (_) {
+                    clearTimeout(fb);
+                    bgVideo.removeEventListener('seeked', onSeeked);
+                    bgVideo.play().catch(() => {});
+                }
+            }
+
+            // Some Safari versions fire 'ended' even with the loop attribute.
+            // Use seeked-before-play so we don't freeze at frame 0.
+            bgVideo.addEventListener('ended', () => {
+                if (!landingVideoAllowed) return;
+                playAfterSeekTo0();
+            });
+
+            // Detect stall within the first 0.8 s of playback — this is the exact
+            // window where Safari gets stuck on the second loop iteration.
+            let stallCheck = null;
+            bgVideo.addEventListener('playing', () => {
+                clearTimeout(stallCheck);
+                if (bgVideo.currentTime < 0.8) {
+                    stallCheck = setTimeout(() => {
+                        if (!landingVideoAllowed || !bgVideo.paused) return;
+                        bgVideo.play().catch(() => {});
+                    }, 900);
+                }
+            });
+
+            // 'waiting' or 'stalled' near the very start of a loop — force recovery.
+            ['waiting', 'stalled'].forEach(evt => {
+                bgVideo.addEventListener(evt, () => {
+                    if (!landingVideoAllowed || bgVideo.currentTime >= 1.5) return;
+                    setTimeout(() => {
+                        if (!landingVideoAllowed || !bgVideo.paused) return;
+                        bgVideo.play().catch(() => {});
+                    }, 350);
+                });
+            });
+        }
+
         function startLandingVideoKeepAlive() {
             if (landingVideoKeepAlive || !bgVideo) return;
+            attachSafariLoopGuard();
             landingVideoKeepAlive = setInterval(() => {
                 if (!landingVideoAllowed || !document.body.classList.contains('landing-mode')) return;
                 if (document.visibilityState === 'hidden') return;
@@ -1583,8 +1648,32 @@
             landingVideoAllowed = true;
             prepareLandingVideoElement();
             if (!mobileMedia.matches) bgVideo.pause();
-            try { bgVideo.currentTime = 0; } catch (_) {}
-            return playLandingVideo();
+
+            // Safari fires seeked asynchronously. Calling play() before the seek
+            // completes leaves the video frozen at frame 0. We wait for the seeked
+            // event (with a short fallback timeout) before invoking playLandingVideo.
+            const alreadyAtStart = bgVideo.currentTime < 0.15;
+            if (alreadyAtStart) {
+                return playLandingVideo();
+            }
+            return new Promise(resolve => {
+                const proceed = () => resolve(playLandingVideo());
+                const timer = setTimeout(() => {
+                    bgVideo.removeEventListener('seeked', onSeeked);
+                    proceed();
+                }, 700);
+                function onSeeked() {
+                    clearTimeout(timer);
+                    bgVideo.removeEventListener('seeked', onSeeked);
+                    proceed();
+                }
+                bgVideo.addEventListener('seeked', onSeeked);
+                try { bgVideo.currentTime = 0; } catch (_) {
+                    clearTimeout(timer);
+                    bgVideo.removeEventListener('seeked', onSeeked);
+                    proceed();
+                }
+            });
         }
 
 	        function pauseLandingVideo(release = false) {
@@ -2145,11 +2234,15 @@
 
         window.addEventListener('message', function(e) {
             if (e.data === 'dataPollen:goHome') {
-                // Resume spolia video — just set the flag and play, no pause/reset
-                // (resetAndPlayLandingVideo calls bgVideo.pause() which would kill it)
                 landingVideoAllowed = true;
                 document.body.classList.add('video-ready');
-                if (bgVideo) bgVideo.play().catch(() => {});
+                // Ensure the Safari loop guard is wired up (keepAlive may have been
+                // stopped or never started if the user entered the game very quickly).
+                attachSafariLoopGuard();
+                // Use playLandingVideo (multiple retry attempts + event listeners)
+                // instead of a bare play() — Safari may have paused/stalled the video
+                // while it was behind the full-screen iframe.
+                playLandingVideo();
                 startLandingVideoKeepAlive();
 
                 // Fade the iframe out — spolia shows through underneath
