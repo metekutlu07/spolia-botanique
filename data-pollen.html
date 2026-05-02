@@ -4,7 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Data Pollen</title>
+<link rel="icon" href="/favicon.jpg" type="image/jpeg">
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+<script src="i18n.js" defer></script>
 <style>
 :root { --pollen-green:#49dca4; }
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -65,10 +67,16 @@ body { background:#000; overflow:hidden; font-family:'IBM Plex Mono',monospace; 
   position:relative; z-index:2;
   display:flex; flex-direction:column; align-items:center; justify-content:center;
   height:100%; gap:0;
-  transition:opacity 0.8s ease;
 }
-#title-copyright { transition:opacity 0.8s ease; }
-body:not(.title-ready) #title-content,
+#title-content > img,
+#title-content .intro-hint,
+#title-copyright {
+  transition:opacity 0.8s ease;
+  transform:translateZ(0);
+  will-change:opacity;
+}
+body:not(.title-ready) #title-content > img,
+body:not(.title-ready) #title-content .intro-hint,
 body:not(.title-ready) #title-copyright { opacity:0; }
 /* #title-video is NOT hidden — keeping it opacity:1 lets Safari autoplay it.
    The #loading screen (z-index:200) already covers it visually during load. */
@@ -145,14 +153,16 @@ body.is-fullscreen #sidebar-fs-toggle .fs-exit  { display:block; }
   background:#000; display:flex; align-items:center; justify-content:center;
 }
 .slide.active { opacity:1; pointer-events:none; }
-.slide > img { max-width:100%; max-height:90vh; width:auto; height:auto; object-fit:contain; display:block; }
+.slide > img { width:85vw; height:100vh; object-fit:cover; display:block; flex-shrink:0; }
 
 /* ── Story slide: stop-motion frames + text overlay ── */
 #story-frames {
   position:absolute; inset:0;
+  overflow:hidden;
 }
 .story-frame {
-  position:absolute; inset:0; width:100%; height:100%;
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  width:max(85vw,100vh); height:max(85vw,100vh);
   object-fit:cover; opacity:0; transition:opacity 0.12s ease;
   display:block;
 }
@@ -179,24 +189,40 @@ body.is-fullscreen #sidebar-fs-toggle .fs-exit  { display:block; }
   text-shadow:0 2px 20px rgba(0,0,30,0.95), 0 0 40px rgba(0,0,30,0.7);
   opacity:0; transition:opacity 0.6s ease;
 }
+.mission-line { color:#f1527a; }
 .story-line.visible,
 .mission-line.visible { opacity:1; }
 
 /* Mission slide frames reuse the same frame pattern */
 .mission-frame {
-  position:absolute; inset:0; width:100%; height:100%;
+  position:absolute; top:0; bottom:0; left:50%; transform:translateX(-50%);
+  width:85vw; height:100vh;
   object-fit:cover; opacity:0; transition:opacity 0.12s ease;
   display:block;
 }
 .mission-frame.active { opacity:1; }
 .slide-btn {
-  position:absolute; bottom:44px; right:60px; z-index:5;
-  background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.22); color:rgba(255,255,255,0.7);
-  padding:12px 36px; font-family:'IBM Plex Mono',monospace; font-size:11px;
+  position:absolute; bottom:52px; left:50%; transform:translateX(-50%);
+  z-index:5;
+  background:rgba(0,0,0,0.38);
+  border:1.5px solid;
+  border-image:linear-gradient(135deg,#60c0ff 0%,#ff70a0 50%,#ffd060 100%) 1;
+  color:#60c0ff;
+  padding:13px 44px; font-family:'IBM Plex Mono',monospace; font-size:11px;
   letter-spacing:0.5em; text-transform:uppercase; cursor:pointer;
-  transition:border-color 0.2s,color 0.2s,background 0.2s; font-weight:600; border-radius:0;
+  font-weight:600; border-radius:0;
+  transition:opacity 0.2s; white-space:nowrap;
 }
-.slide-btn:hover { border-color:rgba(255,255,255,0.6); color:#fff; background:rgba(0,0,0,0.55); }
+.slide-btn:hover { opacity:0.72; }
+.dp-lang-btn {
+  width:42px; height:42px; border:1px solid rgba(73,220,164,0.65);
+  background:rgba(4,1,10,0.65); color:var(--pollen-green);
+  display:flex; align-items:center; justify-content:center;
+  font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.12em;
+  text-transform:uppercase; cursor:pointer; border-radius:0;
+  transition:background-color 0.16s ease,border-color 0.16s ease,color 0.16s ease;
+}
+.dp-lang-btn:hover { border-color:#d8b0ff; color:#f0d0ff; background:rgba(25,10,45,0.9); }
 
 /* Flowers slide */
 .flowers-slide {
@@ -391,10 +417,7 @@ body.is-fullscreen #sidebar-fs-toggle .fs-exit  { display:block; }
   font-family:'IBM Plex Mono',monospace; line-height:2.0;
   text-align:left;
 }
-.sidebar-credit-row {
-  display:flex; align-items:center; gap:12px; margin-top:12px;
-}
-#sidebar-sound-toggle, #sidebar-fs-toggle { flex:0 0 34px; width:34px; height:34px; font-size:15px; }
+.sidebar-credit-row { margin-top:12px; }
 .sidebar-credit {
   color:rgba(73,220,164,0.78); font-size:9px; letter-spacing:0.08em;
   line-height:1.5; font-family:'IBM Plex Mono',monospace;
@@ -512,7 +535,6 @@ body.is-fullscreen #sidebar-fs-toggle .fs-exit  { display:block; }
   border:1px solid var(--pollen-green); transition:background 0.2s;
 }
 #game-intro-start:hover { background:#fff; border-color:#fff; }
-
 /* ── Exit popup ── */
 #exit-popup {
   position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
@@ -529,7 +551,7 @@ body.is-fullscreen #sidebar-fs-toggle .fs-exit  { display:block; }
   font-size:13px; letter-spacing:0.15em; color:rgba(255,255,255,0.85);
   text-transform:uppercase; margin-bottom:28px;
 }
-.exit-popup-btns { display:flex; gap:16px; justify-content:center; }
+.exit-popup-btns { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; }
 .exit-popup-btn {
   font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.2em;
   text-transform:uppercase; padding:10px 28px; cursor:pointer;
@@ -539,10 +561,11 @@ body.is-fullscreen #sidebar-fs-toggle .fs-exit  { display:block; }
   background:var(--pollen-green); color:#000; border:1px solid var(--pollen-green);
 }
 #exit-yes:hover { background:#fff; border-color:#fff; }
-#exit-no {
+#exit-no, #exit-secret {
   background:transparent; color:rgba(255,255,255,0.5); border:1px solid rgba(255,255,255,0.2);
 }
-#exit-no:hover { color:#fff; border-color:rgba(255,255,255,0.6); }
+#exit-secret { color:var(--pollen-green); border-color:rgba(73,220,164,0.35); }
+#exit-no:hover, #exit-secret:hover { color:#fff; border-color:rgba(255,255,255,0.6); }
 #crosshair::before,#crosshair::after { content:''; position:absolute; background:rgba(180,130,220,0.5); }
 #crosshair::before { width:1px; height:100%; left:50%; top:0; }
 #crosshair::after { width:100%; height:1px; top:50%; left:0; }
@@ -562,7 +585,7 @@ body.is-fullscreen #sidebar-fs-toggle .fs-exit  { display:block; }
   font-family:'Space Mono',monospace;
 }
 .pw-space { display:inline-block; width:clamp(16px,2vw,28px); }
-#full-poem .poem-lines { text-align:center; max-width:560px; }
+#full-poem .poem-lines { text-align:center; max-width:min(760px,92vw); }
 #full-poem .poem-line { font-size:clamp(13px,1.7vw,16px); color:#9070b0; letter-spacing:0.1em; font-weight:400; line-height:2.35; opacity:0; transition:opacity 1.4s ease; text-transform:lowercase; }
 #full-poem .poem-line.show { opacity:1; }
 #poem-home-hint { margin-top:30px; font-size:10px; color:var(--pollen-green); letter-spacing:0.45em; text-transform:uppercase; font-family:'IBM Plex Mono',monospace; }
@@ -572,6 +595,7 @@ body.is-fullscreen #sidebar-fs-toggle .fs-exit  { display:block; }
 <canvas id="c"></canvas>
 <audio id="ambient-audio" src="data-pollen/froth.mp3" loop preload="auto"></audio>
 <div id="intro-controls">
+  <button class="dp-lang-btn" id="dp-lang-btn" type="button" title="Switch to French" aria-label="Switch to French">EN</button>
   <button class="sound-btn" id="intro-fs-toggle" type="button" aria-label="Enter fullscreen">
     <svg class="fs-icon fs-enter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
     <svg class="fs-icon fs-exit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 3 3 3 3 8"/><polyline points="21 8 21 3 16 3"/><polyline points="3 16 3 21 8 21"/><polyline points="16 21 21 21 21 16"/></svg>
@@ -580,7 +604,7 @@ body.is-fullscreen #sidebar-fs-toggle .fs-exit  { display:block; }
 </div>
 
 <div id="loading">
-  <div id="loading-text">initializing vegetal network</div>
+  <div id="loading-text" data-i18n="dp.loading">initializing vegetal network</div>
   <div id="loading-bar"><div id="loading-fill"></div></div>
 </div>
 
@@ -599,10 +623,10 @@ body.is-fullscreen #sidebar-fs-toggle .fs-exit  { display:block; }
   <div id="title-overlay"></div>
   <div id="title-content">
     <img src="data-pollen/data-pollen-logo.png" alt="Data Pollen" style="max-width:clamp(420px,70vw,980px); width:90%; height:auto; margin-bottom:0; animation: breathe 4s ease-in-out infinite; filter:drop-shadow(0 0 40px rgba(255,255,255,0.3));">
-    <div class="intro-hint" style="margin-top:40px;">Press Enter or click to continue</div>
+    <div class="intro-hint" style="margin-top:40px;" data-i18n="dp.title-hint">Press Enter or click to continue</div>
   </div>
   <div id="title-copyright">© Mete Kutlu, 2026.</div>
-  <a id="title-back-link" href="/?skipIntro=1">Back to Spolia Botanique</a>
+  <a id="title-back-link" href="/?skipIntro=1" data-i18n="dp.back-link">Back to Spolia Botanique</a>
 </div>
 
 <!-- SCREENS 2-5: IMAGE SLIDES -->
@@ -617,12 +641,12 @@ body.is-fullscreen #sidebar-fs-toggle .fs-exit  { display:block; }
       <img class="story-frame" src="data-pollen/blue/blue05.jpg" alt="">
     </div>
     <div id="story-text">
-      <p class="story-line" id="sline-0">Digital infrastructure has collapsed.</p>
-      <p class="story-line" id="sline-1">Yet the cloud did not disappear.</p>
-      <p class="story-line" id="sline-2">Data migrated to the vegetal network.</p>
-      <p class="story-line" id="sline-3">Flowers store it.</p>
-      <p class="story-line" id="sline-4">Pollen carries it.</p>
-      <p class="story-line" id="sline-5">Bees transmit it.</p>
+      <p class="story-line" id="sline-0" data-i18n="dp.story-0">Digital infrastructure has collapsed.</p>
+      <p class="story-line" id="sline-1" data-i18n="dp.story-1">Yet the cloud did not disappear.</p>
+      <p class="story-line" id="sline-2" data-i18n="dp.story-2">Data migrated to the vegetal network.</p>
+      <p class="story-line" id="sline-3" data-i18n="dp.story-3">Flowers store it.</p>
+      <p class="story-line" id="sline-4" data-i18n="dp.story-4">Pollen carries it.</p>
+      <p class="story-line" id="sline-5" data-i18n="dp.story-5">Bees transmit it.</p>
     </div>
   </div>
   <div class="slide" id="slide-1">
@@ -635,62 +659,63 @@ body.is-fullscreen #sidebar-fs-toggle .fs-exit  { display:block; }
       <img class="mission-frame" src="data-pollen/pink/pembe05.jpg" alt="">
     </div>
     <div id="mission-text">
-      <p class="mission-line">You are a bee within this network.</p>
-      <p class="mission-line">Travel between flowers,</p>
-      <p class="mission-line">and collect data-pollens.</p>
-      <p class="mission-line">130 petabytes will give you a password,</p>
-      <p class="mission-line">and unlock a secret message.</p>
+      <p class="mission-line" data-i18n="dp.mission-0">You are a bee within this network.</p>
+      <p class="mission-line" data-i18n="dp.mission-1">Travel between flowers,</p>
+      <p class="mission-line" data-i18n="dp.mission-2">and collect data-pollens.</p>
+      <p class="mission-line" data-i18n="dp.mission-3">130 petabytes will give you a password,</p>
+      <p class="mission-line" data-i18n="dp.mission-4">and unlock a secret message.</p>
     </div>
   </div>
   <div class="slide" id="slide-2">
     <div class="flowers-slide">
-      <div class="flowers-slide-title">Pollen Packages</div>
+      <div class="flowers-slide-title" data-i18n="dp.flowers-title">Pollen Packages</div>
       <div class="flowers-items">
       <div class="flower-item">
         <img src="data-pollen/fairy-fan.png" alt="Fairy Fan-Flower">
-        <div class="fi-name">Fairy Fan-Flower</div>
-        <div class="fi-pollen">1 pollen</div>
-        <div class="fi-data">10 petabytes of data</div>
+        <div class="fi-name" data-i18n="dp.flower-fairy-name">Fairy Fan-Flower</div>
+        <div class="fi-pollen" data-i18n="dp.flower-fairy-pollen">1 pollen</div>
+        <div class="fi-data" data-i18n="dp.flower-fairy-data">10 petabytes of data</div>
       </div>
       <div class="flower-item">
         <img src="data-pollen/sweet-william.png" alt="Sweet William">
-        <div class="fi-name">Sweet William</div>
-        <div class="fi-pollen">2 pollens</div>
-        <div class="fi-data">20 petabytes of data</div>
+        <div class="fi-name" data-i18n="dp.flower-williams-name">Sweet William</div>
+        <div class="fi-pollen" data-i18n="dp.flower-williams-pollen">2 pollens</div>
+        <div class="fi-data" data-i18n="dp.flower-williams-data">20 petabytes of data</div>
       </div>
       <div class="flower-item">
         <img src="data-pollen/petunia.png" alt="Petunia">
-        <div class="fi-name">Petunia</div>
-        <div class="fi-pollen">2 pollens</div>
-        <div class="fi-data">20 petabytes of data</div>
+        <div class="fi-name" data-i18n="dp.flower-petunia-name">Petunia</div>
+        <div class="fi-pollen" data-i18n="dp.flower-petunia-pollen">2 pollens</div>
+        <div class="fi-data" data-i18n="dp.flower-petunia-data">20 petabytes of data</div>
       </div>
       <div class="flower-item">
         <img src="data-pollen/summer-lila.png" alt="Summer Lilac">
-        <div class="fi-name">Summer Lilac</div>
-        <div class="fi-pollen">3 pollens</div>
-        <div class="fi-data">30 petabytes of data</div>
+        <div class="fi-name" data-i18n="dp.flower-lilac-name">Summer Lilac</div>
+        <div class="fi-pollen" data-i18n="dp.flower-lilac-pollen">3 pollens</div>
+        <div class="fi-data" data-i18n="dp.flower-lilac-data">30 petabytes of data</div>
       </div>
       </div>
     </div>
   </div>
   <div class="slide" id="slide-3"><img src="data-pollen/controls.jpg" alt="Controls"></div>
-  <button class="slide-btn" id="slide-next" onclick="advanceSlide()">Next →</button>
+  <button class="slide-btn" id="slide-next" onclick="advanceSlide()"><span class="btn-label" data-i18n="dp.slide-next">Next →</span></button>
 </div>
 
 <!-- GAME UI -->
 <div id="crosshair"></div>
 <div id="game-intro-modal">
   <div id="game-intro-box">
-    <p>To exit the game,<br>press <strong>Escape twice.</strong></p>
-    <button id="game-intro-start">Start</button>
+    <p data-i18n="dp.game-intro-text">To exit the game,<br>press <strong>Escape twice.</strong></p>
+    <button id="game-intro-start" data-i18n="dp.game-intro-start">Start</button>
   </div>
 </div>
 <div id="exit-popup">
   <div id="exit-popup-box">
-    <p>Exit to Spolia Botanique?</p>
+    <p data-i18n="dp.exit-question">Exit to Spolia Botanique?</p>
     <div class="exit-popup-btns">
-      <button class="exit-popup-btn" id="exit-yes">Yes, exit</button>
-      <button class="exit-popup-btn" id="exit-no">Keep playing</button>
+      <button class="exit-popup-btn" id="exit-yes" data-i18n="dp.exit-yes">Yes, exit</button>
+      <button class="exit-popup-btn" id="exit-no" data-i18n="dp.exit-no">Keep playing</button>
+      <button class="exit-popup-btn" id="exit-secret" data-i18n="dp.exit-secret">See the secret message</button>
     </div>
   </div>
 </div>
@@ -703,22 +728,22 @@ body.is-fullscreen #sidebar-fs-toggle .fs-exit  { display:block; }
 
   <div id="sidebar-content">
     <div class="panel-section">
-      <div class="panel-title">Password Decryption</div>
+      <div class="panel-title" data-i18n="dp.sidebar-pw">Password Decryption</div>
       <div id="pw-chars"></div>
     </div>
     <div class="panel-section">
-      <div class="panel-title">Pollens Collected</div>
+      <div class="panel-title" data-i18n="dp.sidebar-collected">Pollens Collected</div>
       <div id="pollen-circles"></div>
     </div>
     <div class="panel-section">
-      <div class="panel-title">Data Stored</div>
+      <div class="panel-title" data-i18n="dp.sidebar-data">Data Stored</div>
       <div id="data-bar-wrap">
-        <div id="data-bar-nums">0 / 130 petabytes</div>
+        <div id="data-bar-nums" data-i18n="dp.data-bar">0 / 130 petabytes</div>
         <div id="data-bar-bg"><div id="data-bar-fill"></div></div>
       </div>
     </div>
     <div class="panel-section">
-      <div class="panel-title">Pollen Signal</div>
+      <div class="panel-title" data-i18n="dp.sidebar-signal">Pollen Signal</div>
       <div id="wifi-wrap">
         <svg width="101" height="82" viewBox="0 0 54 44">
           <circle cx="27" cy="40" r="3.2" fill="#49dca4" opacity="0.18" id="arc-dot"/>
@@ -731,20 +756,15 @@ body.is-fullscreen #sidebar-fs-toggle .fs-exit  { display:block; }
   </div>
 
   <div id="sidebar-caption">
-    <div class="caption-title">A Spolia Garden</div>
-    <div class="caption-text">
+    <div class="caption-title" data-i18n="dp.sidebar-garden-title">A Spolia Garden</div>
+    <div class="caption-text" data-i18n="dp.sidebar-garden-text">
       Based on a 3D scan of the gardens of the Castle of Chaumont-sur-Loire.<br>
       12 July 2022 · No.F21
     </div>
     <div class="sidebar-credit-row">
-      <button class="sound-btn" id="sidebar-fs-toggle" type="button" aria-label="Enter fullscreen">
-        <svg class="fs-icon fs-enter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
-        <svg class="fs-icon fs-exit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 3 3 3 3 8"/><polyline points="21 8 21 3 16 3"/><polyline points="3 16 3 21 8 21"/><polyline points="16 21 21 21 21 16"/></svg>
-      </button>
-      <button class="sound-btn" id="sidebar-sound-toggle" type="button" aria-label="Turn sound off"><svg class="speaker-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor" stroke="none"/><g class="speaker-waves"><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></g><g class="speaker-mute"><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></g></svg></button>
-      <div class="sidebar-credit">Designed and developed by Mete Kutlu, 2026.</div>
+      <div class="sidebar-credit" data-i18n="dp.sidebar-credit">Designed and developed by Mete Kutlu, 2026.</div>
     </div>
-    <div class="sidebar-song">Song: Sculpture, Froth Surfer</div>
+    <div class="sidebar-song" data-i18n="dp.sidebar-song">Song: Sculpture, Froth Surfer</div>
   </div>
 </div>
 
@@ -755,23 +775,23 @@ body.is-fullscreen #sidebar-fs-toggle .fs-exit  { display:block; }
     <div id="flash-data-line"></div>
   </div>
   <div id="flash-decrypt">
-    <div id="flash-decrypt-label">Password Decryption</div>
+    <div id="flash-decrypt-label" data-i18n="dp.flash-decrypt-label">Password Decryption</div>
     <div id="flash-letter"></div>
   </div>
 </div>
-<div id="downloading-label">Downloading data...</div>
+<div id="downloading-label" data-i18n="dp.downloading">Downloading data...</div>
 <canvas id="glyph-rain"></canvas>
 
-<div id="proximity-hint">[ F ] collect pollen</div>
+<div id="proximity-hint" data-i18n="dp.proximity-hint">[ F ] collect pollen</div>
 
 <div id="full-poem">
   <div id="poem-stage-1">
-    <div class="pw-success">Password fully decrypted</div>
+    <div class="pw-success" data-i18n="dp.pw-success">Password fully decrypted</div>
     <div id="pw-shown"></div>
   </div>
   <div id="poem-stage-2">
     <div class="poem-lines" id="poem-lines"></div>
-    <div id="poem-home-hint">press enter to return to homepage</div>
+    <div id="poem-home-hint" data-i18n="dp.poem-home-hint">press enter to return to homepage</div>
   </div>
 </div>
 
@@ -813,6 +833,29 @@ const POEM = [
   "You are not in the garden.",
   "You are the garden itself."
 ];
+// ms each line stays before the next appears (matches secret-message.mp3 narration)
+const POEM_DELAYS = [
+  2000, 2000, 2000, 1500, // "Before there were circuits," … "there were seeds."
+  0,                       // "" paragraph break — shown with next line
+  4000, 3500, 4000, 3500, 3000, // stanza 2
+  0,                       // "" paragraph break
+  1000, 2000, 1000, 2000,  // "What you call data" … "then through silicon."
+  0,                       // "" paragraph break
+  1000, 2000, 3000, 3000,  // "Now it returns" … "to a system older than human memory."
+  0,                       // "" paragraph break
+  2000, 0                  // "You are not in the garden." / last line
+];
+
+// ── TRANSLATIONS ─────────────────────────────────────────────────────────────
+let _dpT = {};
+function dpT(key, fallback){ return (_dpT[key] !== undefined && _dpT[key] !== '') ? _dpT[key] : (fallback !== undefined ? fallback : key); }
+function buildPoem(){
+  const lines = [];
+  for(let i=0;i<23;i++) lines.push(_dpT['dp.poem-'+i] !== undefined ? _dpT['dp.poem-'+i] : '');
+  // Fall back to hardcoded English if translations not loaded
+  if(!lines[0]) return ["Before there were circuits,","there were constellations.","Before there were servers,","there were seeds.","","Entire galaxies within each human.","Infinite constellations within each pollen.","A hundred blazing suns in every seed.","Chlorophyll, the first architect of the planet.","The code of life written out of stellar light.","","What you call data","once moved through stone,","then through sap,","then through silicon.","","Now it returns","to the vegetal archive,","to roots, to pollen, to breath,","to a system older than human memory.","","You are not in the garden.","You are the garden itself."];
+  return lines;
+}
 
 // ── FLOWER TYPES ─────────────────────────────────────────────────────────────
 // color, name, latin, petabytes per node, letters per node, pollen size
@@ -876,6 +919,7 @@ scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(0x000005, 0.09);
 camera = new THREE.PerspectiveCamera(80, gameW()/gameH(), 0.01, 30);
 camera.position.set(-1.5, 0.35, 1.5);
+scene.add(camera); // needed so camera-attached objects render
 scene.add(new THREE.AmbientLight(0x080812, 3.5));
 const dl = new THREE.DirectionalLight(0x6030a0, 1.5); dl.position.set(1,3,1); scene.add(dl);
 const dl2 = new THREE.DirectionalLight(0x49dca4,0.25); dl2.position.set(-2,1,-2); scene.add(dl2);
@@ -1200,7 +1244,7 @@ function tryCollect(){
   updateDataBar(totalPb);
 
   const pollens = nd.letters.length;
-  const pollenLabel = pollens === 1 ? 'pollen' : 'pollens';
+  const pollenLabel = pollens === 1 ? dpT('dp.pollen-single','pollen') : dpT('dp.pollen-plural','pollens');
   const dlLabel = document.getElementById('downloading-label');
   dlLabel.style.opacity = '1';
 
@@ -1209,7 +1253,7 @@ function tryCollect(){
 
     document.getElementById('flash-flower').textContent = f.name;
     document.getElementById('flash-pollen').textContent = `+${pollens} ${pollenLabel}`;
-    document.getElementById('flash-data-line').textContent = `+${f.pb} petabytes of data`;
+    document.getElementById('flash-data-line').textContent = `+${f.pb} ${dpT('dp.petabytes-of-data','petabytes of data')}`;
     document.getElementById('flash-gains').style.display = 'block';
     document.getElementById('flash-decrypt').style.display = 'none';
 
@@ -1237,6 +1281,7 @@ function tryCollect(){
 function showPoem(){
   hideExitPopup();
   hideIntroModal();
+  document.body.classList.add('poem-visible');
   isPlaying = false; // must be false before exitPointerLock
   if(document.pointerLockElement || document.webkitPointerLockElement){
     (document.exitPointerLock || document.webkitExitPointerLock || (()=>{})).call(document);
@@ -1263,10 +1308,13 @@ function showPoem(){
       stage1.style.display='none';
       const c=document.getElementById('poem-lines');
       c.innerHTML='';
-      POEM.forEach((line,i)=>{
+      let t = 600;
+      const poemLines = buildPoem();
+      poemLines.forEach((line,i)=>{
         const d=document.createElement('div');
         d.className='poem-line'; d.textContent=line; c.appendChild(d);
-        setTimeout(()=>d.classList.add('show'), i*600+600);
+        setTimeout(()=>d.classList.add('show'), t);
+        t += POEM_DELAYS[i] || 0;
       });
       stage2.style.display='flex';
       void stage2.offsetHeight;
@@ -1275,6 +1323,7 @@ function showPoem(){
   }, 3500);
 }
 function hidePoem(){
+  document.body.classList.remove('poem-visible');
   document.getElementById('full-poem').classList.remove('visible');
   const stage1=document.getElementById('poem-stage-1');
   const stage2=document.getElementById('poem-stage-2');
@@ -1294,6 +1343,7 @@ function resetRun(){
   document.getElementById('collect-flash').classList.remove('visible');
   document.getElementById('downloading-label').style.opacity = '0';
   clearTimeout(flashTimeout);
+  document.body.classList.remove('poem-visible');
   updateDataBar(0);
   buildPasswordUI();
   pollenNodes.forEach(node=>{
@@ -1401,8 +1451,7 @@ const IN_IFRAME = (function(){ try{ return window.self !== window.top; }catch(e)
 let currentScreen = 'title';
 const ambientAudio = document.getElementById('ambient-audio');
 const soundButtons = [
-  document.getElementById('intro-sound-toggle'),
-  document.getElementById('sidebar-sound-toggle')
+  document.getElementById('intro-sound-toggle')
 ].filter(Boolean);
 
 // ── Volume levels ─────────────────────────────────────────────────────────────
@@ -1440,19 +1489,42 @@ function playAmbient(){
 
 // ── Narration layer ───────────────────────────────────────────────────────────
 const narrFiles = {
-  story:   'data-pollen/story.mp3',
-  mission: 'data-pollen/mission.mp3',
-  secret:  'data-pollen/secret-message.mp3',
+  en: {
+    story:   'data-pollen/story.mp3',
+    mission: 'data-pollen/mission.mp3',
+    secret:  'data-pollen/secret-message.mp3',
+  },
+  fr: {
+    story:   'data-pollen/story-fr.mp3',
+    mission: 'data-pollen/mission-fr.mp3',
+    secret:  'data-pollen/secret-message-fr.mp3',
+  }
 };
 const narrAudio = {};
-Object.entries(narrFiles).forEach(([key, src])=>{
-  const a = new Audio(src);
-  a.preload = 'auto';
-  narrAudio[key] = a;
+Object.entries(narrFiles).forEach(([lang, files])=>{
+  Object.entries(files).forEach(([key, src])=>{
+    const a = new Audio(src);
+    a.preload = 'auto';
+    narrAudio[`${lang}:${key}`] = a;
+  });
 });
 let activeNarr = null;
+let pendingNarrTimer = null;
+
+function dpCurrentLang(){
+  return window.SpoliaI18n?.getLanguage?.() === 'fr' ? 'fr' : 'en';
+}
+
+function getNarrationAudio(key){
+  const lang = dpCurrentLang();
+  return narrAudio[`${lang}:${key}`] || narrAudio[`en:${key}`];
+}
 
 function stopNarration(fadeMs = 400){
+  if(pendingNarrTimer){
+    clearTimeout(pendingNarrTimer);
+    pendingNarrTimer = null;
+  }
   if(!activeNarr) return;
   const a = activeNarr;
   activeNarr = null;
@@ -1470,15 +1542,16 @@ function stopNarration(fadeMs = 400){
 function playNarration(key, delayMs = 0){
   if(!soundEnabled) return;
   stopNarration(200);
-  const a = narrAudio[key];
-  if(!a) return;
   const start = ()=>{
+    pendingNarrTimer = null;
+    const a = getNarrationAudio(key);
+    if(!a) return;
     a.volume = 1;
     a.currentTime = 0;
     a.play().catch(()=>{});
     activeNarr = a;
   };
-  if(delayMs > 0) setTimeout(start, delayMs);
+  if(delayMs > 0) pendingNarrTimer = setTimeout(start, delayMs);
   else start();
 }
 
@@ -1725,7 +1798,7 @@ function initSlides(){
   slideLocked = false;
   document.querySelectorAll('.slide').forEach((s,i) => s.classList.toggle('active', i===0));
   const btn = document.getElementById('slide-next');
-  if(btn) btn.textContent = 'Next →';
+  if(btn){ const lbl=btn.querySelector('.btn-label'); if(lbl) lbl.textContent=dpT('dp.slide-next','Next →'); else btn.textContent=dpT('dp.slide-next','Next →'); }
   // Slide 0 = story — bring ambient low, story animation handles narration timing
   fadeAmbientTo(VOL_NARRATION, 1200);
   startStoryAnimation();
@@ -1748,7 +1821,7 @@ function advanceSlide(){
     setTimeout(()=>{
       slides[slideIndex].classList.add('active');
       const btn = document.getElementById('slide-next');
-      if(btn) btn.textContent = slideIndex === SLIDE_COUNT - 1 ? 'Enter the Garden' : 'Next →';
+      if(btn){ const lbl=btn.querySelector('.btn-label'); const txt=slideIndex===SLIDE_COUNT-1?dpT('dp.slide-enter','Enter the Garden'):dpT('dp.slide-next','Next →'); if(lbl) lbl.textContent=txt; else btn.textContent=txt; }
       slideLocked = false;
       // Per-slide audio cues
       if(slideIndex === 1){
@@ -1897,7 +1970,8 @@ function fillPollenCircles(nodeIndex){
 }
 
 function updateDataBar(pb){
-  document.getElementById('data-bar-nums').textContent=`${pb} / 130 petabytes`;
+  const unit = dpT('dp.petabytes-unit','petabytes');
+  document.getElementById('data-bar-nums').textContent=`${pb} / 130 ${unit}`;
   document.getElementById('data-bar-fill').style.width=`${(pb/130)*100}%`;
 }
 // ── GAME INTRO MODAL ──────────────────────────────────────────────────────────
@@ -1918,6 +1992,19 @@ document.getElementById('exit-yes').addEventListener('click', ()=>{ hideExitPopu
 document.getElementById('exit-no').addEventListener('click', ()=>{
   hideExitPopup();
   if(isPlaying) canvas.requestPointerLock();
+});
+document.getElementById('exit-secret').addEventListener('click', ()=>{
+  hideExitPopup();
+  if(glyphRainRaf) cancelAnimationFrame(glyphRainRaf);
+  glyphRainRaf = 0;
+  glyphRainActive = false;
+  transferActive = false;
+  glyphCanvas.classList.remove('visible');
+  glyphCtx.clearRect(0, 0, glyphCanvas.width, glyphCanvas.height);
+  document.getElementById('collect-flash').classList.remove('visible');
+  document.getElementById('downloading-label').style.opacity = '0';
+  clearTimeout(flashTimeout);
+  showPoem();
 });
 
 // Shared exit trigger — called from Q keydown inside the iframe,
@@ -2078,6 +2165,49 @@ if(titleVideo){
 }
 setTimeout(startGardenLoad, 900);
 
+// ── BEE MODEL (camera-attached) ──────────────────────────────────────────────
+let beeMixer = null;
+const beeLoader = new THREE.GLTFLoader();
+beeLoader.setDRACOLoader(dracoLoader);
+beeLoader.load('data-pollen/bee2-s.glb', gltf => {
+  const bee = gltf.scene;
+  // Compute the model's bounding box to auto-scale it to ~0.18 world units tall
+  const box = new THREE.Box3().setFromObject(bee);
+  const modelHeight = box.max.y - box.min.y;
+  const targetHeight = 0.18;
+  const autoScale = modelHeight > 0 ? targetHeight / modelHeight : 0.5;
+  bee.scale.setScalar(autoScale);
+  // Third-person lower-center: slightly below camera line, forward
+  bee.position.set(0.0, -0.22, -0.55);
+  bee.rotation.y = Math.PI;
+  bee.rotation.x = THREE.MathUtils.degToRad(-60);
+  // Keep bee albedo visible independent of the very dark garden lighting.
+  bee.traverse(child => {
+    if(!child.isMesh) return;
+    const sourceMaterials = Array.isArray(child.material) ? child.material : [child.material];
+    const albedoMaterials = sourceMaterials.map(mat => {
+      const basic = new THREE.MeshBasicMaterial({
+        map: mat && mat.map ? mat.map : null,
+        color: mat && mat.color ? mat.color.clone() : new THREE.Color(0xffffff),
+        alphaMap: mat && mat.alphaMap ? mat.alphaMap : null,
+        transparent: mat ? !!mat.transparent : false,
+        opacity: mat && mat.opacity !== undefined ? mat.opacity : 1,
+        side: mat && mat.side !== undefined ? mat.side : THREE.FrontSide
+      });
+      basic.toneMapped = false;
+      return basic;
+    });
+    child.material = Array.isArray(child.material) ? albedoMaterials : albedoMaterials[0];
+    child.renderOrder = 999;
+  });
+  renderer.sortObjects = true;
+  camera.add(bee);
+  if(gltf.animations && gltf.animations.length){
+    beeMixer = new THREE.AnimationMixer(bee);
+    gltf.animations.forEach(clip => beeMixer.clipAction(clip).play());
+  }
+}, null, err => console.warn('bee2-s.glb:', err));
+
 // ── PRE-ALLOCATED OBJECTS — never allocate inside loop ───────────────────────
 const _fwdH  = new THREE.Vector3();
 const _fwd3D = new THREE.Vector3();
@@ -2120,6 +2250,7 @@ function loopFrame(){
 
   const dt = Math.min(clock.getDelta(), .05);
   t+=dt; wingT+=dt*28; hoverT+=dt; frameCount++;
+  if(beeMixer) beeMixer.update(dt);
 
   if(pendingMouseX || pendingMouseY){
     yaw -= pendingMouseX*.0022;
@@ -2192,6 +2323,58 @@ function loopFrame(){
     renderer.render(scene, camera);
   }
 }
+
+// -- I18N INIT ---------------------------------------------------------------
+async function dpLoadTranslations(){
+  if(!window.SpoliaI18n) return;
+  const lang = window.SpoliaI18n.getLanguage();
+  const catalog = await window.SpoliaI18n.loadCatalog(lang);
+  const merged = {...(catalog.global||{}), ...(catalog.pages?.['data-pollen']||{})};
+  _dpT = merged;
+  // Re-apply i18n to static elements (data-i18n attrs)
+  window.SpoliaI18n.applyTranslations(document,'data-pollen');
+  // Sync language buttons
+  const btnLabel = lang.toUpperCase();
+  ['dp-lang-btn'].forEach(id=>{
+    const b=document.getElementById(id);
+    if(!b) return;
+    b.textContent=btnLabel;
+    const isFr=lang==='fr';
+    b.setAttribute('title',isFr?'Passer en anglais':'Switch to French');
+    b.setAttribute('aria-label',b.getAttribute('title'));
+  });
+  // Refresh dynamic JS-driven text
+  updateDataBar(totalPb);
+  const slideBtn=document.getElementById('slide-next');
+  if(slideBtn){
+    const lbl=slideBtn.querySelector('.btn-label');
+    const isLastSlide=slideIndex===SLIDE_COUNT-1;
+    const txt=isLastSlide?dpT('dp.slide-enter','Enter the Garden'):dpT('dp.slide-next','Next →');
+    if(lbl) lbl.textContent=txt; else slideBtn.textContent=txt;
+  }
+}
+
+function dpWireLangBtns(){
+  ['dp-lang-btn'].forEach(id=>{
+    const b=document.getElementById(id);
+    if(!b) return;
+    b.addEventListener('click',async()=>{
+      const next=window.SpoliaI18n?.getLanguage()==='fr'?'en':'fr';
+      if(window.SpoliaI18n){
+        window.SpoliaI18n.setLanguage(next);
+        await dpLoadTranslations();
+      } else {
+        localStorage.setItem('language',next);
+        location.reload();
+      }
+    });
+  });
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  dpWireLangBtns();
+  dpLoadTranslations();
+});
 </script>
 </body>
 </html>

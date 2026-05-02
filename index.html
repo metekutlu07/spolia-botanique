@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spolia Botanique</title>
+    <title>Spolia botanique</title>
+    <link rel="icon" href="/favicon.jpg" type="image/jpeg">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="site-nav.css">
     <script src="i18n.js" defer></script>
@@ -421,7 +422,6 @@
             object-fit: cover;
             display: block;
         }
-        .video-background,
         .landing-hero,
         .logos-bar,
         .copyright,
@@ -437,7 +437,6 @@
         .landing-controls {
             transition-duration: 1s;
         }
-        .video-background,
         .landing-hero,
         .logos-bar,
         .copyright,
@@ -446,8 +445,17 @@
             transform: translateZ(0);
             will-change: opacity;
         }
-        body:not(.video-ready) .video-background {
-            opacity: 0.001; /* Must be > 0 — Safari refuses autoplay on opacity:0 elements */
+        .landing-video-cover {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background: #000;
+            opacity: 1;
+            pointer-events: none;
+            transition: opacity 0.9s ease;
+        }
+        body.video-ready .landing-video-cover {
+            opacity: 0;
         }
         body:not(.video-ready) .blinds-overlay,
         body:not(.home-ready):not(.home-prewarm) .landing-hero,
@@ -667,6 +675,7 @@
             text-transform: uppercase;
             margin-top: 0;
             transform: translateZ(0);
+            isolation: isolate;
             will-change: opacity, background-color, color, box-shadow;
         }
         .enter-button-glass {
@@ -682,12 +691,20 @@
         }
         .enter-button-label {
             position: relative;
-            z-index: 1;
+            z-index: 2;
+            display: inline-block;
+            color: currentColor;
+            -webkit-text-fill-color: currentColor;
+            transform: translateZ(1px);
         }
         .enter-button:hover .enter-button-glass {
             background: white;
         }
         .enter-button:hover { color: #1a1a1a; box-shadow: 0 4px 20px rgba(255,255,255,0.3); }
+        .enter-button:hover .enter-button-label {
+            color: #1a1a1a;
+            -webkit-text-fill-color: #1a1a1a;
+        }
         /* <a> element needs inline-block + no underline; everything else inherits from .enter-button */
         .data-pollen-link {
             display: inline-block;
@@ -1174,7 +1191,7 @@
     </div>
 
     <div class="entry-brand-stage" id="entry-brand-stage">
-        <button class="entry-skip-btn" id="entry-skip-btn-brand">Skip</button>
+        <button class="entry-skip-btn" id="entry-skip-btn-brand" data-i18n="entry.skip">Skip</button>
         <div class="entry-brand-logo">
             <img src="images/ministerg.png" alt="Ministry of Culture">
         </div>
@@ -1187,7 +1204,7 @@
     </div>
 
     <div class="entry-lines-stage" id="entry-lines-stage">
-        <button class="entry-skip-btn" id="entry-skip-btn-lines">Skip</button>
+        <button class="entry-skip-btn" id="entry-skip-btn-lines" data-i18n="entry.skip">Skip</button>
         <div class="entry-line-group" data-i18n="entry.line-1">In the ultraviolet city,</div>
         <div class="entry-line-group" data-i18n="entry.line-2">pollen carries data.</div>
         <div class="entry-line-group" data-i18n="entry.line-3">The world is seen through the eye of a bee.</div>
@@ -1226,6 +1243,7 @@
             <source src="videos/intro-video.mp4" type="video/mp4">
         </video>
     </div>
+    <div class="landing-video-cover landing-el" aria-hidden="true"></div>
     <div class="blinds-overlay landing-el"></div>
     <div class="enter-button-glass-fixed landing-el landing-home-ui" id="discover-glass" aria-hidden="true"></div>
     <div class="landing-container landing-el landing-home-ui">
@@ -1647,33 +1665,7 @@
             if (!bgVideo) return Promise.resolve();
             landingVideoAllowed = true;
             prepareLandingVideoElement();
-            if (!mobileMedia.matches) bgVideo.pause();
-
-            // Safari fires seeked asynchronously. Calling play() before the seek
-            // completes leaves the video frozen at frame 0. We wait for the seeked
-            // event (with a short fallback timeout) before invoking playLandingVideo.
-            const alreadyAtStart = bgVideo.currentTime < 0.15;
-            if (alreadyAtStart) {
-                return playLandingVideo();
-            }
-            return new Promise(resolve => {
-                const proceed = () => resolve(playLandingVideo());
-                const timer = setTimeout(() => {
-                    bgVideo.removeEventListener('seeked', onSeeked);
-                    proceed();
-                }, 700);
-                function onSeeked() {
-                    clearTimeout(timer);
-                    bgVideo.removeEventListener('seeked', onSeeked);
-                    proceed();
-                }
-                bgVideo.addEventListener('seeked', onSeeked);
-                try { bgVideo.currentTime = 0; } catch (_) {
-                    clearTimeout(timer);
-                    bgVideo.removeEventListener('seeked', onSeeked);
-                    proceed();
-                }
-            });
+            return playLandingVideo();
         }
 
 	        function pauseLandingVideo(release = false) {
@@ -2198,9 +2190,9 @@
         document.querySelectorAll('.data-pollen-link').forEach(function(link) {
             link.addEventListener('click', function(e) {
                 e.preventDefault();
-                if (!dpFrame.src || dpFrame.src === window.location.href) {
-                    dpFrame.src = 'data-pollen.html';
-                }
+                dpFrame.style.opacity = '';
+                dpFrame.style.transition = '';
+                dpFrame.src = 'data-pollen.html?run=' + Date.now();
                 dpFrame.style.display = 'block';
                 // Fade spolia music out so data-pollen's audio takes over
                 fadeBackgroundTo(0, 1200);
@@ -2629,14 +2621,6 @@
             bgVideo.defaultMuted = true;
             bgVideo.muted = true;
             bgVideo.load();
-            bgVideo.addEventListener('ended', () => {
-                if (!landingVideoAllowed) return;
-                // Safari ignores the `loop` attribute on <source>-based videos and fires
-                // `ended` instead. Play() called synchronously inside the trusted media
-                // event is always allowed by Safari's autoplay policy.
-                bgVideo.currentTime = 0;
-                bgVideo.play().catch(() => {});
-            });
             if (skipIntro) {
                 resetAndPlayLandingVideo();
             }
