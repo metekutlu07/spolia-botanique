@@ -51,22 +51,17 @@ body { background:#000; overflow:hidden; font-family:'IBM Plex Mono',monospace; 
   object-fit:cover; opacity:1; z-index:0; pointer-events:none;
   transition:opacity 0.8s ease;
 }
-#title-video::-webkit-media-controls,
-#title-video::-webkit-media-controls-enclosure,
-#title-video::-webkit-media-controls-panel,
-#title-video::-webkit-media-controls-start-playback-button,
-#title-video::-webkit-media-controls-overlay-play-button,
-#title-video::-webkit-media-controls-play-button {
-  display:none !important;
-  opacity:0 !important;
-  pointer-events:none !important;
-  -webkit-appearance:none;
+#title-overlay {
+  position:absolute; inset:0; z-index:1;
+  background:none; pointer-events:none;
 }
-#title-overlay { display:none; }
 #title-content {
   position:relative; z-index:2;
   display:flex; flex-direction:column; align-items:center; justify-content:center;
   height:100%; gap:0;
+  transition:opacity 0.8s ease;
+  transform:translateZ(0);
+  will-change:opacity;
 }
 #title-content > img,
 #title-content .intro-hint,
@@ -78,8 +73,6 @@ body { background:#000; overflow:hidden; font-family:'IBM Plex Mono',monospace; 
 body:not(.title-ready) #title-content > img,
 body:not(.title-ready) #title-content .intro-hint,
 body:not(.title-ready) #title-copyright { opacity:0; }
-/* #title-video is NOT hidden — keeping it opacity:1 lets Safari autoplay it.
-   The #loading screen (z-index:200) already covers it visually during load. */
 #screen-title .game-title {
   font-family:'Space Mono',monospace;
   font-size:clamp(48px,9vw,110px);
@@ -120,6 +113,9 @@ body:not(.title-ready) #title-copyright { opacity:0; }
 #intro-controls {
   position:fixed; top:24px; right:24px; z-index:130;
   display:flex; flex-direction:row; gap:10px; align-items:center;
+  transition:opacity 0.8s ease;
+  transform:translateZ(0);
+  will-change:opacity;
 }
 body.game-active #intro-controls { display:none; }
 body:not(.game-active) #intro-sound-toggle,
@@ -142,9 +138,17 @@ body.is-fullscreen #sidebar-fs-toggle .fs-exit  { display:block; }
   font-family:'IBM Plex Mono',monospace; text-decoration:none;
   text-transform:uppercase; font-weight:400;
   border:1px solid rgba(255,255,255,0.65); padding:10px 22px;
-  background:rgba(0,0,0,0.25); transition:background 0.2s,border-color 0.2s;
+  background:rgba(0,0,0,0.25); transition:opacity 0.8s ease,background 0.2s,border-color 0.2s;
+  transform:translateZ(0);
+  will-change:opacity;
 }
 #title-back-link:hover { background:rgba(0,0,0,0.55); border-color:#fff; }
+body:not(.title-ready) #title-content,
+body:not(.title-ready) #intro-controls,
+body:not(.title-ready) #title-back-link {
+  opacity:0;
+  pointer-events:none;
+}
 
 /* ── SCREENS 2-4: IMAGE SLIDES ── */
 #screen-slides { padding:0; }
@@ -280,6 +284,50 @@ body.is-fullscreen #sidebar-fs-toggle .fs-exit  { display:block; }
 }
 .ctrl-row { font-size:clamp(14px,1.8vw,18px); color:var(--pollen-green); letter-spacing:0.06em; line-height:2.8; font-family:'IBM Plex Mono',monospace; white-space:nowrap; }
 .ctrl-key { color:var(--pollen-green); font-weight:700; font-family:'Space Mono',monospace; font-size:1.05em; }
+.controls-slide {
+  position:relative;
+  width:100%;
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+.controls-slide > img {
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+.controls-text {
+  position:relative;
+  z-index:2;
+  max-width:min(880px,88vw);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:18px;
+  padding:0 32px;
+  text-align:center;
+}
+.controls-title {
+  font-family:'Space Mono',monospace;
+  font-size:clamp(20px,3vw,34px);
+  letter-spacing:0.36em;
+  color:#d8b0ff;
+  text-transform:uppercase;
+  font-weight:700;
+  margin-bottom:10px;
+}
+.controls-line {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:clamp(14px,1.8vw,20px);
+  line-height:1.65;
+  letter-spacing:0.08em;
+  color:var(--pollen-green);
+  text-shadow:0 0 18px rgba(73,220,164,0.25);
+}
 
 /* Pollen packet grid */
 .pollen-packet-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:8px; }
@@ -610,16 +658,9 @@ body.is-fullscreen #sidebar-fs-toggle .fs-exit  { display:block; }
 
 <!-- SCREEN 1: TITLE -->
 <div class="intro-screen" id="screen-title">
-  <video id="title-video" src="data-pollen/bee04.mp4" autoplay muted loop playsinline webkit-playsinline preload="auto"></video>
-  <script>
-    (function(){
-      var v=document.getElementById('title-video');
-      if(!v) return;
-      v.muted=true; v.defaultMuted=true;
-      v.setAttribute('muted',''); v.setAttribute('playsinline',''); v.setAttribute('webkit-playsinline','');
-      v.play().catch(function(){});
-    })();
-  </script>
+  <video id="title-video" class="bg-video" autoplay muted loop playsinline preload="auto" webkit-playsinline data-native-autoplay>
+    <source src="data-pollen/bee04.mp4" type="video/mp4">
+  </video>
   <div id="title-overlay"></div>
   <div id="title-content">
     <img src="data-pollen/data-pollen-logo.png" alt="Data Pollen" style="max-width:clamp(420px,70vw,980px); width:90%; height:auto; margin-bottom:0; animation: breathe 4s ease-in-out infinite; filter:drop-shadow(0 0 40px rgba(255,255,255,0.3));">
@@ -671,8 +712,8 @@ body.is-fullscreen #sidebar-fs-toggle .fs-exit  { display:block; }
       <div class="flowers-slide-title" data-i18n="dp.flowers-title">Pollen Packages</div>
       <div class="flowers-items">
       <div class="flower-item">
-        <img src="data-pollen/fairy-fan.png" alt="Fairy Fan-Flower">
-        <div class="fi-name" data-i18n="dp.flower-fairy-name">Fairy Fan-Flower</div>
+        <img src="data-pollen/fairy-fan.png" alt="Fan-Flower">
+        <div class="fi-name" data-i18n="dp.flower-fairy-name">Fan-Flower</div>
         <div class="fi-pollen" data-i18n="dp.flower-fairy-pollen">1 pollen</div>
         <div class="fi-data" data-i18n="dp.flower-fairy-data">10 petabytes of data</div>
       </div>
@@ -697,7 +738,17 @@ body.is-fullscreen #sidebar-fs-toggle .fs-exit  { display:block; }
       </div>
     </div>
   </div>
-  <div class="slide" id="slide-3"><img src="data-pollen/controls.jpg" alt="Controls"></div>
+  <div class="slide" id="slide-3">
+    <div class="controls-slide">
+      <img src="data-pollen/controls.jpg" alt="Controls">
+      <div class="controls-text">
+        <div class="controls-title" data-i18n="dp.controls-title">Controls</div>
+        <p class="controls-line" data-i18n="dp.controls-look">Look around with your mouse for data-pollen.</p>
+        <p class="controls-line" data-i18n="dp.controls-fly">Use the space bar to fly in that direction.</p>
+        <p class="controls-line" data-i18n="dp.controls-collect">Press F to collect it when you are close enough.</p>
+      </div>
+    </div>
+  </div>
   <button class="slide-btn" id="slide-next" onclick="advanceSlide()"><span class="btn-label" data-i18n="dp.slide-next">Next →</span></button>
 </div>
 
@@ -705,7 +756,7 @@ body.is-fullscreen #sidebar-fs-toggle .fs-exit  { display:block; }
 <div id="crosshair"></div>
 <div id="game-intro-modal">
   <div id="game-intro-box">
-    <p data-i18n="dp.game-intro-text">To exit the game,<br>press <strong>Escape twice.</strong></p>
+    <p data-i18n="dp.game-intro-text">To exit the game or reveal the secret message, press the Escape key twice on your keyboard.</p>
     <button id="game-intro-start" data-i18n="dp.game-intro-start">Start</button>
   </div>
 </div>
@@ -833,18 +884,32 @@ const POEM = [
   "You are not in the garden.",
   "You are the garden itself."
 ];
-// ms each line stays before the next appears (matches secret-message.mp3 narration)
-const POEM_DELAYS = [
-  2000, 2000, 2000, 1500, // "Before there were circuits," … "there were seeds."
-  0,                       // "" paragraph break — shown with next line
-  4000, 3500, 4000, 3500, 3000, // stanza 2
-  0,                       // "" paragraph break
-  1000, 2000, 1000, 2000,  // "What you call data" … "then through silicon."
-  0,                       // "" paragraph break
-  1000, 2000, 3000, 3000,  // "Now it returns" … "to a system older than human memory."
-  0,                       // "" paragraph break
-  2000, 0                  // "You are not in the garden." / last line
-];
+// ms each line stays before the next appears, per narration language.
+// Empty paragraph lines use 0 so they appear with the next spoken line.
+const POEM_DELAYS_BY_LANG = {
+  en: [
+    2000, 2000, 2000, 1500,
+    0,
+    4000, 3500, 4000, 3500, 3000,
+    0,
+    1000, 2000, 1000, 2000,
+    0,
+    1000, 2000, 3000, 3000,
+    0,
+    2000, 0
+  ],
+  fr: [
+    1500, 2500, 1500, 2000,
+    0,
+    3500, 4000, 3500, 4000, 4500,
+    0,
+    2000, 2500, 1000, 2000,
+    0,
+    0, 4000, 4000, 3500,
+    0,
+    2000, 0
+  ]
+};
 
 // ── TRANSLATIONS ─────────────────────────────────────────────────────────────
 let _dpT = {};
@@ -856,15 +921,28 @@ function buildPoem(){
   if(!lines[0]) return ["Before there were circuits,","there were constellations.","Before there were servers,","there were seeds.","","Entire galaxies within each human.","Infinite constellations within each pollen.","A hundred blazing suns in every seed.","Chlorophyll, the first architect of the planet.","The code of life written out of stellar light.","","What you call data","once moved through stone,","then through sap,","then through silicon.","","Now it returns","to the vegetal archive,","to roots, to pollen, to breath,","to a system older than human memory.","","You are not in the garden.","You are the garden itself."];
   return lines;
 }
+function poemDelays(){
+  return POEM_DELAYS_BY_LANG[dpCurrentLang()] || POEM_DELAYS_BY_LANG.en;
+}
 
 // ── FLOWER TYPES ─────────────────────────────────────────────────────────────
 // color, name, latin, petabytes per node, letters per node, pollen size
 const FLOWERS = {
-  fairy:    { color:0x60c0ff, colorHex:'#60c0ff', name:'Fairy Fan-Flower', latin:'Scaevola aemula',  pb:10, letters:1, size:0.009 },
+  fairy:    { color:0x60c0ff, colorHex:'#60c0ff', name:'Fan-Flower', latin:'Scaevola aemula',  pb:10, letters:1, size:0.009 },
   williams: { color:0xff70a0, colorHex:'#ff70a0', name:'Sweet William',    latin:'Dianthus barbatus', pb:20, letters:2, size:0.011 },
   petunia:  { color:0xff9030, colorHex:'#ff9030', name:'Petunia',          latin:'Petunia atkinsiana',pb:20, letters:2, size:0.011 },
   lilac:    { color:0xc060ff, colorHex:'#c060ff', name:'Summer Lilac',     latin:'Buddleja davidii',  pb:30, letters:3, size:0.013 },
 };
+const FLOWER_NAME_KEYS = {
+  fairy: 'dp.flower-fairy-name',
+  williams: 'dp.flower-williams-name',
+  petunia: 'dp.flower-petunia-name',
+  lilac: 'dp.flower-lilac-name'
+};
+function flowerName(type){
+  const f = FLOWERS[type];
+  return dpT(FLOWER_NAME_KEYS[type], f ? f.name : type);
+}
 
 // ── POLLEN NODES ─────────────────────────────────────────────────────────────
 // 13 letters total: H A C K T H E S Y S T E M
@@ -1251,7 +1329,7 @@ function tryCollect(){
   showDataTransfer(f, ()=>{
     dlLabel.style.opacity = '0';
 
-    document.getElementById('flash-flower').textContent = f.name;
+    document.getElementById('flash-flower').textContent = flowerName(nd.type);
     document.getElementById('flash-pollen').textContent = `+${pollens} ${pollenLabel}`;
     document.getElementById('flash-data-line').textContent = `+${f.pb} ${dpT('dp.petabytes-of-data','petabytes of data')}`;
     document.getElementById('flash-gains').style.display = 'block';
@@ -1282,6 +1360,7 @@ function showPoem(){
   hideExitPopup();
   hideIntroModal();
   document.body.classList.add('poem-visible');
+  document.body.classList.remove('game-active');
   isPlaying = false; // must be false before exitPointerLock
   if(document.pointerLockElement || document.webkitPointerLockElement){
     (document.exitPointerLock || document.webkitExitPointerLock || (()=>{})).call(document);
@@ -1310,11 +1389,12 @@ function showPoem(){
       c.innerHTML='';
       let t = 600;
       const poemLines = buildPoem();
+      const delays = poemDelays();
       poemLines.forEach((line,i)=>{
         const d=document.createElement('div');
         d.className='poem-line'; d.textContent=line; c.appendChild(d);
         setTimeout(()=>d.classList.add('show'), t);
-        t += POEM_DELAYS[i] || 0;
+        t += delays[i] || 0;
       });
       stage2.style.display='flex';
       void stage2.offsetHeight;
@@ -1382,14 +1462,8 @@ function goHome(){
   document.body.classList.remove('game-active');
 
   if(IN_IFRAME){
-    // Fade the canvas and sidebar together — spolia will crossfade in underneath
-    [canvas, document.getElementById('sidebar')].forEach(el => {
-      if(el){ el.style.transition = 'opacity 1s ease'; el.style.opacity = '0'; }
-    });
-    setTimeout(()=>{
-      if(canvas){ canvas.style.display = 'none'; canvas.style.opacity = ''; canvas.style.transition = ''; }
-      window.parent.postMessage('dataPollen:goHome', '*');
-    }, 1050);
+    silenceDataPollenMedia();
+    window.parent.postMessage('dataPollen:goHome', '*');
     return;
   }
 
@@ -1446,6 +1520,15 @@ function updateWifi(d){
 // When loaded inside the index.html iframe, the parent page owns fullscreen.
 // We suppress our own fullscreen requests and send postMessage to close instead.
 const IN_IFRAME = (function(){ try{ return window.self !== window.top; }catch(e){ return true; } })();
+const titleBackLink = document.getElementById('title-back-link');
+if(titleBackLink && IN_IFRAME){
+  titleBackLink.addEventListener('click', (event)=>{
+    event.preventDefault();
+    event.stopPropagation();
+    silenceDataPollenMedia();
+    window.parent.postMessage('dataPollen:goHome', '*');
+  });
+}
 
 // ── SOUND + FULLSCREEN (synced with Spolia Botanique via localStorage) ────────
 let currentScreen = 'title';
@@ -1455,9 +1538,21 @@ const soundButtons = [
 ].filter(Boolean);
 
 // ── Volume levels ─────────────────────────────────────────────────────────────
-const VOL_NARRATION = 0.08;   // background during story / mission / secret-message
-const VOL_SLIDES    = 0.15;   // background for non-narrated slides (flowers, controls)
-const VOL_GAME      = 0.35;   // in-game background level
+const VOL_NARRATION_BG = 0.08; // froth.mp3 under story / mission / secret-message
+const VOL_SLIDES_BG    = 0.15; // froth.mp3 for non-narrated slides (flowers, controls)
+const VOL_GAME_BG      = 0.15; // froth.mp3 during the 3D canvas scene
+const VOL_STORY_VOICE  = 0.5; // story.mp3 / story-fr.mp3
+const VOL_MISSION_VOICE= 0.5; // mission.mp3 / mission-fr.mp3
+const VOL_SECRET_VOICE = 0.5; // secret-message.mp3 / secret-message-fr.mp3
+
+const VOL_NARRATION = VOL_NARRATION_BG;
+const VOL_SLIDES = VOL_SLIDES_BG;
+const VOL_GAME = VOL_GAME_BG;
+const narrationVolumes = {
+  story: VOL_STORY_VOICE,
+  mission: VOL_MISSION_VOICE,
+  secret: VOL_SECRET_VOICE
+};
 
 // ── Background ambient ────────────────────────────────────────────────────────
 let soundEnabled = localStorage.getItem('soundEnabled') !== '0';
@@ -1485,6 +1580,17 @@ function fadeAmbientTo(targetVol, durationMs = 1500){
 function playAmbient(){
   if(!ambientAudio || !soundEnabled) return;
   ambientAudio.play().catch(()=>{});
+}
+
+function stopAmbient(reset = false){
+  if(!ambientAudio) return;
+  if(ambientFadeTimer){
+    clearInterval(ambientFadeTimer);
+    ambientFadeTimer = null;
+  }
+  ambientAudio.pause();
+  ambientAudio.volume = 0;
+  if(reset) ambientAudio.currentTime = 0;
 }
 
 // ── Narration layer ───────────────────────────────────────────────────────────
@@ -1546,7 +1652,7 @@ function playNarration(key, delayMs = 0){
     pendingNarrTimer = null;
     const a = getNarrationAudio(key);
     if(!a) return;
-    a.volume = 1;
+    a.volume = narrationVolumes[key] ?? 1;
     a.currentTime = 0;
     a.play().catch(()=>{});
     activeNarr = a;
@@ -1640,43 +1746,50 @@ syncFsButton();
 if(IN_IFRAME) allFsBtns.forEach(btn => btn.style.display = 'none');
 
 // ── VIDEO AUTOPLAY ────────────────────────────────────────────────────────────
-const titleVideo = document.getElementById('title-video');
+const titleVideoHost = document.getElementById('screen-title');
+const titleOverlay = document.getElementById('title-overlay');
+
+function restoreTitleVideo(){
+  if(document.getElementById('title-video')) return;
+  if(!titleVideoHost) return null;
+  const video = document.createElement('video');
+  video.id = 'title-video';
+  video.className = 'bg-video';
+  video.dataset.nativeAutoplay = '';
+  video.src = 'data-pollen/bee04.mp4';
+  video.autoplay = true;
+  video.muted = true;
+  video.defaultMuted = true;
+  video.loop = true;
+  video.playsInline = true;
+  video.preload = 'auto';
+  video.setAttribute('muted', '');
+  video.setAttribute('autoplay', '');
+  video.setAttribute('playsinline', '');
+  video.setAttribute('webkit-playsinline', '');
+  titleVideoHost.insertBefore(video, titleOverlay || titleVideoHost.firstChild);
+  return video;
+}
+
 function playTitleVideo(){
-  if(!titleVideo || currentScreen !== 'title') return;
-  titleVideo.muted = true;
-  titleVideo.setAttribute('muted', '');
-  titleVideo.play().catch(()=>{});
+  if(currentScreen !== 'title') return;
+  restoreTitleVideo();
 }
-if(titleVideo){
-  // Force muted + attributes at the earliest possible moment
-  titleVideo.muted = true;
-  titleVideo.defaultMuted = true;
-  titleVideo.setAttribute('muted', '');
-  titleVideo.setAttribute('playsinline', '');
-  titleVideo.setAttribute('webkit-playsinline', '');
-  // Try immediately — best chance Safari will allow this within the page-load window
-  titleVideo.play().catch(()=>{});
-  // Also try once data is ready
-  if(titleVideo.readyState >= 3){
-    playTitleVideo();
-  } else {
-    titleVideo.addEventListener('canplay', playTitleVideo, {once:true});
-  }
-  // Periodic recovery — if tab regains focus or Safari deferred the play
-  document.addEventListener('visibilitychange', ()=>{
-    if(!document.hidden && currentScreen==='title') playTitleVideo();
-  });
-  // Keep-alive: re-attempt every 1.8s while on title screen
-  setInterval(()=>{
-    if(currentScreen==='title' && titleVideo.paused) playTitleVideo();
-  }, 1800);
+
+function removeTitleVideo(){
+  const video = document.getElementById('title-video');
+  if(!video) return;
+  video.remove();
 }
-// Fallback: play on any user gesture (covers Safari's strict policy)
-['pointerdown','keydown','touchstart'].forEach(ev=>{
-  document.addEventListener(ev, ()=>{
-    if(titleVideo && titleVideo.paused && currentScreen==='title') playTitleVideo();
-  }, {passive:true});
-});
+
+function silenceDataPollenMedia(){
+  removeTitleVideo();
+  stopNarration(0);
+  stopAmbient(true);
+}
+
+window.addEventListener('pagehide', silenceDataPollenMedia);
+window.addEventListener('beforeunload', silenceDataPollenMedia);
 
 // ── SPORE CLOUD FOR CONTROLS SCREEN ─────────────────────────────────────────
 function buildSporeCloud(containerId, count, color){
@@ -1840,9 +1953,9 @@ function advanceSlide(){
 
 function showScreen(name){
   if(name === currentScreen) return;
+  const leavingTitle = currentScreen === 'title';
   const fromEl = document.getElementById('screen-' + currentScreen);
   const toEl   = document.getElementById('screen-' + name);
-  if(currentScreen === 'title' && titleVideo) titleVideo.pause();
   currentScreen = name;
   fromEl.style.opacity = '0';
   fromEl.style.pointerEvents = 'none';
@@ -1851,6 +1964,7 @@ function showScreen(name){
   void toEl.offsetHeight;
   setTimeout(()=>{
     fromEl.classList.add('hidden');
+    if(leavingTitle) removeTitleVideo();
     fromEl.style.opacity = '';
     fromEl.style.pointerEvents = '';
     toEl.style.opacity = '1';
@@ -1903,7 +2017,7 @@ document.getElementById('sidebar-logo').addEventListener('click', e=>{
 // ── POLLEN CIRCLES UI ────────────────────────────────────────────────────────
 // Node definitions with flower type for building circles
 const POLLEN_UI = [
-  { type:'fairy',    label:'Fairy Fan-Flower', count:1  },
+  { type:'fairy',    label:'Fan-Flower', count:1  },
   { type:'williams', label:'Sweet William',    count:2  },
   { type:'petunia',  label:'Petunia',          count:2, node:2 },
   { type:'petunia',  label:'Petunia',          count:2, node:3 },
@@ -1914,7 +2028,6 @@ const POLLEN_UI = [
 function buildPollenCircles(){
   const container = document.getElementById('pollen-circles');
   container.innerHTML='';
-  const shortNames = {fairy:'Fan-Flower', williams:'Sweet William', petunia:'Petunia', lilac:'Summer Lilac'};
   let lastType = null;
 
   NODES.forEach((nd, ni)=>{
@@ -1951,7 +2064,7 @@ function buildPollenCircles(){
     const lbl = document.createElement('div');
     lbl.className='pollen-group-label';
     lbl.style.color=f.colorHex+'cc';
-    lbl.textContent = shortNames[nd.type]||f.name;
+    lbl.textContent = flowerName(nd.type);
     group.appendChild(lbl);
 
     container.appendChild(group);
@@ -2085,10 +2198,7 @@ function isSL(k)  { return k['ArrowLeft']; }
 function isSR(k)  { return k['ArrowRight']; }
 
 function startGame(){
-  // Pause the title video during gameplay, but keep its source intact so autoplay survives returning home.
-  if(titleVideo){
-    titleVideo.pause();
-  }
+  removeTitleVideo();
   // Show the 3D canvas
   if(canvas) canvas.style.display = 'block';
   ['screen-title','screen-slides'].forEach(id=>{
@@ -2143,7 +2253,6 @@ function startGardenLoad(){
   buildPasswordUI();
   // Fade out loading screen (transition: 1.2s), then reveal title content
   document.getElementById('loading').style.opacity='0';
-  playTitleVideo(); // try early — loading screen still visible, but video is in DOM
   setTimeout(()=>{
     document.getElementById('loading').style.display='none';
     document.body.classList.add('title-ready'); // title-content/copyright fade in AFTER loading gone
@@ -2160,53 +2269,70 @@ function startGardenLoad(){
   lt.innerHTML='error loading garden01-s.glb<br><span style="font-size:10px;color:#555">check console · is the file in the same folder?</span>';
   });
 }
-if(titleVideo){
-  titleVideo.addEventListener('playing', startGardenLoad, {once:true});
-}
 setTimeout(startGardenLoad, 900);
 
 // ── BEE MODEL (camera-attached) ──────────────────────────────────────────────
 let beeMixer = null;
 const beeLoader = new THREE.GLTFLoader();
 beeLoader.setDRACOLoader(dracoLoader);
-beeLoader.load('data-pollen/bee2-s.glb', gltf => {
+beeLoader.load('data-pollen/bee07-s.glb', gltf => {
   const bee = gltf.scene;
-  // Compute the model's bounding box to auto-scale it to ~0.18 world units tall
+  // Compute the model's bounding box to auto-scale it to ~0.36 world units tall
   const box = new THREE.Box3().setFromObject(bee);
   const modelHeight = box.max.y - box.min.y;
-  const targetHeight = 0.18;
+  const targetHeight = 0.4;
   const autoScale = modelHeight > 0 ? targetHeight / modelHeight : 0.5;
   bee.scale.setScalar(autoScale);
   // Third-person lower-center: slightly below camera line, forward
-  bee.position.set(0.0, -0.22, -0.55);
-  bee.rotation.y = Math.PI;
-  bee.rotation.x = THREE.MathUtils.degToRad(-60);
-  // Keep bee albedo visible independent of the very dark garden lighting.
+  bee.position.set(0.0, -0.2, -0.58);
+  bee.rotation.set(
+    THREE.MathUtils.degToRad(140),
+    THREE.MathUtils.degToRad(180),
+    THREE.MathUtils.degToRad(-180)
+  );
+  // Keep the bee readable, but use lit materials so its volume still shades in 3D.
   bee.traverse(child => {
     if(!child.isMesh) return;
     const sourceMaterials = Array.isArray(child.material) ? child.material : [child.material];
-    const albedoMaterials = sourceMaterials.map(mat => {
-      const basic = new THREE.MeshBasicMaterial({
+    const shadedMaterials = sourceMaterials.map(mat => {
+      const shaded = new THREE.MeshStandardMaterial({
         map: mat && mat.map ? mat.map : null,
         color: mat && mat.color ? mat.color.clone() : new THREE.Color(0xffffff),
         alphaMap: mat && mat.alphaMap ? mat.alphaMap : null,
         transparent: mat ? !!mat.transparent : false,
         opacity: mat && mat.opacity !== undefined ? mat.opacity : 1,
-        side: mat && mat.side !== undefined ? mat.side : THREE.FrontSide
+        side: mat && mat.side !== undefined ? mat.side : THREE.FrontSide,
+        normalMap: mat && mat.normalMap ? mat.normalMap : null,
+        roughnessMap: mat && mat.roughnessMap ? mat.roughnessMap : null,
+        metalnessMap: mat && mat.metalnessMap ? mat.metalnessMap : null,
+        roughness: mat && mat.roughness !== undefined ? Math.max(mat.roughness, 0.78) : 0.86,
+        metalness: mat && mat.metalness !== undefined ? Math.min(mat.metalness, 0.02) : 0.0,
+        emissive: mat && mat.emissive ? mat.emissive.clone() : new THREE.Color(0x12180f),
+        emissiveMap: mat && mat.emissiveMap ? mat.emissiveMap : null,
+        emissiveIntensity: mat && mat.emissiveIntensity !== undefined ? Math.max(mat.emissiveIntensity, 0.1) : 0.1
       });
-      basic.toneMapped = false;
-      return basic;
+      if (shaded.normalMap) shaded.normalScale.set(0.45, 0.45);
+      shaded.toneMapped = true;
+      return shaded;
     });
-    child.material = Array.isArray(child.material) ? albedoMaterials : albedoMaterials[0];
+    child.material = Array.isArray(child.material) ? shadedMaterials : shadedMaterials[0];
     child.renderOrder = 999;
   });
+  const beeSoftLight = new THREE.HemisphereLight(0xecffdf, 0x263520, 0.52);
+  const beeKeyLight = new THREE.DirectionalLight(0xffffff, 0.12);
+  beeKeyLight.position.set(-0.35, 0.62, 0.55);
+  const beeFillLight = new THREE.DirectionalLight(0x8fffd0, 0.16);
+  beeFillLight.position.set(0.45, 0.22, 0.48);
+  const beeRimLight = new THREE.DirectionalLight(0xd8b0ff, 0.18);
+  beeRimLight.position.set(0.2, 0.45, -0.62);
+  camera.add(beeSoftLight, beeKeyLight, beeFillLight, beeRimLight);
   renderer.sortObjects = true;
   camera.add(bee);
   if(gltf.animations && gltf.animations.length){
     beeMixer = new THREE.AnimationMixer(bee);
     gltf.animations.forEach(clip => beeMixer.clipAction(clip).play());
   }
-}, null, err => console.warn('bee2-s.glb:', err));
+}, null, err => console.warn('bee06-s.glb:', err));
 
 // ── PRE-ALLOCATED OBJECTS — never allocate inside loop ───────────────────────
 const _fwdH  = new THREE.Vector3();
@@ -2345,6 +2471,7 @@ async function dpLoadTranslations(){
   });
   // Refresh dynamic JS-driven text
   updateDataBar(totalPb);
+  if(document.getElementById('pollen-circles')?.children.length) buildPollenCircles();
   const slideBtn=document.getElementById('slide-next');
   if(slideBtn){
     const lbl=slideBtn.querySelector('.btn-label');

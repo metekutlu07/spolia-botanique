@@ -104,6 +104,7 @@
 
     const tryPlay = () => {
       if (document.visibilityState === 'hidden') return
+      if (!video.paused && video.readyState >= 2) return
       const promise = video.play()
       if (promise) promise.catch(() => {})
     }
@@ -129,7 +130,7 @@
 
   function replayVisibleVideos() {
     _autoplayVideos.forEach((video) => {
-      if (video.dataset.inView === '1' && !video.ended) {
+      if (video.dataset.inView === '1' && !video.ended && (video.paused || video.readyState < 2)) {
         const tryPlay = video._spoliaTryPlay || (() => video.play().catch(() => {}))
         tryPlay()
       }
@@ -140,7 +141,7 @@
     // Disconnect any previous observer so old-page videos are no longer tracked
     disconnectVideoObserver()
 
-    const videos = [...root.querySelectorAll('video')].filter((video) => video.id !== 'bg-video')
+    const videos = [...root.querySelectorAll('video')].filter((video) => video.id !== 'bg-video' && !video.dataset.nativeAutoplay)
     _autoplayVideos = videos
 
     videos.forEach((video) => {

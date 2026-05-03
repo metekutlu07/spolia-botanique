@@ -263,7 +263,8 @@
     },
     "contact": {
       "page-contact.contact-title-1": "Contact",
-      "page-contact.contact-text-1": "For further inquiries, please write to\n            <a href=\"mailto:metekutlu@gmail.com\">metekutlu@gmail.com</a>."
+      "page-contact.contact-text-1": "For further inquiries, please write to\n            <a href=\"mailto:metekutlu@gmail.com\">metekutlu@gmail.com</a>.",
+      "page-contact.snake-fire-legend": "Loose a branch"
     },
     "data-pollen": {
       "dp.loading": "initializing vegetal network",
@@ -281,7 +282,7 @@
       "dp.mission-3": "130 petabytes will give you a password,",
       "dp.mission-4": "and unlock a secret message.",
       "dp.flowers-title": "Pollen Packages",
-      "dp.flower-fairy-name": "Fairy Fan-Flower",
+      "dp.flower-fairy-name": "Fan-Flower",
       "dp.flower-williams-name": "Sweet William",
       "dp.flower-petunia-name": "Petunia",
       "dp.flower-lilac-name": "Summer Lilac",
@@ -293,9 +294,13 @@
       "dp.flower-williams-data": "20 petabytes of data",
       "dp.flower-petunia-data": "20 petabytes of data",
       "dp.flower-lilac-data": "30 petabytes of data",
+      "dp.controls-title": "Controls",
+      "dp.controls-look": "Look around with your mouse for data-pollen.",
+      "dp.controls-fly": "Use the space bar to fly in that direction.",
+      "dp.controls-collect": "Press F to collect it when you are close enough.",
       "dp.slide-next": "Next →",
       "dp.slide-enter": "Enter the Garden",
-      "dp.game-intro-text": "To exit the game,<br>press <strong>Escape twice.</strong>",
+      "dp.game-intro-text": "To exit the game or reveal the secret message, press the Escape key twice on your keyboard.",
       "dp.game-intro-start": "Start",
       "dp.exit-question": "Exit to Spolia Botanique?",
       "dp.exit-yes": "Yes, exit",

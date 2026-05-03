@@ -286,7 +286,8 @@
     },
     "contact": {
       "page-contact.contact-title-1": "Contact",
-      "page-contact.contact-text-1": "Pour toute demande complémentaire, veuillez écrire à\n            <a href=\"mailto:metekutlu@gmail.com\">metekutlu@gmail.com</a>."
+      "page-contact.contact-text-1": "Pour toute demande complémentaire, veuillez écrire à\n            <a href=\"mailto:metekutlu@gmail.com\">metekutlu@gmail.com</a>.",
+      "page-contact.snake-fire-legend": "Perdre une branche"
     },
     "data-pollen": {
       "dp.loading": "initialisation du réseau végétal",
@@ -304,10 +305,10 @@
       "dp.mission-3": "130 pétaoctets vous donneront un mot de passe,",
       "dp.mission-4": "et révéleront un message secret.",
       "dp.flowers-title": "Paquets de pollen",
-      "dp.flower-fairy-name": "Fleur éventail féerique",
-      "dp.flower-williams-name": "Œillet du poète",
+      "dp.flower-fairy-name": "Scaevole",
+      "dp.flower-williams-name": "Œillet des poètes",
       "dp.flower-petunia-name": "Pétunia",
-      "dp.flower-lilac-name": "Lilas d'été",
+      "dp.flower-lilac-name": "Arbre à papillons",
       "dp.flower-fairy-pollen": "1 pollen",
       "dp.flower-williams-pollen": "2 pollens",
       "dp.flower-petunia-pollen": "2 pollens",
@@ -316,9 +317,13 @@
       "dp.flower-williams-data": "20 pétaoctets de données",
       "dp.flower-petunia-data": "20 pétaoctets de données",
       "dp.flower-lilac-data": "30 pétaoctets de données",
+      "dp.controls-title": "Contrôles",
+      "dp.controls-look": "Regardez autour de vous avec la souris pour repérer le pollen de données.",
+      "dp.controls-fly": "Utilisez la barre d’espace pour voler dans cette direction.",
+      "dp.controls-collect": "Appuyez sur F pour le collecter lorsque vous êtes suffisamment proche.",
       "dp.slide-next": "Suivant →",
       "dp.slide-enter": "Entrer dans le jardin",
-      "dp.game-intro-text": "Pour quitter le jeu,<br>appuyez deux fois sur <strong>Échap.</strong>",
+      "dp.game-intro-text": "Pour quitter le jeu ou révéler le message secret, appuyez deux fois sur la touche Échap de votre clavier.",
       "dp.game-intro-start": "Démarrer",
       "dp.exit-question": "Quitter vers Spolia Botanique ?",
       "dp.exit-yes": "Oui, quitter",
