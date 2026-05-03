@@ -2270,6 +2270,14 @@
         });
 
         window.addEventListener('message', function(e) {
+            if (e.data === 'dataPollen:enterFullscreen') {
+                setFsState(true);
+                return;
+            }
+            if (e.data === 'dataPollen:exitFullscreen') {
+                setFsState(false);
+                return;
+            }
             if (e.data === 'dataPollen:goHome') {
                 landingVideoAllowed = true;
                 // Ensure the Safari loop guard is wired up (keepAlive may have been

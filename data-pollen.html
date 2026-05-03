@@ -46,10 +46,20 @@ body { background:#000; overflow:hidden; font-family:'IBM Plex Mono',monospace; 
 
 /* ── SCREEN 1: TITLE ── */
 #screen-title { position:fixed; inset:0; overflow:hidden; cursor:pointer; }
-#title-video {
-  position:absolute; inset:0; width:100%; height:100%;
-  object-fit:cover; opacity:1; z-index:0; pointer-events:none;
-  transition:opacity 0.8s ease;
+.title-3d-bg {
+  position:absolute;
+  inset:0;
+  z-index:0;
+  background:#000;
+  cursor:grab;
+}
+.title-3d-bg.dragging {
+  cursor:grabbing;
+}
+#title-pollen-canvas {
+  width:100%;
+  height:100%;
+  display:block;
 }
 #title-overlay {
   position:absolute; inset:0; z-index:1;
@@ -59,19 +69,21 @@ body { background:#000; overflow:hidden; font-family:'IBM Plex Mono',monospace; 
   position:relative; z-index:2;
   display:flex; flex-direction:column; align-items:center; justify-content:center;
   height:100%; gap:0;
+  pointer-events:none;
   transition:opacity 0.8s ease;
   transform:translateZ(0);
   will-change:opacity;
 }
+#title-content > img { pointer-events:none; }
 #title-content > img,
-#title-content .intro-hint,
+#title-content .title-start-button,
 #title-copyright {
   transition:opacity 0.8s ease;
   transform:translateZ(0);
   will-change:opacity;
 }
 body:not(.title-ready) #title-content > img,
-body:not(.title-ready) #title-content .intro-hint,
+body:not(.title-ready) #title-content .title-start-button,
 body:not(.title-ready) #title-copyright { opacity:0; }
 #screen-title .game-title {
   font-family:'Space Mono',monospace;
@@ -90,11 +102,45 @@ body:not(.title-ready) #title-copyright { opacity:0; }
   0%,100% { text-shadow:0 0 40px rgba(255,255,255,0.4),0 0 80px rgba(255,255,255,0.15); }
   50%      { text-shadow:0 0 70px rgba(255,255,255,0.7),0 0 140px rgba(255,255,255,0.3); }
 }
-.intro-hint {
-  font-size:clamp(15px,2vw,22px); letter-spacing:0.5em; color:rgba(255,255,255,0.7);
-  text-transform:uppercase; animation: pulse 2s ease-in-out infinite;
+.title-start-button {
+  position:relative;
+  overflow:hidden;
+  margin-top:40px;
+  padding:20px 44px;
+  border:1px solid rgba(255,255,255,0.95);
+  background:transparent;
+  color:#fff;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:clamp(15px,1.7vw,21px);
+  letter-spacing:0.24em;
+  text-indent:0.24em;
+  text-transform:uppercase;
+  cursor:pointer;
+  pointer-events:auto;
+  transform:translateZ(0);
+  isolation:isolate;
+  transition:background-color 0.3s ease,color 0.3s ease,box-shadow 0.3s ease;
 }
-@keyframes pulse { 0%,100%{opacity:0.3} 50%{opacity:1} }
+.title-start-button-glass {
+  position:absolute;
+  inset:0;
+  z-index:0;
+  background:rgba(200,200,200,0.08);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+  pointer-events:none;
+}
+.title-start-button-label {
+  position:relative;
+  z-index:2;
+  color:currentColor;
+  -webkit-text-fill-color:currentColor;
+}
+.title-start-button:hover {
+  color:#1a1a1a;
+  box-shadow:0 4px 20px rgba(255,255,255,0.3);
+}
+.title-start-button:hover .title-start-button-glass { background:#fff; }
 
 /* ── SOUND ── */
 .sound-btn {
@@ -118,13 +164,19 @@ body:not(.title-ready) #title-copyright { opacity:0; }
   will-change:opacity;
 }
 body.game-active #intro-controls { display:none; }
+.dp-lang-btn { color:#fff !important; border-color:rgba(255,255,255,0.7); background:rgba(0,0,0,0.3); }
 body:not(.game-active) #intro-sound-toggle,
 body:not(.game-active) #intro-fs-toggle {
-  color:rgba(255,255,255,0.8); border-color:rgba(255,255,255,0.35); background:rgba(0,0,0,0.3);
+  color:rgba(255,255,255,0.32); border-color:rgba(255,255,255,0.18); background:rgba(0,0,0,0.3);
 }
 body:not(.game-active) #intro-sound-toggle:hover,
 body:not(.game-active) #intro-fs-toggle:hover { color:#fff; border-color:rgba(255,255,255,0.7); background:rgba(0,0,0,0.5); }
 body:not(.game-active) #intro-sound-toggle.off { color:rgba(255,255,255,0.25); border-color:rgba(255,255,255,0.15); }
+body:not(.game-active) #intro-sound-toggle:not(.off),
+body.is-fullscreen:not(.game-active) #intro-fs-toggle {
+  color:#fff;
+  border-color:rgba(255,255,255,0.7);
+}
 /* Fullscreen icon swap */
 .fs-icon { width:18px; height:18px; display:block; flex-shrink:0; }
 .fs-exit { display:none; }
@@ -219,14 +271,14 @@ body:not(.title-ready) #title-back-link {
 }
 .slide-btn:hover { opacity:0.72; }
 .dp-lang-btn {
-  width:42px; height:42px; border:1px solid rgba(73,220,164,0.65);
-  background:rgba(4,1,10,0.65); color:var(--pollen-green);
+  width:42px; height:42px; border:1px solid rgba(255,255,255,0.7);
+  background:rgba(4,1,10,0.65); color:#fff;
   display:flex; align-items:center; justify-content:center;
   font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.12em;
   text-transform:uppercase; cursor:pointer; border-radius:0;
   transition:background-color 0.16s ease,border-color 0.16s ease,color 0.16s ease;
 }
-.dp-lang-btn:hover { border-color:#d8b0ff; color:#f0d0ff; background:rgba(25,10,45,0.9); }
+.dp-lang-btn:hover { border-color:rgba(255,255,255,0.9); color:#fff; background:rgba(25,10,45,0.9); }
 
 /* Flowers slide */
 .flowers-slide {
@@ -641,14 +693,14 @@ body:not(.title-ready) #title-back-link {
 </head>
 <body>
 <canvas id="c"></canvas>
-<audio id="ambient-audio" src="data-pollen/froth.mp3" loop preload="auto"></audio>
+<audio id="ambient-audio" src="sounds/shima.mp3" loop preload="auto"></audio>
 <div id="intro-controls">
   <button class="dp-lang-btn" id="dp-lang-btn" type="button" title="Switch to French" aria-label="Switch to French">EN</button>
-  <button class="sound-btn" id="intro-fs-toggle" type="button" aria-label="Enter fullscreen">
-    <svg class="fs-icon fs-enter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
-    <svg class="fs-icon fs-exit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 3 3 3 3 8"/><polyline points="21 8 21 3 16 3"/><polyline points="3 16 3 21 8 21"/><polyline points="16 21 21 21 21 16"/></svg>
-  </button>
   <button class="sound-btn" id="intro-sound-toggle" type="button" aria-label="Turn sound off"><svg class="speaker-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor" stroke="none"/><g class="speaker-waves"><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></g><g class="speaker-mute"><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></g></svg></button>
+  <button class="sound-btn" id="intro-fs-toggle" type="button" aria-label="Enter fullscreen">
+    <svg class="fs-icon fs-enter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5"/><path d="M15 4h5v5"/><path d="M20 15v5h-5"/><path d="M9 20H4v-5"/></svg>
+    <svg class="fs-icon fs-exit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4v5H4"/><path d="M15 4v5h5"/><path d="M15 20v-5h5"/><path d="M9 20v-5H4"/></svg>
+  </button>
 </div>
 
 <div id="loading">
@@ -658,13 +710,16 @@ body:not(.title-ready) #title-back-link {
 
 <!-- SCREEN 1: TITLE -->
 <div class="intro-screen" id="screen-title">
-  <video id="title-video" class="bg-video" autoplay muted loop playsinline preload="auto" webkit-playsinline data-native-autoplay>
-    <source src="data-pollen/bee04.mp4" type="video/mp4">
-  </video>
+  <div class="title-3d-bg" id="title-3d-bg" aria-hidden="true">
+    <canvas id="title-pollen-canvas"></canvas>
+  </div>
   <div id="title-overlay"></div>
   <div id="title-content">
     <img src="data-pollen/data-pollen-logo.png" alt="Data Pollen" style="max-width:clamp(420px,70vw,980px); width:90%; height:auto; margin-bottom:0; animation: breathe 4s ease-in-out infinite; filter:drop-shadow(0 0 40px rgba(255,255,255,0.3));">
-    <div class="intro-hint" style="margin-top:40px;" data-i18n="dp.title-hint">Press Enter or click to continue</div>
+    <button class="title-start-button" type="button" id="title-start-button">
+      <span class="title-start-button-glass" aria-hidden="true"></span>
+      <span class="title-start-button-label" data-i18n="dp.title-start">Start</span>
+    </button>
   </div>
   <div id="title-copyright">© Mete Kutlu, 2026.</div>
   <a id="title-back-link" href="/?skipIntro=1" data-i18n="dp.back-link">Back to Spolia Botanique</a>
@@ -847,6 +902,7 @@ body:not(.title-ready) #title-back-link {
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="data-pollen/RGBELoader.js"></script>
 <script src="data-pollen/GLTFLoader.js"></script>
 <script src="data-pollen/DRACOLoader.js"></script>
 <script>
@@ -998,6 +1054,8 @@ scene.fog = new THREE.FogExp2(0x000005, 0.09);
 camera = new THREE.PerspectiveCamera(80, gameW()/gameH(), 0.01, 30);
 camera.position.set(-1.5, 0.35, 1.5);
 scene.add(camera); // needed so camera-attached objects render
+const beePollenGroup = new THREE.Group();
+camera.add(beePollenGroup);
 scene.add(new THREE.AmbientLight(0x080812, 3.5));
 const dl = new THREE.DirectionalLight(0x6030a0, 1.5); dl.position.set(1,3,1); scene.add(dl);
 const dl2 = new THREE.DirectionalLight(0x49dca4,0.25); dl2.position.set(-2,1,-2); scene.add(dl2);
@@ -1092,6 +1150,61 @@ function makeCircleTex(hex){
 // Pre-generate one texture per flower type
 const CIRCLE_TEXTURES = {};
 Object.entries(FLOWERS).forEach(([k,v]) => { CIRCLE_TEXTURES[k] = makeCircleTex(v.colorHex); });
+
+// Tiny collected pollen marks placed over the visible top/back of the camera bee.
+const BEE_POLLEN_SPOTS = [
+  [ 0.000,-0.122,-0.465,0.019],
+  [-0.058,-0.160,-0.468,0.018],
+  [ 0.060,-0.162,-0.468,0.018],
+  [-0.112,-0.214,-0.470,0.017],
+  [ 0.112,-0.214,-0.470,0.017],
+  [ 0.000,-0.220,-0.466,0.020],
+  [-0.155,-0.270,-0.474,0.016],
+  [ 0.155,-0.270,-0.474,0.016],
+  [-0.052,-0.294,-0.468,0.018],
+  [ 0.054,-0.296,-0.468,0.018],
+  [-0.030,-0.366,-0.466,0.017],
+  [ 0.034,-0.368,-0.466,0.017],
+  [ 0.000,-0.432,-0.462,0.018],
+];
+let beePollenCount = 0;
+
+function addBeePollenMarks(type, count){
+  const f = FLOWERS[type];
+  if(!f) return;
+  for(let i=0; i<count; i++){
+    const spot = BEE_POLLEN_SPOTS[beePollenCount % BEE_POLLEN_SPOTS.length];
+    const wrap = Math.floor(beePollenCount / BEE_POLLEN_SPOTS.length);
+    const mat = new THREE.SpriteMaterial({
+      map: CIRCLE_TEXTURES[type],
+      color: f.color,
+      transparent:true,
+      opacity:0.95,
+      blending:THREE.AdditiveBlending,
+      depthTest:false,
+      depthWrite:false
+    });
+    const sprite = new THREE.Sprite(mat);
+    const jitter = wrap * 0.006;
+    sprite.position.set(
+      spot[0] + ((beePollenCount % 2) ? jitter : -jitter),
+      spot[1] + ((beePollenCount % 3) - 1) * jitter,
+      spot[2]
+    );
+    sprite.scale.setScalar(spot[3]);
+    sprite.renderOrder = 1200 + beePollenCount;
+    beePollenGroup.add(sprite);
+    beePollenCount++;
+  }
+}
+
+function clearBeePollenMarks(){
+  while(beePollenGroup.children.length){
+    const child = beePollenGroup.children.pop();
+    if(child.material) child.material.dispose();
+  }
+  beePollenCount = 0;
+}
 
 // ── POLLEN NODE ──────────────────────────────────────────────────────────────
 function makePollenNode(nodeData){
@@ -1317,6 +1430,7 @@ function tryCollect(){
   const nodeIndex = NODES.indexOf(nd);
   collectedCount += nd.letters.length;
   totalPb += f.pb;
+  addBeePollenMarks(nd.type, nd.letters.length);
   revealLetters(nd.letters);
   fillPollenCircles(nodeIndex);
   updateDataBar(totalPb);
@@ -1425,6 +1539,7 @@ function resetRun(){
   clearTimeout(flashTimeout);
   document.body.classList.remove('poem-visible');
   updateDataBar(0);
+  clearBeePollenMarks();
   buildPasswordUI();
   pollenNodes.forEach(node=>{
     node.visible = true;
@@ -1489,7 +1604,7 @@ function goHome(){
 
     currentScreen = 'title';
     document.body.classList.add('title-ready');
-    playTitleVideo();
+    startTitlePollenScene();
 
     setTimeout(()=>{
       titleEl.style.opacity = '';
@@ -1538,9 +1653,9 @@ const soundButtons = [
 ].filter(Boolean);
 
 // ── Volume levels ─────────────────────────────────────────────────────────────
-const VOL_NARRATION_BG = 0.08; // froth.mp3 under story / mission / secret-message
-const VOL_SLIDES_BG    = 0.15; // froth.mp3 for non-narrated slides (flowers, controls)
-const VOL_GAME_BG      = 0.15; // froth.mp3 during the 3D canvas scene
+const VOL_NARRATION_BG = 0.08; // ambient track under story / mission / secret-message
+const VOL_SLIDES_BG    = 0.15; // ambient track for non-narrated slides (flowers, controls)
+const VOL_GAME_BG      = 0.15; // ambient track during the 3D canvas scene
 const VOL_STORY_VOICE  = 0.5; // story.mp3 / story-fr.mp3
 const VOL_MISSION_VOICE= 0.5; // mission.mp3 / mission-fr.mp3
 const VOL_SECRET_VOICE = 0.5; // secret-message.mp3 / secret-message-fr.mp3
@@ -1708,8 +1823,23 @@ const sidebarFsBtn = document.getElementById('sidebar-fs-toggle');
 const allFsBtns    = [introFsBtn, sidebarFsBtn].filter(Boolean);
 function isFsPreferred(){ return localStorage.getItem('fullscreenPreferred') === '1'; }
 function setFsState(on){
-  if(IN_IFRAME) return; // parent owns fullscreen
   localStorage.setItem('fullscreenPreferred', on ? '1' : '0');
+  if(IN_IFRAME){
+    try {
+      const parentDoc = window.parent.document;
+      if(on){
+        (parentDoc.documentElement.requestFullscreen
+          || parentDoc.documentElement.webkitRequestFullscreen
+          || (()=>{})).call(parentDoc.documentElement).catch(()=>{});
+      } else {
+        (parentDoc.exitFullscreen || parentDoc.webkitExitFullscreen || (()=>{})).call(parentDoc).catch(()=>{});
+      }
+    } catch(_) {}
+    document.body.classList.toggle('is-fullscreen', on);
+    window.parent.postMessage(on ? 'dataPollen:enterFullscreen' : 'dataPollen:exitFullscreen', '*');
+    syncFsButton();
+    return;
+  }
   if(on){
     (document.documentElement.requestFullscreen
       || document.documentElement.webkitRequestFullscreen
@@ -1719,7 +1849,7 @@ function setFsState(on){
   }
 }
 function syncFsButton(){
-  const inFs = IN_IFRAME || !!(document.fullscreenElement || document.webkitFullscreenElement);
+  const inFs = IN_IFRAME ? isFsPreferred() : !!(document.fullscreenElement || document.webkitFullscreenElement);
   document.body.classList.toggle('is-fullscreen', inFs);
   allFsBtns.forEach(btn=>btn.setAttribute('aria-label', inFs ? 'Exit fullscreen' : 'Enter fullscreen'));
 }
@@ -1738,52 +1868,208 @@ if(!IN_IFRAME){
 }
 allFsBtns.forEach(btn=>btn.addEventListener('click', e=>{
   e.stopPropagation();
-  if(IN_IFRAME) return; // fullscreen controlled by parent
-  setFsState(!(document.fullscreenElement || document.webkitFullscreenElement));
+  const inFs = IN_IFRAME ? isFsPreferred() : !!(document.fullscreenElement || document.webkitFullscreenElement);
+  setFsState(!inFs);
 }));
 syncFsButton();
-// Hide fullscreen buttons when running inside the spolia iframe
-if(IN_IFRAME) allFsBtns.forEach(btn => btn.style.display = 'none');
 
-// ── VIDEO AUTOPLAY ────────────────────────────────────────────────────────────
-const titleVideoHost = document.getElementById('screen-title');
-const titleOverlay = document.getElementById('title-overlay');
+// ── TITLE BACKGROUND 3D POLLEN ──────────────────────────────────────────────
+const titlePollenHost = document.getElementById('title-3d-bg');
+const titlePollenCanvas = document.getElementById('title-pollen-canvas');
+let titlePollenRenderer = null;
+let titlePollenScene = null;
+let titlePollenCamera = null;
+let titlePollenRoot = null;
+let titlePollenAnimation = 0;
+let titlePollenLoaded = false;
+let titlePollenDragging = false;
+let titlePollenLastX = 0;
+let titlePollenLastY = 0;
+let titlePollenDragVX = 0;
+let titlePollenDragVY = 0;
+let titlePollenZoom = 4.45;
 
-function restoreTitleVideo(){
-  if(document.getElementById('title-video')) return;
-  if(!titleVideoHost) return null;
-  const video = document.createElement('video');
-  video.id = 'title-video';
-  video.className = 'bg-video';
-  video.dataset.nativeAutoplay = '';
-  video.src = 'data-pollen/bee04.mp4';
-  video.autoplay = true;
-  video.muted = true;
-  video.defaultMuted = true;
-  video.loop = true;
-  video.playsInline = true;
-  video.preload = 'auto';
-  video.setAttribute('muted', '');
-  video.setAttribute('autoplay', '');
-  video.setAttribute('playsinline', '');
-  video.setAttribute('webkit-playsinline', '');
-  titleVideoHost.insertBefore(video, titleOverlay || titleVideoHost.firstChild);
-  return video;
+function titlePollenSize(){
+  if(!titlePollenHost) return { w: innerWidth, h: innerHeight };
+  const rect = titlePollenHost.getBoundingClientRect();
+  return { w: Math.max(1, rect.width), h: Math.max(1, rect.height) };
 }
 
-function playTitleVideo(){
-  if(currentScreen !== 'title') return;
-  restoreTitleVideo();
+function resizeTitlePollen(){
+  if(!titlePollenRenderer || !titlePollenCamera) return;
+  const { w, h } = titlePollenSize();
+  titlePollenRenderer.setSize(w, h, false);
+  titlePollenCamera.aspect = w / h;
+  titlePollenCamera.updateProjectionMatrix();
 }
 
-function removeTitleVideo(){
-  const video = document.getElementById('title-video');
-  if(!video) return;
-  video.remove();
+function initTitlePollenScene(){
+  if(titlePollenRenderer || !titlePollenCanvas) return;
+  titlePollenRenderer = new THREE.WebGLRenderer({
+    canvas:titlePollenCanvas,
+    antialias:true,
+    alpha:false,
+    powerPreference:'high-performance'
+  });
+  titlePollenRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+  titlePollenRenderer.setClearColor(0x000000, 1);
+  if('outputEncoding' in titlePollenRenderer) titlePollenRenderer.outputEncoding = THREE.sRGBEncoding;
+  if('toneMapping' in titlePollenRenderer) {
+    titlePollenRenderer.toneMapping = THREE.ACESFilmicToneMapping;
+    titlePollenRenderer.toneMappingExposure = 0.62;
+  }
+
+  titlePollenScene = new THREE.Scene();
+  titlePollenScene.background = new THREE.Color(0x000000);
+  titlePollenCamera = new THREE.PerspectiveCamera(38, 1, 0.01, 40);
+  titlePollenCamera.position.set(0, 0, titlePollenZoom);
+
+  if(THREE.RGBELoader){
+    const pmrem = new THREE.PMREMGenerator(titlePollenRenderer);
+    pmrem.compileEquirectangularShader();
+    new THREE.RGBELoader()
+      .setDataType(THREE.UnsignedByteType)
+      .load('data-pollen/pav_studio_03_2k.hdr', texture => {
+        const envMap = pmrem.fromEquirectangular(texture).texture;
+        titlePollenScene.environment = envMap;
+        texture.dispose();
+        pmrem.dispose();
+        if(titlePollenRoot){
+          titlePollenRoot.traverse(obj => {
+            if(obj.isMesh && obj.material){
+              obj.material.envMapIntensity = 0.42;
+              obj.material.needsUpdate = true;
+            }
+          });
+        }
+      }, undefined, err => {
+        console.warn('pav_studio_03_2k.hdr:', err);
+        pmrem.dispose();
+      });
+  }
+
+  titlePollenRoot = new THREE.Group();
+  titlePollenScene.add(titlePollenRoot);
+
+  const hemi = new THREE.HemisphereLight(0xffffff, 0x121018, 0.82);
+  titlePollenScene.add(hemi);
+  const key = new THREE.DirectionalLight(0xffffff, 0.52);
+  key.position.set(3.0, 3.6, 4.2);
+  titlePollenScene.add(key);
+  const fill = new THREE.DirectionalLight(0x9ee8ff, 0.22);
+  fill.position.set(-3.5, 1.2, 2.6);
+  titlePollenScene.add(fill);
+  const rim = new THREE.DirectionalLight(0xffa8d8, 0.26);
+  rim.position.set(-1.5, 2.4, -3.0);
+  titlePollenScene.add(rim);
+
+  const titleDraco = new THREE.DRACOLoader();
+  titleDraco.setDecoderPath('data-pollen/');
+  const titleLoader = new THREE.GLTFLoader();
+  titleLoader.setDRACOLoader(titleDraco);
+  titleLoader.load('data-pollen/pollen-s.glb', gltf => {
+    const model = gltf.scene;
+    const box = new THREE.Box3().setFromObject(model);
+    const center = box.getCenter(new THREE.Vector3());
+    const size = box.getSize(new THREE.Vector3());
+    const maxDim = Math.max(size.x, size.y, size.z) || 1;
+    model.position.sub(center);
+    model.scale.setScalar(2.36 / maxDim);
+    model.traverse(obj => {
+      if(!obj.isMesh) return;
+      obj.castShadow = false;
+      obj.receiveShadow = false;
+      const mat = obj.material;
+      if(mat && mat.isMeshStandardMaterial){
+        mat.roughness = Math.max(mat.roughness ?? 0.65, 0.72);
+        mat.metalness = Math.min(mat.metalness ?? 0.02, 0.04);
+        mat.envMapIntensity = 0.42;
+        mat.needsUpdate = true;
+      }
+    });
+    titlePollenRoot.add(model);
+    titlePollenLoaded = true;
+  }, undefined, err => console.warn('pollen-s.glb:', err));
+
+  resizeTitlePollen();
 }
+
+function renderTitlePollen(){
+  titlePollenAnimation = requestAnimationFrame(renderTitlePollen);
+  if(!titlePollenRenderer || !titlePollenScene || !titlePollenCamera) return;
+  titlePollenCamera.position.z += (titlePollenZoom - titlePollenCamera.position.z) * 0.12;
+  if(titlePollenRoot){
+    if(!titlePollenDragging){
+      titlePollenRoot.rotation.y += 0.0022 + titlePollenDragVX;
+      titlePollenRoot.rotation.x += titlePollenDragVY;
+      titlePollenDragVX *= 0.92;
+      titlePollenDragVY *= 0.92;
+    }
+    titlePollenRoot.rotation.x = Math.max(-0.85, Math.min(0.85, titlePollenRoot.rotation.x));
+  }
+  titlePollenRenderer.render(titlePollenScene, titlePollenCamera);
+}
+
+function setTitlePollenZoom(nextZoom){
+  titlePollenZoom = Math.max(3.45, Math.min(6.2, nextZoom));
+}
+
+function startTitlePollenScene(){
+  initTitlePollenScene();
+  resizeTitlePollen();
+  if(!titlePollenAnimation) renderTitlePollen();
+}
+
+function stopTitlePollenScene(){
+  if(titlePollenAnimation){
+    cancelAnimationFrame(titlePollenAnimation);
+    titlePollenAnimation = 0;
+  }
+}
+
+function removeTitleBackground(){
+  stopTitlePollenScene();
+}
+
+if(titlePollenHost){
+  titlePollenHost.addEventListener('pointerdown', e => {
+    titlePollenDragging = true;
+    titlePollenLastX = e.clientX;
+    titlePollenLastY = e.clientY;
+    titlePollenDragVX = 0;
+    titlePollenDragVY = 0;
+    titlePollenHost.classList.add('dragging');
+    titlePollenHost.setPointerCapture?.(e.pointerId);
+  });
+  titlePollenHost.addEventListener('pointermove', e => {
+    if(!titlePollenDragging || !titlePollenRoot) return;
+    const dx = e.clientX - titlePollenLastX;
+    const dy = e.clientY - titlePollenLastY;
+    titlePollenLastX = e.clientX;
+    titlePollenLastY = e.clientY;
+    titlePollenDragVX = dx * 0.0045;
+    titlePollenDragVY = dy * 0.0032;
+    titlePollenRoot.rotation.y += titlePollenDragVX;
+    titlePollenRoot.rotation.x += titlePollenDragVY;
+  });
+  titlePollenHost.addEventListener('wheel', e => {
+    e.preventDefault();
+    setTitlePollenZoom(titlePollenZoom + e.deltaY * 0.0022);
+  }, { passive:false });
+  ['pointerup','pointercancel','pointerleave'].forEach(ev => {
+    titlePollenHost.addEventListener(ev, e => {
+      titlePollenDragging = false;
+      titlePollenHost.classList.remove('dragging');
+      titlePollenHost.releasePointerCapture?.(e.pointerId);
+    });
+  });
+}
+
+addEventListener('resize', resizeTitlePollen);
+startTitlePollenScene();
 
 function silenceDataPollenMedia(){
-  removeTitleVideo();
+  removeTitleBackground();
   stopNarration(0);
   stopAmbient(true);
 }
@@ -1964,14 +2250,13 @@ function showScreen(name){
   void toEl.offsetHeight;
   setTimeout(()=>{
     fromEl.classList.add('hidden');
-    if(leavingTitle) removeTitleVideo();
+    if(leavingTitle) removeTitleBackground();
     fromEl.style.opacity = '';
     fromEl.style.pointerEvents = '';
     toEl.style.opacity = '1';
     setTimeout(()=>{
       toEl.style.opacity = '';
       if(name === 'slides'){ initSlides(); playAmbient(); }
-      else if(name === 'title') playTitleVideo();
       else playAmbient();
     }, 650);
   }, 600);
@@ -2007,8 +2292,10 @@ document.addEventListener('keyup',e=>{
   }
 });
 
-// Click title screen to advance
-document.getElementById('screen-title').addEventListener('click', ()=> showScreen('slides'));
+document.getElementById('title-start-button').addEventListener('click', e => {
+  e.stopPropagation();
+  showScreen('slides');
+});
 document.getElementById('sidebar-logo').addEventListener('click', e=>{
   e.stopPropagation();
   goHome();
@@ -2198,7 +2485,7 @@ function isSL(k)  { return k['ArrowLeft']; }
 function isSR(k)  { return k['ArrowRight']; }
 
 function startGame(){
-  removeTitleVideo();
+  removeTitleBackground();
   // Show the 3D canvas
   if(canvas) canvas.style.display = 'block';
   ['screen-title','screen-slides'].forEach(id=>{
@@ -2485,7 +2772,8 @@ function dpWireLangBtns(){
   ['dp-lang-btn'].forEach(id=>{
     const b=document.getElementById(id);
     if(!b) return;
-    b.addEventListener('click',async()=>{
+    b.addEventListener('click',async(e)=>{
+      e.stopPropagation();
       const next=window.SpoliaI18n?.getLanguage()==='fr'?'en':'fr';
       if(window.SpoliaI18n){
         window.SpoliaI18n.setLanguage(next);

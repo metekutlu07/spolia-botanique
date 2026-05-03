@@ -269,6 +269,7 @@
     "data-pollen": {
       "dp.loading": "initializing vegetal network",
       "dp.title-hint": "Press Enter or click to continue",
+      "dp.title-start": "Start",
       "dp.back-link": "Back to Spolia Botanique",
       "dp.story-0": "Digital infrastructure has collapsed.",
       "dp.story-1": "Yet the cloud did not disappear.",
