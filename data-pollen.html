@@ -251,8 +251,8 @@ body:not(.title-ready) #title-back-link {
 
 /* Mission slide frames reuse the same frame pattern */
 .mission-frame {
-  position:absolute; top:0; bottom:0; left:50%; transform:translateX(-50%);
-  width:85vw; height:100vh;
+  position:absolute; inset:0;
+  width:100%; height:100%;
   object-fit:cover; opacity:0; transition:opacity 0.12s ease;
   display:block;
 }
@@ -606,6 +606,158 @@ body:not(.title-ready) #title-back-link {
 /* ── Proximity hint ── */
 #proximity-hint { position:fixed; bottom:30px; left:calc(320px + (100vw - 320px)/2); transform:translateX(-50%); font-size:13px; letter-spacing:0.5em; color:#9a7aba; text-transform:uppercase; opacity:0; transition:opacity 0.4s; pointer-events:none; font-weight:600; background:rgba(8,3,18,0.85); padding:10px 20px; border:0.5px solid rgba(150,100,180,0.4); white-space:nowrap; }
 
+/* ── Touch controls ── */
+body.touch-device #c {
+  touch-action:none;
+  -webkit-user-select:none;
+  user-select:none;
+}
+#touch-controls {
+  position:fixed;
+  inset:0 0 0 320px;
+  z-index:35;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity 0.35s ease;
+}
+body.touch-device.game-active #touch-controls { opacity:1; }
+body.touch-device #game-intro-box p { max-width:460px; }
+.touch-fly-btn {
+  position:absolute;
+  right:38px;
+  bottom:34px;
+  width:132px;
+  height:132px;
+  border-radius:50%;
+  border:1.5px solid rgba(73,220,164,0.88);
+  background:rgba(4,1,10,0.68);
+  color:var(--pollen-green);
+  font-family:'Space Mono',monospace;
+  font-size:13px;
+  letter-spacing:0.18em;
+  text-transform:uppercase;
+  cursor:pointer;
+  pointer-events:auto;
+  touch-action:none;
+  -webkit-user-select:none;
+  user-select:none;
+  box-shadow:0 0 28px rgba(73,220,164,0.16), inset 0 0 28px rgba(73,220,164,0.06);
+}
+.touch-fly-btn.active {
+  background:rgba(73,220,164,0.2);
+  border-color:#fff;
+  color:#fff;
+  box-shadow:0 0 42px rgba(73,220,164,0.42), inset 0 0 34px rgba(255,255,255,0.08);
+}
+.touch-status {
+  position:absolute;
+  left:50%;
+  bottom:34px;
+  transform:translateX(-50%);
+  padding:11px 18px;
+  border:0.5px solid rgba(150,100,180,0.38);
+  background:rgba(8,3,18,0.84);
+  color:#9a7aba;
+  font-family:'Space Mono',monospace;
+  font-size:12px;
+  letter-spacing:0.32em;
+  text-transform:uppercase;
+  white-space:nowrap;
+  opacity:0;
+  transition:opacity 0.25s ease,color 0.25s ease,border-color 0.25s ease;
+  pointer-events:none;
+}
+.touch-status.visible { opacity:1; }
+.touch-skip-btn {
+  position:absolute;
+  top:28px;
+  right:34px;
+  min-width:126px;
+  min-height:48px;
+  border:1px solid rgba(216,176,255,0.62);
+  background:rgba(4,1,10,0.62);
+  color:#d8b0ff;
+  font-family:'Space Mono',monospace;
+  font-size:11px;
+  letter-spacing:0.18em;
+  text-transform:uppercase;
+  cursor:pointer;
+  pointer-events:auto;
+  touch-action:manipulation;
+  -webkit-user-select:none;
+  user-select:none;
+}
+.touch-skip-btn:active {
+  color:#fff;
+  border-color:#fff;
+  background:rgba(80,35,110,0.72);
+}
+#compact-pollen-progress {
+  position:fixed;
+  left:10px;
+  top:50%;
+  transform:translateY(-50%);
+  z-index:36;
+  display:none;
+  flex-direction:column;
+  gap:8px;
+  pointer-events:none;
+}
+.compact-pdot {
+  width:11px;
+  height:11px;
+  border-radius:50%;
+  border:1px solid rgba(73,220,164,0.62);
+  background:rgba(4,1,10,0.42);
+  opacity:0.45;
+  box-shadow:0 0 8px rgba(73,220,164,0.12);
+}
+.compact-pdot.filled {
+  opacity:1;
+  background:currentColor;
+  box-shadow:0 0 10px currentColor;
+}
+
+@media (max-width: 700px) {
+  body.touch-device #title-back-link { display:none; }
+  body.touch-device #c {
+    left:0;
+    width:100vw;
+  }
+  body.touch-device #sidebar {
+    display:none;
+  }
+  body.touch-device #glyph-rain {
+    left:0;
+    width:100vw;
+  }
+  body.touch-device #collect-flash,
+  body.touch-device #downloading-label {
+    left:50%;
+  }
+  body.touch-device #proximity-hint,
+  body.touch-device #crosshair {
+    left:50%;
+  }
+  body.touch-device #touch-controls {
+    inset:0;
+  }
+  body.touch-device.game-active #compact-pollen-progress {
+    display:flex;
+  }
+  body.touch-device .touch-skip-btn {
+    top:18px;
+    right:16px;
+    min-width:150px;
+  }
+  body.touch-device .touch-fly-btn {
+    right:22px;
+    bottom:26px;
+    width:118px;
+    height:118px;
+  }
+}
+
 /* ── Crosshair ── */
 #crosshair { position:fixed; top:50%; left:calc(320px + (100vw - 320px)/2); transform:translate(-50%,-50%); width:16px; height:16px; opacity:0; transition:opacity 0.5s; pointer-events:none; }
 #crosshair.visible { opacity:1; }
@@ -689,6 +841,73 @@ body:not(.title-ready) #title-back-link {
 #full-poem .poem-line { font-size:clamp(13px,1.7vw,16px); color:#9070b0; letter-spacing:0.1em; font-weight:400; line-height:2.35; opacity:0; transition:opacity 1.4s ease; text-transform:lowercase; }
 #full-poem .poem-line.show { opacity:1; }
 #poem-home-hint { margin-top:30px; font-size:10px; color:var(--pollen-green); letter-spacing:0.45em; text-transform:uppercase; font-family:'IBM Plex Mono',monospace; }
+
+@media (max-width: 700px) {
+  body.touch-device #title-content > img {
+    width:108% !important;
+    max-width:108vw !important;
+  }
+  body.touch-device .title-start-button {
+    padding:14px 18px;
+  }
+  body.touch-device.poem-visible #intro-controls {
+    display:none;
+  }
+  body.touch-device .story-line,
+  body.touch-device .mission-line {
+    font-size:clamp(12px,4.1vw,18px);
+    line-height:1.55;
+  }
+  body.touch-device #full-poem {
+    align-items:center;
+    justify-content:flex-start;
+    overflow-y:auto;
+    padding:42px 22px 112px;
+  }
+  body.touch-device #poem-stage-2 {
+    width:100%;
+    min-height:calc(100vh - 154px);
+    justify-content:flex-start;
+  }
+  body.touch-device #full-poem .poem-lines {
+    max-width:100%;
+    padding-top:0;
+  }
+  body.touch-device #full-poem .poem-line {
+    font-size:clamp(11px,3.2vw,14px);
+    line-height:2.05;
+    letter-spacing:0.08em;
+  }
+  body.touch-device #poem-home-hint {
+    position:fixed;
+    top:auto;
+    bottom:24px;
+    left:50%;
+    transform:translateX(-50%);
+    z-index:60;
+    margin:0;
+    width:auto;
+    min-width:112px;
+    height:42px;
+    padding:0 14px;
+    border:1px solid rgba(73,220,164,0.58);
+    background:rgba(4,1,10,0.68);
+    letter-spacing:0.13em;
+    line-height:1;
+    text-align:center;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    pointer-events:auto;
+  }
+  body.touch-device .mission-frame {
+    transition:none;
+  }
+  body.touch-device .slide-btn {
+    bottom:36px;
+  }
+}
 </style>
 </head>
 <body>
@@ -889,6 +1108,12 @@ body:not(.title-ready) #title-back-link {
 <canvas id="glyph-rain"></canvas>
 
 <div id="proximity-hint" data-i18n="dp.proximity-hint">[ F ] collect pollen</div>
+<div id="compact-pollen-progress" aria-hidden="true"></div>
+<div id="touch-controls" aria-hidden="true">
+  <div class="touch-status" id="touch-status">collecting pollen</div>
+  <button class="touch-skip-btn" id="touch-skip-btn" type="button">Secret Message</button>
+  <button class="touch-fly-btn" id="touch-fly-btn" type="button">Fly</button>
+</div>
 
 <div id="full-poem">
   <div id="poem-stage-1">
@@ -1031,11 +1256,38 @@ const vel = new THREE.Vector3();
 const BEE_SPEED=0.15, BEE_DRAG=0.80, BEE_ACCEL=0.48;
 let roll=0, wingT=0, hoverT=0, hoverOffset=0, frameCount=0;
 let spaceHeld=false, pendingMouseX=0, pendingMouseY=0;
+const IS_TOUCH_DEVICE = (navigator.maxTouchPoints || 0) > 0 || window.matchMedia?.('(pointer: coarse)').matches || 'ontouchstart' in window;
+const SMALL_SCREEN_MEDIA = window.matchMedia?.('(max-width: 700px)');
+let touchAutoCollectSince = 0;
+const TOUCH_AUTO_COLLECT_DELAY = 0.65;
+if(IS_TOUCH_DEVICE) document.body.classList.add('touch-device');
+function isCompactGameUi(){
+  return IS_TOUCH_DEVICE && !!SMALL_SCREEN_MEDIA?.matches;
+}
+function syncCompactGameUi(){
+  document.body.classList.toggle('compact-game-ui', isCompactGameUi());
+}
+syncCompactGameUi();
+SMALL_SCREEN_MEDIA?.addEventListener?.('change', syncCompactGameUi);
+function applyTouchInstructionCopy(){
+  if(!IS_TOUCH_DEVICE) return;
+  const look = document.querySelector('[data-i18n="dp.controls-look"]');
+  const fly = document.querySelector('[data-i18n="dp.controls-fly"]');
+  const collect = document.querySelector('[data-i18n="dp.controls-collect"]');
+  if(look) look.textContent = 'Drag on the garden to look around for data-pollen.';
+  if(fly) fly.textContent = 'Hold the Fly button to move in that direction.';
+  if(collect) collect.textContent = 'Stay close to pollen to collect it automatically.';
+  const hint = document.getElementById('proximity-hint');
+  if(hint) hint.textContent = 'collecting pollen';
+  const poemHomeHint = document.getElementById('poem-home-hint');
+  if(poemHomeHint) poemHomeHint.textContent = 'Homepage';
+}
 
 // ── RENDERER ─────────────────────────────────────────────────────────────────
 const canvas = document.getElementById('c');
 const SIDEBAR_W = 320;
-function gameW(){ return innerWidth - SIDEBAR_W; }
+function sidebarW(){ return isCompactGameUi() ? 0 : SIDEBAR_W; }
+function gameW(){ return innerWidth - sidebarW(); }
 function gameH(){ return innerHeight; }
 
 renderer = new THREE.WebGLRenderer({
@@ -1304,7 +1556,7 @@ const GLYPH_STEP = 46;
 
 function setupGlyphRain(colorHex){
   const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-  const w = Math.max(1, window.innerWidth - SIDEBAR_W);
+  const w = Math.max(1, window.innerWidth - sidebarW());
   const h = window.innerHeight;
   glyphCanvas.width = Math.floor(w * dpr);
   glyphCanvas.height = Math.floor(h * dpr);
@@ -1345,7 +1597,7 @@ function showDataTransfer(f, done){
     const elapsed = now - started;
     const progress = Math.min(elapsed / duration, 1);
     const fade = progress < 0.1 ? progress / 0.1 : progress > 0.9 ? (1 - progress) / 0.1 : 1;
-    const w = window.innerWidth - SIDEBAR_W;
+    const w = window.innerWidth - sidebarW();
     const h = window.innerHeight;
 
     glyphCtx.clearRect(0, 0, w, h);
@@ -1433,6 +1685,7 @@ function tryCollect(){
   addBeePollenMarks(nd.type, nd.letters.length);
   revealLetters(nd.letters);
   fillPollenCircles(nodeIndex);
+  fillCompactPollenProgress(nd.letters, f.colorHex);
   updateDataBar(totalPb);
 
   const pollens = nd.letters.length;
@@ -1473,6 +1726,10 @@ function tryCollect(){
 function showPoem(){
   hideExitPopup();
   hideIntroModal();
+  if(IS_TOUCH_DEVICE){
+    const poemHomeHint = document.getElementById('poem-home-hint');
+    if(poemHomeHint) poemHomeHint.textContent = 'Homepage';
+  }
   document.body.classList.add('poem-visible');
   document.body.classList.remove('game-active');
   isPlaying = false; // must be false before exitPointerLock
@@ -1516,6 +1773,24 @@ function showPoem(){
     }, 1000);
   }, 3500);
 }
+function revealSecretMessage(){
+  hideExitPopup();
+  hideIntroModal();
+  isPlaying = false;
+  spaceHeld = false;
+  touchAutoCollectSince = 0;
+  vel.set(0,0,0);
+  if(glyphRainRaf) cancelAnimationFrame(glyphRainRaf);
+  glyphRainRaf = 0;
+  glyphRainActive = false;
+  transferActive = false;
+  glyphCanvas.classList.remove('visible');
+  glyphCtx.clearRect(0, 0, glyphCanvas.width, glyphCanvas.height);
+  document.getElementById('collect-flash').classList.remove('visible');
+  document.getElementById('downloading-label').style.opacity = '0';
+  clearTimeout(flashTimeout);
+  showPoem();
+}
 function hidePoem(){
   document.body.classList.remove('poem-visible');
   document.getElementById('full-poem').classList.remove('visible');
@@ -1546,13 +1821,16 @@ function resetRun(){
     node.userData.collected = false;
   });
   document.getElementById('pollen-circles').innerHTML = '';
+  buildCompactPollenProgress();
   setCollectHint(false);
+  setTouchStatus(false);
+  touchAutoCollectSince = 0;
 }
 function returnToGarden(){
   hidePoem();
   isPlaying = true;
   document.body.classList.add('game-active');
-  canvas.requestPointerLock();
+  if(!IS_TOUCH_DEVICE) canvas.requestPointerLock();
 }
 function goHome(){
   hidePoem();
@@ -1564,6 +1842,7 @@ function goHome(){
   // doesn't see an active game and re-show the exit popup.
   isPlaying = false;
   spaceHeld = false;
+  touchAutoCollectSince = 0;
   if(document.pointerLockElement || document.webkitPointerLockElement){
     (document.exitPointerLock || document.webkitExitPointerLock || (()=>{})).call(document);
   }
@@ -1663,6 +1942,7 @@ const VOL_SECRET_VOICE = 0.5; // secret-message.mp3 / secret-message-fr.mp3
 const VOL_NARRATION = VOL_NARRATION_BG;
 const VOL_SLIDES = VOL_SLIDES_BG;
 const VOL_GAME = VOL_GAME_BG;
+const TOUCH_AMBIENT_SCALE = 0.20;
 const narrationVolumes = {
   story: VOL_STORY_VOICE,
   mission: VOL_MISSION_VOICE,
@@ -1673,27 +1953,52 @@ const narrationVolumes = {
 let soundEnabled = localStorage.getItem('soundEnabled') !== '0';
 let ambientTarget = VOL_NARRATION;
 let ambientFadeTimer = null;
+let ambientAppliedVolume = 0;
+let touchAudioCtx = null;
+let touchAmbientGain = null;
+let touchAmbientSource = null;
 if(ambientAudio) ambientAudio.volume = 0;
+
+function ensureTouchAmbientGain(){
+  if(!IS_TOUCH_DEVICE || !ambientAudio || touchAmbientGain) return;
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  if(!AudioCtx) return;
+  touchAudioCtx = touchAudioCtx || new AudioCtx();
+  touchAmbientSource = touchAmbientSource || touchAudioCtx.createMediaElementSource(ambientAudio);
+  touchAmbientGain = touchAudioCtx.createGain();
+  touchAmbientGain.gain.value = ambientAppliedVolume;
+  touchAmbientSource.connect(touchAmbientGain).connect(touchAudioCtx.destination);
+}
+
+function setAmbientOutputVolume(vol){
+  ambientAppliedVolume = Math.max(0, Math.min(1, vol));
+  if(ambientAudio) ambientAudio.volume = ambientAppliedVolume;
+  if(touchAmbientGain) touchAmbientGain.gain.value = ambientAppliedVolume;
+}
 
 function fadeAmbientTo(targetVol, durationMs = 1500){
   if(!ambientAudio) return;
   ambientTarget = targetVol;
+  ensureTouchAmbientGain();
+  const appliedTargetVol = IS_TOUCH_DEVICE ? targetVol * TOUCH_AMBIENT_SCALE : targetVol;
   if(ambientFadeTimer) clearInterval(ambientFadeTimer);
-  const startVol = ambientAudio.volume;
-  const diff = targetVol - startVol;
-  if(Math.abs(diff) < 0.002){ ambientAudio.volume = targetVol; return; }
+  const startVol = ambientAppliedVolume;
+  const diff = appliedTargetVol - startVol;
+  if(Math.abs(diff) < 0.002){ setAmbientOutputVolume(appliedTargetVol); return; }
   const steps = Math.max(20, Math.round(durationMs / 40));
   const interval = durationMs / steps;
   let s = 0;
   ambientFadeTimer = setInterval(()=>{
     s++;
-    ambientAudio.volume = Math.max(0, Math.min(1, startVol + diff * (s / steps)));
+    setAmbientOutputVolume(startVol + diff * (s / steps));
     if(s >= steps){ clearInterval(ambientFadeTimer); ambientFadeTimer = null; }
   }, interval);
 }
 
 function playAmbient(){
   if(!ambientAudio || !soundEnabled) return;
+  ensureTouchAmbientGain();
+  if(touchAudioCtx && touchAudioCtx.state === 'suspended') touchAudioCtx.resume().catch(()=>{});
   ambientAudio.play().catch(()=>{});
 }
 
@@ -1704,7 +2009,7 @@ function stopAmbient(reset = false){
     ambientFadeTimer = null;
   }
   ambientAudio.pause();
-  ambientAudio.volume = 0;
+  setAmbientOutputVolume(0);
   if(reset) ambientAudio.currentTime = 0;
 }
 
@@ -1731,6 +2036,14 @@ Object.entries(narrFiles).forEach(([lang, files])=>{
 });
 let activeNarr = null;
 let pendingNarrTimer = null;
+let narrFadeTimer = null;
+let activeNarrKey = null;
+let touchNarrPrimedKey = null;
+const touchNarrAudio = IS_TOUCH_DEVICE ? new Audio() : null;
+if(touchNarrAudio){
+  touchNarrAudio.preload = 'auto';
+  touchNarrAudio.playsInline = true;
+}
 
 function dpCurrentLang(){
   return window.SpoliaI18n?.getLanguage?.() === 'fr' ? 'fr' : 'en';
@@ -1741,36 +2054,86 @@ function getNarrationAudio(key){
   return narrAudio[`${lang}:${key}`] || narrAudio[`en:${key}`];
 }
 
+function getNarrationSrc(key){
+  const lang = dpCurrentLang();
+  return narrFiles[lang]?.[key] || narrFiles.en[key];
+}
+
+function prepareTouchNarration(key){
+  if(!IS_TOUCH_DEVICE || !touchNarrAudio || !soundEnabled) return;
+  if(pendingNarrTimer){
+    clearTimeout(pendingNarrTimer);
+    pendingNarrTimer = null;
+  }
+  if(narrFadeTimer){
+    clearInterval(narrFadeTimer);
+    narrFadeTimer = null;
+  }
+  const src = getNarrationSrc(key);
+  if(!src) return;
+  const absoluteSrc = new URL(src, window.location.href).href;
+  if(touchNarrAudio.src !== absoluteSrc){
+    touchNarrAudio.src = src;
+    try { touchNarrAudio.load(); } catch(_) {}
+  }
+  activeNarr = touchNarrAudio;
+  activeNarrKey = key;
+  touchNarrPrimedKey = key;
+  touchNarrAudio.volume = narrationVolumes[key] ?? 1;
+  touchNarrAudio.currentTime = 0;
+}
+
 function stopNarration(fadeMs = 400){
   if(pendingNarrTimer){
     clearTimeout(pendingNarrTimer);
     pendingNarrTimer = null;
   }
+  if(narrFadeTimer){
+    clearInterval(narrFadeTimer);
+    narrFadeTimer = null;
+  }
   if(!activeNarr) return;
   const a = activeNarr;
   activeNarr = null;
+  activeNarrKey = null;
   if(fadeMs <= 0){ a.pause(); a.currentTime = 0; return; }
   const start = a.volume;
   const steps = Math.max(10, Math.round(fadeMs / 30));
   let s = 0;
-  const t = setInterval(()=>{
+  narrFadeTimer = setInterval(()=>{
     s++;
     a.volume = Math.max(0, start * (1 - s / steps));
-    if(s >= steps){ clearInterval(t); a.pause(); a.currentTime = 0; a.volume = 1; }
+    if(s >= steps){
+      clearInterval(narrFadeTimer);
+      narrFadeTimer = null;
+      a.pause();
+      a.currentTime = 0;
+      a.volume = 1;
+    }
   }, fadeMs / steps);
 }
 
 function playNarration(key, delayMs = 0){
   if(!soundEnabled) return;
-  stopNarration(200);
+  stopNarration(IS_TOUCH_DEVICE ? 0 : 200);
   const start = ()=>{
     pendingNarrTimer = null;
-    const a = getNarrationAudio(key);
+    const a = IS_TOUCH_DEVICE ? touchNarrAudio : getNarrationAudio(key);
     if(!a) return;
+    if(IS_TOUCH_DEVICE){
+      const src = getNarrationSrc(key);
+      if(!src) return;
+      const absoluteSrc = new URL(src, window.location.href).href;
+      if(a.src !== absoluteSrc){
+        a.src = src;
+        try { a.load(); } catch(_) {}
+      }
+    }
     a.volume = narrationVolumes[key] ?? 1;
     a.currentTime = 0;
     a.play().catch(()=>{});
     activeNarr = a;
+    activeNarrKey = key;
   };
   if(delayMs > 0) pendingNarrTimer = setTimeout(start, delayMs);
   else start();
@@ -1788,7 +2151,7 @@ function setSoundEnabled(enabled){
   localStorage.setItem('soundEnabled', enabled ? '1' : '0');
   if(!ambientAudio) return;
   if(enabled){
-    ambientAudio.volume = 0;
+    setAmbientOutputVolume(0);
     playAmbient();
     fadeAmbientTo(ambientTarget, 1200);
   } else {
@@ -1809,7 +2172,8 @@ let audioStarted = false;
 function handleFirstGesture(){
   if(audioStarted || !soundEnabled) return;
   audioStarted = true;
-  ambientAudio.volume = 0;
+  ensureTouchAmbientGain();
+  setAmbientOutputVolume(0);
   ambientAudio.play().then(()=>{ fadeAmbientTo(ambientTarget, 2000); }).catch(()=>{});
 }
 ['click','keydown','touchstart'].forEach(ev=>{
@@ -2134,7 +2498,7 @@ function startStoryAnimation(){
   STORY_LINES.forEach((item, i) => {
     const t = setTimeout(()=>{
       lines[i].classList.add('visible');
-      if(i === 0) playNarration('story'); // audio synced to first line
+      if(i === 0) playNarration('story', IS_TOUCH_DEVICE ? 500 : 0); // audio synced to first line
     }, item.delay);
     storyTextTimers.push(t);
   });
@@ -2157,6 +2521,21 @@ const MISSION_LINES = [
   { delay: 11500 },  // "and unlock a secret message."
 ];
 let missionFrameTimer = null, missionTextTimers = [], missionFrameIdx = 0;
+let missionFramesReady = false;
+
+function primeMissionFrames(){
+  if(missionFramesReady) return Promise.resolve();
+  const frames = Array.from(document.querySelectorAll('.mission-frame'));
+  const work = frames.map(img => {
+    if(img.complete && img.naturalWidth > 0) return Promise.resolve();
+    if(img.decode) return img.decode().catch(()=>{});
+    return new Promise(resolve => {
+      img.addEventListener('load', resolve, {once:true});
+      img.addEventListener('error', resolve, {once:true});
+    });
+  });
+  return Promise.all(work).then(()=>{ missionFramesReady = true; });
+}
 
 function startMissionAnimation(){
   const frames = document.querySelectorAll('.mission-frame');
@@ -2165,16 +2544,27 @@ function startMissionAnimation(){
   frames.forEach((f,i) => f.classList.toggle('active', i === 0));
   lines.forEach(l => l.classList.remove('visible'));
   // Stop-motion frame cycle
-  missionFrameTimer = setInterval(()=>{
-    frames[missionFrameIdx].classList.remove('active');
-    missionFrameIdx = (missionFrameIdx + 1) % frames.length;
-    frames[missionFrameIdx].classList.add('active');
-  }, 500);
+  const startFrameCycle = ()=>{
+    if(missionFrameTimer) clearInterval(missionFrameTimer);
+    missionFrameTimer = setInterval(()=>{
+      frames[missionFrameIdx].classList.remove('active');
+      missionFrameIdx = (missionFrameIdx + 1) % frames.length;
+      frames[missionFrameIdx].classList.add('active');
+    }, 500);
+  };
+  primeMissionFrames().then(()=>{
+    if(slideIndex !== 1) return;
+    missionFrameTimer = setTimeout(()=>{
+      missionFrameTimer = null;
+      if(slideIndex !== 1) return;
+      startFrameCycle();
+    }, IS_TOUCH_DEVICE ? 850 : 0);
+  });
   // Reveal lines at fixed positions
   MISSION_LINES.forEach((item, i) => {
     const t = setTimeout(()=>{
       lines[i].classList.add('visible');
-      if(i === 0) playNarration('mission'); // audio synced to first line
+      if(i === 0) playNarration('mission', IS_TOUCH_DEVICE ? 500 : 0); // audio synced to first line
     }, item.delay);
     missionTextTimers.push(t);
   });
@@ -2192,6 +2582,9 @@ function stopMissionAnimation(){
 let slideIndex = 0;
 let slideLocked = false;
 const SLIDE_COUNT = 4;
+function effectiveSlideCount(){
+  return (IS_TOUCH_DEVICE || !!SMALL_SCREEN_MEDIA?.matches) ? 2 : SLIDE_COUNT;
+}
 function initSlides(){
   slideIndex = 0;
   slideLocked = false;
@@ -2205,13 +2598,14 @@ function initSlides(){
 function advanceSlide(){
   if(slideLocked) return;
   slideLocked = true;
+  if(IS_TOUCH_DEVICE && slideIndex === 0) prepareTouchNarration('mission');
   // Stop animations when leaving a slide
   if(slideIndex === 0) stopStoryAnimation();
   if(slideIndex === 1) stopMissionAnimation();
   const slides = document.querySelectorAll('.slide');
   slides[slideIndex].classList.remove('active');
   slideIndex++;
-  if(slideIndex >= SLIDE_COUNT){
+  if(slideIndex >= effectiveSlideCount()){
     // Entering game — stop narration, raise ambient to game level
     stopNarration(600);
     fadeAmbientTo(VOL_GAME, 2500);
@@ -2220,12 +2614,12 @@ function advanceSlide(){
     setTimeout(()=>{
       slides[slideIndex].classList.add('active');
       const btn = document.getElementById('slide-next');
-      if(btn){ const lbl=btn.querySelector('.btn-label'); const txt=slideIndex===SLIDE_COUNT-1?dpT('dp.slide-enter','Enter the Garden'):dpT('dp.slide-next','Next →'); if(lbl) lbl.textContent=txt; else btn.textContent=txt; }
+      if(btn){ const lbl=btn.querySelector('.btn-label'); const txt=slideIndex===effectiveSlideCount()-1?dpT('dp.slide-enter','Enter the Garden'):dpT('dp.slide-next','Next →'); if(lbl) lbl.textContent=txt; else btn.textContent=txt; }
       slideLocked = false;
       // Per-slide audio cues
       if(slideIndex === 1){
         // Mission slide — stop-motion + narration
-        stopNarration(300);
+        if(!IS_TOUCH_DEVICE) stopNarration(300);
         fadeAmbientTo(VOL_NARRATION, 600);
         startMissionAnimation();
       } else {
@@ -2272,7 +2666,7 @@ document.addEventListener('keydown', e=>{
       // Enter = click Start in the intro modal (same as clicking the Start button)
       e.preventDefault();
       hideIntroModal();
-      canvas.requestPointerLock();
+      if(!IS_TOUCH_DEVICE) canvas.requestPointerLock();
     } else if(currentScreen==='title') showScreen('slides');
     else if(currentScreen==='slides') advanceSlide();
   }
@@ -2294,11 +2688,18 @@ document.addEventListener('keyup',e=>{
 
 document.getElementById('title-start-button').addEventListener('click', e => {
   e.stopPropagation();
+  if(IS_TOUCH_DEVICE) prepareTouchNarration('story');
   showScreen('slides');
 });
 document.getElementById('sidebar-logo').addEventListener('click', e=>{
   e.stopPropagation();
   goHome();
+});
+document.getElementById('poem-home-hint')?.addEventListener('click', e=>{
+  if(!IS_TOUCH_DEVICE) return;
+  e.preventDefault();
+  e.stopPropagation();
+  if(document.getElementById('full-poem').classList.contains('visible')) goHome();
 });
 
 // ── POLLEN CIRCLES UI ────────────────────────────────────────────────────────
@@ -2369,6 +2770,28 @@ function fillPollenCircles(nodeIndex){
   }
 }
 
+function buildCompactPollenProgress(){
+  const container = document.getElementById('compact-pollen-progress');
+  if(!container) return;
+  container.innerHTML = '';
+  for(let i=0; i<PASSWORD.length; i++){
+    const d = document.createElement('div');
+    d.className = 'compact-pdot';
+    d.id = `compact-pdot-${i}`;
+    container.appendChild(d);
+  }
+}
+
+function fillCompactPollenProgress(indices, color){
+  indices.forEach(idx=>{
+    const d = document.getElementById(`compact-pdot-${idx}`);
+    if(!d) return;
+    d.classList.add('filled');
+    d.style.color = color;
+    d.style.borderColor = color;
+  });
+}
+
 function updateDataBar(pb){
   const unit = dpT('dp.petabytes-unit','petabytes');
   document.getElementById('data-bar-nums').textContent=`${pb} / 130 ${unit}`;
@@ -2376,12 +2799,18 @@ function updateDataBar(pb){
 }
 // ── GAME INTRO MODAL ──────────────────────────────────────────────────────────
 const gameIntroModal = document.getElementById('game-intro-modal');
-function showIntroModal(){ gameIntroModal.classList.add('visible'); }
+function showIntroModal(){
+  if(IS_TOUCH_DEVICE){
+    const copy = gameIntroModal.querySelector('p');
+    if(copy) copy.textContent = 'Drag on the garden to look around. Hold Fly to move. Stay close to pollen to collect it.';
+  }
+  gameIntroModal.classList.add('visible');
+}
 function hideIntroModal(){ gameIntroModal.classList.remove('visible'); }
 document.getElementById('game-intro-start').addEventListener('click', ()=>{
   hideIntroModal();
   // Start button click IS a user gesture — request pointer lock now
-  canvas.requestPointerLock();
+  if(!IS_TOUCH_DEVICE) canvas.requestPointerLock();
 });
 
 // ── EXIT POPUP ────────────────────────────────────────────────────────────────
@@ -2391,20 +2820,10 @@ function hideExitPopup(){ exitPopup.classList.remove('visible'); }
 document.getElementById('exit-yes').addEventListener('click', ()=>{ hideExitPopup(); goHome(); });
 document.getElementById('exit-no').addEventListener('click', ()=>{
   hideExitPopup();
-  if(isPlaying) canvas.requestPointerLock();
+  if(isPlaying && !IS_TOUCH_DEVICE) canvas.requestPointerLock();
 });
 document.getElementById('exit-secret').addEventListener('click', ()=>{
-  hideExitPopup();
-  if(glyphRainRaf) cancelAnimationFrame(glyphRainRaf);
-  glyphRainRaf = 0;
-  glyphRainActive = false;
-  transferActive = false;
-  glyphCanvas.classList.remove('visible');
-  glyphCtx.clearRect(0, 0, glyphCanvas.width, glyphCanvas.height);
-  document.getElementById('collect-flash').classList.remove('visible');
-  document.getElementById('downloading-label').style.opacity = '0';
-  clearTimeout(flashTimeout);
-  showPoem();
+  revealSecretMessage();
 });
 
 // Shared exit trigger — called from Q keydown inside the iframe,
@@ -2429,7 +2848,7 @@ window.addEventListener('message', function(e){
       goHome();
     } else if(gameIntroModal.classList.contains('visible')){
       hideIntroModal();
-      canvas.requestPointerLock();
+      if(!IS_TOUCH_DEVICE) canvas.requestPointerLock();
     } else if(currentScreen === 'title'){
       showScreen('slides');
     } else if(currentScreen === 'slides'){
@@ -2437,6 +2856,81 @@ window.addEventListener('message', function(e){
     }
   }
 });
+
+// ── TOUCH INPUT ───────────────────────────────────────────────────────────────
+let touchLookPointerId = null;
+let touchLookLastX = 0;
+let touchLookLastY = 0;
+function endTouchFly(){
+  if(!IS_TOUCH_DEVICE) return;
+  spaceHeld = false;
+  vel.set(0,0,0);
+  document.getElementById('touch-fly-btn')?.classList.remove('active');
+}
+if(IS_TOUCH_DEVICE){
+  canvas.addEventListener('pointerdown', e=>{
+    if(!isPlaying || e.pointerType !== 'touch' || touchLookPointerId !== null) return;
+    e.preventDefault();
+    touchLookPointerId = e.pointerId;
+    touchLookLastX = e.clientX;
+    touchLookLastY = e.clientY;
+    canvas.setPointerCapture?.(e.pointerId);
+    hideIntroModal();
+    hideExitPopup();
+  }, {passive:false});
+
+  canvas.addEventListener('pointermove', e=>{
+    if(!isPlaying || e.pointerId !== touchLookPointerId) return;
+    e.preventDefault();
+    const dx = e.clientX - touchLookLastX;
+    const dy = e.clientY - touchLookLastY;
+    touchLookLastX = e.clientX;
+    touchLookLastY = e.clientY;
+    pendingMouseX += dx;
+    pendingMouseY += dy;
+  }, {passive:false});
+
+  ['pointerup','pointercancel','pointerleave'].forEach(ev=>{
+    canvas.addEventListener(ev, e=>{
+      if(e.pointerId !== touchLookPointerId) return;
+      touchLookPointerId = null;
+      canvas.releasePointerCapture?.(e.pointerId);
+    });
+  });
+
+  const touchFlyBtn = document.getElementById('touch-fly-btn');
+  if(touchFlyBtn){
+    touchFlyBtn.addEventListener('pointerdown', e=>{
+      if(!isPlaying) return;
+      e.preventDefault();
+      spaceHeld = true;
+      touchFlyBtn.classList.add('active');
+      touchFlyBtn.setPointerCapture?.(e.pointerId);
+      hideIntroModal();
+      hideExitPopup();
+    }, {passive:false});
+    ['pointerup','pointercancel','pointerleave'].forEach(ev=>{
+      touchFlyBtn.addEventListener(ev, e=>{
+        e.preventDefault();
+        endTouchFly();
+        touchFlyBtn.releasePointerCapture?.(e.pointerId);
+      }, {passive:false});
+    });
+  }
+
+  const touchSkipBtn = document.getElementById('touch-skip-btn');
+  if(touchSkipBtn){
+    touchSkipBtn.addEventListener('pointerdown', e=>{
+      e.preventDefault();
+      e.stopPropagation();
+    }, {passive:false});
+    touchSkipBtn.addEventListener('pointerup', e=>{
+      e.preventDefault();
+      e.stopPropagation();
+      if(isPlaying) revealSecretMessage();
+    }, {passive:false});
+  }
+}
 
 // ── POINTER LOCK ───────────────────────────────────────────────────────────────
 document.addEventListener('pointerlockchange',()=>{
@@ -2466,12 +2960,13 @@ function onLocked(e){
 
 // Click canvas to re-acquire pointer lock (e.g. after dismissing popup with "Keep playing")
 canvas.addEventListener('click',()=>{
-  if(isPlaying && document.pointerLockElement !== canvas && !exitPopup.classList.contains('visible')){
+  if(!IS_TOUCH_DEVICE && isPlaying && document.pointerLockElement !== canvas && !exitPopup.classList.contains('visible')){
     canvas.requestPointerLock();
   }
 });
 
 window.addEventListener('resize',()=>{
+  syncCompactGameUi();
   camera.aspect = gameW()/gameH();
   camera.updateProjectionMatrix();
   renderer.setPixelRatio(renderPixelRatio());
@@ -2493,6 +2988,7 @@ function startGame(){
     if(el) el.classList.add('hidden');
   });
   buildPollenCircles();
+  buildCompactPollenProgress();
   vel.set(0,0,0);
   spaceHeld = false;
   pendingMouseX = 0;
@@ -2647,6 +3143,15 @@ function setCollectHint(visible, color=''){
     _hintEl.style.color = color;
   }
 }
+const _touchStatusEl = document.getElementById('touch-status');
+function setTouchStatus(visible, color=''){
+  if(!_touchStatusEl) return;
+  _touchStatusEl.classList.toggle('visible', visible);
+  if(visible && color){
+    _touchStatusEl.style.borderColor = color + '88';
+    _touchStatusEl.style.color = color;
+  }
+}
 
 const clock = new THREE.Clock();
 let t = 0;
@@ -2726,9 +3231,16 @@ function loopFrame(){
 
   if(nearestDist<0.55 && nearestNode && !nearestNode.userData.collected){
     const f = FLOWERS[nearestNode.userData.nodeData.type];
-    setCollectHint(true, f.colorHex);
+    setCollectHint(!IS_TOUCH_DEVICE, f.colorHex);
+    setTouchStatus(IS_TOUCH_DEVICE, f.colorHex);
+    if(IS_TOUCH_DEVICE && !transferActive){
+      if(!touchAutoCollectSince) touchAutoCollectSince = t;
+      if(t - touchAutoCollectSince >= TOUCH_AUTO_COLLECT_DELAY) tryCollect();
+    }
   } else {
     setCollectHint(false);
+    setTouchStatus(false);
+    touchAutoCollectSince = 0;
   }
   updateWifi(nearestDist);
 
@@ -2762,10 +3274,11 @@ async function dpLoadTranslations(){
   const slideBtn=document.getElementById('slide-next');
   if(slideBtn){
     const lbl=slideBtn.querySelector('.btn-label');
-    const isLastSlide=slideIndex===SLIDE_COUNT-1;
+    const isLastSlide=slideIndex===effectiveSlideCount()-1;
     const txt=isLastSlide?dpT('dp.slide-enter','Enter the Garden'):dpT('dp.slide-next','Next →');
     if(lbl) lbl.textContent=txt; else slideBtn.textContent=txt;
   }
+  applyTouchInstructionCopy();
 }
 
 function dpWireLangBtns(){
@@ -2789,6 +3302,7 @@ function dpWireLangBtns(){
 document.addEventListener('DOMContentLoaded',()=>{
   dpWireLangBtns();
   dpLoadTranslations();
+  applyTouchInstructionCopy();
 });
 </script>
 </body>
