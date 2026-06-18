@@ -1053,12 +1053,12 @@
             }
             .enter-button-glass {
                 inset: 0;
-                background: rgba(255, 255, 255, 0.1);
-                backdrop-filter: blur(18px) saturate(150%) !important;
-                -webkit-backdrop-filter: blur(18px) saturate(150%) !important;
+                background: transparent;
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
             }
             .enter-button-glass-fixed {
-                display: none !important;
+                display: block !important;
                 position: fixed;
                 top: var(--enter-glass-top, -999px);
                 left: var(--enter-glass-left, -999px);
@@ -1246,6 +1246,7 @@
     <div class="landing-video-cover landing-el" aria-hidden="true"></div>
     <div class="blinds-overlay landing-el"></div>
     <div class="enter-button-glass-fixed landing-el landing-home-ui" id="discover-glass" aria-hidden="true"></div>
+    <div class="enter-button-glass-fixed landing-el landing-home-ui" id="data-pollen-glass" aria-hidden="true"></div>
     <div class="landing-container landing-el landing-home-ui">
         <div class="landing-hero">
             <div class="spolia-title">
@@ -1404,6 +1405,8 @@
 	        const navBrand    = document.getElementById('nav-brand');
 	        const discoverBtn = document.getElementById('discover-btn');
         const discoverGlass = document.getElementById('discover-glass');
+        const dataPollenBtn = document.querySelector('.data-pollen-link');
+        const dataPollenGlass = document.getElementById('data-pollen-glass');
 	        const veil        = document.getElementById('page-veil');
         const mobileMedia = window.matchMedia('(max-width: 767px)');
         const backgroundLowVolume = () => mobileMedia.matches ? 0.05 : 0.1;
@@ -1877,14 +1880,19 @@
             return new Promise(resolve => requestAnimationFrame(() => resolve()));
         }
 
-        function syncDiscoverGlass() {
-            if (!discoverBtn || !discoverGlass) return;
-            const rect = discoverBtn.getBoundingClientRect();
+        function syncButtonGlass(button, glass) {
+            if (!button || !glass) return;
+            const rect = button.getBoundingClientRect();
             if (!rect.width || !rect.height) return;
-            discoverGlass.style.setProperty('--enter-glass-top', `${rect.top}px`);
-            discoverGlass.style.setProperty('--enter-glass-left', `${rect.left}px`);
-            discoverGlass.style.setProperty('--enter-glass-width', `${rect.width}px`);
-            discoverGlass.style.setProperty('--enter-glass-height', `${rect.height}px`);
+            glass.style.setProperty('--enter-glass-top', `${rect.top}px`);
+            glass.style.setProperty('--enter-glass-left', `${rect.left}px`);
+            glass.style.setProperty('--enter-glass-width', `${rect.width}px`);
+            glass.style.setProperty('--enter-glass-height', `${rect.height}px`);
+        }
+
+        function syncDiscoverGlass() {
+            syncButtonGlass(discoverBtn, discoverGlass);
+            syncButtonGlass(dataPollenBtn, dataPollenGlass);
         }
 
         let homeRevealReadyPromise = null;
@@ -1893,14 +1901,18 @@
             if (homeRevealReadyPromise) return homeRevealReadyPromise;
 
             const logos = [...document.querySelectorAll('.logos-bar img')];
-            homeRevealReadyPromise = Promise.all(logos.map(img => {
+            const fontReady = document.fonts?.ready?.catch(() => {}) || Promise.resolve();
+            homeRevealReadyPromise = Promise.all([
+                fontReady,
+                ...logos.map(img => {
                 if (img.decode) return img.decode().catch(() => {});
                 if (img.complete) return Promise.resolve();
                 return new Promise(resolve => {
                     img.onload = resolve;
                     img.onerror = resolve;
                 });
-            })).then(async () => {
+            })
+            ]).then(async () => {
                 document.body.classList.add('home-prewarm');
                 syncDiscoverGlass();
                 await nextFrame();
@@ -2048,6 +2060,9 @@
             document.body.classList.remove('home-prewarm');
             await nextFrame();
             document.body.classList.add('home-ready');
+            syncDiscoverGlass();
+            await nextFrame();
+            syncDiscoverGlass();
             fadeBackgroundToFull();
 
             if (useVeil && returningFromPage) {
@@ -2100,6 +2115,9 @@
             await prepareHomeReveal();
             document.body.classList.add('home-ready');
             document.body.classList.remove('home-prewarm');
+            syncDiscoverGlass();
+            await nextFrame();
+            syncDiscoverGlass();
             document.body.classList.remove('entry-sequence');
             fadeBackgroundToFull();
         }
